@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CustomerOrderTimeRptMapper">
+
+    <select id="getRecordCount" resultType="com.kkl.kklplus.provider.rpt.entity.ChargeBaseEntity">
+        SELECT
+        ropt.day_index AS "dayIndex",
+        count(id) AS countNum
+        FROM rpt_order_customer_time ropt
+        <if test="salesId != null and salesId != 0">
+        INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = ropt.customer_id  and mcs.system_id = #{systemId}
+        </if>
+        WHERE
+        ropt.system_id = #{systemId}
+        AND ropt.order_close_date >= #{beginDate}
+        AND <![CDATA[ ropt.order_close_date <= #{endDate} ]]>
+        <if test="customerId != null">
+            and ropt.customer_id=#{customerId}
+        </if>
+        <if test="servicePointId != null">
+            and ropt.service_point_id = #{servicePointId}
+        </if>
+        <if test="keFuId != 0 and keFuId != null">
+            and ropt.kefu_id = #{keFuId}
+        </if>
+        <if test="areaType == 2">
+            and ropt.province_id = #{areaId}
+        </if>
+        <if test="areaType == 3">
+            and ropt.city_id = #{areaId}
+        </if>
+        <if test="areaType == 4">
+            and ropt.county_id = #{areaId}
+        </if>
+        <if test="orderServiceType != null">
+            and ropt.order_service_type = #{orderServiceType}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and ropt.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and ropt.product_category_id in
+                    <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{productCategoryIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="salesId != null and salesId != 0">
+            AND mcs.sales_id = #{salesId}
+        </if>
+        GROUP BY dayIndex
+    </select>
+
+    <select id="getLessSix" resultType="com.kkl.kklplus.provider.rpt.entity.ChargeBaseEntity">
+        SELECT
+        ropt.day_index AS "dayIndex",
+        count(0) as countNum
+        FROM rpt_order_customer_time ropt
+        <if test="salesId != null and salesId != 0">
+        INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = ropt.customer_id  and mcs.system_id = #{systemId}
+        </if>
+        WHERE
+        ropt.system_id = #{systemId}
+        AND ropt.order_close_date >= #{beginDate}
+        AND <![CDATA[ ropt.order_close_date <= #{endDate} ]]>
+        AND <![CDATA[ ropt.create_plan_time <= 10800 ]]>
+        <if test="customerId != null">
+            and ropt.customer_id = #{customerId}
+        </if>
+        <if test="servicePointId != null">
+            and ropt.service_point_id = #{servicePointId}
+        </if>
+        <if test="keFuId != 0 and keFuId != null">
+            and ropt.kefu_id = #{keFuId}
+        </if>
+        <if test="areaType == 2">
+            and ropt.province_id = #{areaId}
+        </if>
+        <if test="areaType == 3">
+            and ropt.city_id = #{areaId}
+        </if>
+        <if test="areaType == 4">
+            and ropt.county_id = #{areaId}
+        </if>
+        <if test="orderServiceType != null">
+            and ropt.order_service_type = #{orderServiceType}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and ropt.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and ropt.product_category_id in
+                    <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{productCategoryIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="salesId != null and salesId != 0">
+            AND mcs.sales_id = #{salesId}
+        </if>
+        GROUP BY dayIndex
+
+    </select>
+
+
+    <select id="getMoreSix" resultType="com.kkl.kklplus.provider.rpt.entity.ChargeBaseEntity">
+        SELECT
+        ropt.day_index AS "dayIndex",
+        count(0) as countNum
+        FROM rpt_order_customer_time ropt
+        <if test="salesId != null and salesId != 0">
+        INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = ropt.customer_id  and mcs.system_id = #{systemId}
+        </if>
+        WHERE
+        ropt.system_id = #{systemId}
+        AND ropt.order_close_date >= #{beginDate}
+        AND <![CDATA[ ropt.order_close_date <= #{endDate} ]]>
+        AND ropt.create_plan_time > 10800
+        <if test="customerId != null">
+            and ropt.customer_id = #{customerId}
+        </if>
+        <if test="servicePointId != null">
+            and ropt.service_point_id = #{servicePointId}
+        </if>
+        <if test="keFuId != 0 and keFuId != null">
+            and ropt.kefu_id = #{keFuId}
+        </if>
+        <if test="areaType == 2">
+            and ropt.province_id = #{areaId}
+        </if>
+        <if test="areaType == 3">
+            and ropt.city_id = #{areaId}
+        </if>
+        <if test="areaType == 4">
+            and ropt.county_id = #{areaId}
+        </if>
+        <if test="orderServiceType != null">
+            and ropt.order_service_type = #{orderServiceType}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and ropt.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and ropt.product_category_id in
+                    <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{productCategoryIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="salesId != null and salesId != 0">
+            AND mcs.sales_id = #{salesId}
+        </if>
+        GROUP BY dayIndex
+
+    </select>
+
+
+    <select id="getCloseLessTwelve" resultType="com.kkl.kklplus.provider.rpt.entity.ChargeBaseEntity">
+        SELECT
+        ropt.day_index AS "dayIndex",
+        count(0) as countNum
+        FROM rpt_order_customer_time ropt
+        <if test="salesId != null and salesId != 0">
+        INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = ropt.customer_id  and mcs.system_id = #{systemId}
+        </if>
+        WHERE
+        ropt.system_id = #{systemId}
+        AND ropt.order_close_date >= #{beginDate}
+        AND <![CDATA[ ropt.order_close_date <= #{endDate} ]]>
+        AND <![CDATA[ ropt.plan_close_time <= 43200 ]]>
+        <if test="customerId != null">
+            and ropt.customer_id = #{customerId}
+        </if>
+        <if test="servicePointId != null">
+            and ropt.service_point_id = #{servicePointId}
+        </if>
+        <if test="keFuId != 0 and keFuId != null">
+            and ropt.kefu_id = #{keFuId}
+        </if>
+        <if test="areaType == 2">
+            and ropt.province_id = #{areaId}
+        </if>
+        <if test="areaType == 3">
+            and ropt.city_id = #{areaId}
+        </if>
+        <if test="areaType == 4">
+            and ropt.county_id = #{areaId}
+        </if>
+        <if test="orderServiceType != null">
+            and ropt.order_service_type = #{orderServiceType}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and ropt.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and ropt.product_category_id in
+                    <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{productCategoryIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="salesId != null and salesId != 0">
+            AND mcs.sales_id = #{salesId}
+        </if>
+        GROUP BY dayIndex
+
+    </select>
+
+
+    <select id="getClose12to24" resultType="com.kkl.kklplus.provider.rpt.entity.ChargeBaseEntity">
+        SELECT
+        ropt.day_index AS "dayIndex",
+        count(0) as countNum
+        FROM rpt_order_customer_time ropt
+        <if test="salesId != null and salesId != 0">
+        INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = ropt.customer_id  and mcs.system_id = #{systemId}
+        </if>
+        WHERE
+        ropt.system_id = #{systemId}
+        AND ropt.order_close_date >= #{beginDate}
+        AND <![CDATA[ ropt.order_close_date <= #{endDate} ]]>
+        AND ropt.plan_close_time > 43200
+        AND <![CDATA[ ropt.plan_close_time <= 86400 ]]>
+        <if test="customerId != null">
+            and ropt.customer_id = #{customerId}
+        </if>
+        <if test="servicePointId != null">
+            and ropt.service_point_id = #{servicePointId}
+        </if>
+        <if test="keFuId != 0 and keFuId != null">
+            and ropt.kefu_id = #{keFuId}
+        </if>
+        <if test="areaType == 2">
+            and ropt.province_id = #{areaId}
+        </if>
+        <if test="areaType == 3">
+            and ropt.city_id = #{areaId}
+        </if>
+        <if test="areaType == 4">
+            and ropt.county_id = #{areaId}
+        </if>
+        <if test="orderServiceType != null">
+            and ropt.order_service_type = #{orderServiceType}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and ropt.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and ropt.product_category_id in
+                    <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{productCategoryIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="salesId != null and salesId != 0">
+            AND mcs.sales_id = #{salesId}
+        </if>
+        GROUP BY dayIndex
+
+    </select>
+
+    <!--2019-11-19 添加 AND mcs.sub_flag = 1 -->
+    <select id="getClose24to48" resultType="com.kkl.kklplus.provider.rpt.entity.ChargeBaseEntity">
+        SELECT
+        ropt.day_index AS "dayIndex",
+        count(0) as countNum
+        FROM rpt_order_customer_time ropt
+        <if test="salesId != null and salesId != 0">
+        INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = ropt.customer_id  and mcs.system_id = #{systemId}
+        </if>
+        WHERE
+        ropt.system_id = #{systemId}
+        AND ropt.order_close_date >= #{beginDate}
+        AND <![CDATA[ ropt.order_close_date <= #{endDate} ]]>
+        AND ropt.plan_close_time > 86400
+        AND <![CDATA[ ropt.plan_close_time <= 172800 ]]>
+        <if test="customerId != null">
+            and ropt.customer_id = #{customerId}
+        </if>
+        <if test="servicePointId != null">
+            and ropt.service_point_id = #{servicePointId}
+        </if>
+        <if test="keFuId != 0 and keFuId != null">
+            and ropt.kefu_id = #{keFuId}
+        </if>
+        <if test="areaType == 2">
+            and ropt.province_id = #{areaId}
+        </if>
+        <if test="areaType == 3">
+            and ropt.city_id = #{areaId}
+        </if>
+        <if test="areaType == 4">
+            and ropt.county_id = #{areaId}
+        </if>
+        <if test="orderServiceType != null">
+            and ropt.order_service_type = #{orderServiceType}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and ropt.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and ropt.product_category_id in
+                    <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{productCategoryIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="salesId != null and salesId != 0">
+            AND mcs.sales_id = #{salesId}
+        </if>
+        GROUP BY dayIndex
+
+    </select>
+
+    <select id="getClose48to72" resultType="com.kkl.kklplus.provider.rpt.entity.ChargeBaseEntity">
+        SELECT
+        ropt.day_index AS "dayIndex",
+        count(0) as countNum
+        FROM rpt_order_customer_time ropt
+        <if test="salesId != null and salesId != 0">
+        INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = ropt.customer_id  and mcs.system_id = #{systemId}
+        </if>
+        WHERE
+        ropt.system_id = #{systemId}
+        AND ropt.order_close_date >= #{beginDate}
+        AND <![CDATA[ ropt.order_close_date <= #{endDate} ]]>
+        AND ropt.plan_close_time > 172800
+        AND <![CDATA[ ropt.plan_close_time <= 259200 ]]>
+        <if test="customerId != null">
+            and ropt.customer_id = #{customerId}
+        </if>
+        <if test="servicePointId != null">
+            and ropt.service_point_id = #{servicePointId}
+        </if>
+        <if test="keFuId != 0 and keFuId != null">
+            and ropt.kefu_id = #{keFuId}
+        </if>
+        <if test="areaType == 2">
+            and ropt.province_id = #{areaId}
+        </if>
+        <if test="areaType == 3">
+            and ropt.city_id = #{areaId}
+        </if>
+        <if test="areaType == 4">
+            and ropt.county_id = #{areaId}
+        </if>
+        <if test="orderServiceType != null">
+            and ropt.order_service_type = #{orderServiceType}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and ropt.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and ropt.product_category_id in
+                    <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{productCategoryIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="salesId != null and salesId != 0">
+            AND mcs.sales_id = #{salesId}
+        </if>
+        GROUP BY dayIndex
+
+    </select>
+
+
+    <select id="getCloseMore72" resultType="com.kkl.kklplus.provider.rpt.entity.ChargeBaseEntity">
+        SELECT
+        ropt.day_index AS "dayIndex",
+        count(0) as countNum
+        FROM rpt_order_customer_time ropt
+        <if test="salesId != null and salesId != 0">
+        INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = ropt.customer_id  and mcs.system_id = #{systemId}
+        </if>
+        WHERE
+        ropt.system_id = #{systemId}
+        AND ropt.order_close_date >= #{beginDate}
+        AND <![CDATA[ ropt.order_close_date <= #{endDate} ]]>
+        AND ropt.plan_close_time > 259200
+        <if test="customerId != null">
+            and ropt.customer_id = #{customerId}
+        </if>
+        <if test="servicePointId != null">
+            and ropt.service_point_id = #{servicePointId}
+        </if>
+        <if test="keFuId != 0 and keFuId != null">
+            and ropt.kefu_id = #{keFuId}
+        </if>
+        <if test="areaType == 2">
+            and ropt.province_id = #{areaId}
+        </if>
+        <if test="areaType == 3">
+            and ropt.city_id = #{areaId}
+        </if>
+        <if test="areaType == 4">
+            and ropt.county_id = #{areaId}
+        </if>
+        <if test="orderServiceType != null">
+            and ropt.order_service_type = #{orderServiceType}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and ropt.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and ropt.product_category_id in
+                    <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{productCategoryIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="salesId != null and salesId != 0">
+            AND mcs.sales_id = #{salesId}
+        </if>
+        GROUP BY dayIndex
+    </select>
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        count(id)
+        FROM rpt_order_customer_time ropt
+        <if test="salesId != null and salesId != 0">
+            INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = ropt.customer_id  and mcs.system_id = #{systemId}
+        </if>
+        WHERE
+        ropt.system_id = #{systemId}
+        AND ropt.order_close_date >= #{beginDate}
+        AND <![CDATA[ ropt.order_close_date <= #{endDate} ]]>
+        <if test="customerId != null">
+            and ropt.customer_id = #{customerId}
+        </if>
+        <if test="servicePointId != null">
+            and ropt.service_point_id = #{servicePointId}
+        </if>
+        <if test="keFuId != 0 and keFuId != null">
+            and ropt.kefu_id = #{keFuId}
+        </if>
+        <if test="areaType == 2">
+            and ropt.province_id = #{areaId}
+        </if>
+        <if test="areaType == 3">
+            and ropt.city_id = #{areaId}
+        </if>
+        <if test="areaType == 4">
+            and ropt.county_id = #{areaId}
+        </if>
+        <if test="orderServiceType != null">
+            and ropt.order_service_type = #{orderServiceType}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and ropt.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and ropt.product_category_id in
+                    <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{productCategoryIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="salesId != null and salesId != 0">
+            AND mcs.sales_id = #{salesId}
+        </if>
+    </select>
+
+    <select id="getCustomerOrderTimeData" resultType="com.kkl.kklplus.provider.rpt.entity.CustomerOrderTimeRptEntity">
+        SELECT soc.order_id ,soc.customer_id ,soc.kefu_id AS "keFuId",soc.create_date AS "orderCreateDate",soc.product_category_id,
+        sos.first_plan_date AS "firstPlanDate",sos.plan_date AS "planDate",sos.charge_date AS "orderCloseDate",
+        soc.servicepoint_id AS "servicePointId",soc.area_id AS "countyId",soc.order_service_type
+        FROM sd_order_condition soc
+        INNER JOIN sd_order_status sos ON soc.order_id = sos.order_id
+        WHERE <!-- soc.status = 80 --> soc.grade_flag > 0
+        AND sos.charge_date >= #{beginDate}
+        AND <![CDATA[ sos.charge_date <= #{endDate} ]]>
+        LIMIT 80000
+    </select>
+
+    <insert id="insertCustomerOrderTimeData" parameterType="java.util.List">
+        INSERT INTO rpt_order_customer_time(
+        order_id,
+        system_id,
+        province_id,
+        city_id,
+        county_id,
+        product_category_id,
+        customer_id,
+        kefu_id,
+        order_service_type,
+        order_create_date,
+        order_close_date,
+        first_plan_date,
+        service_point_id,
+        day_index,
+        create_plan_time,
+        plan_close_time,
+        quarter
+        )VALUES
+        <foreach collection="list" item="entity" separator=",">(
+            #{entity.orderId},
+            #{entity.systemId},
+            #{entity.provinceId},
+            #{entity.cityId},
+            #{entity.countyId},
+            #{entity.productCategoryId},
+            #{entity.customerId},
+            #{entity.keFuId},
+            #{entity.orderServiceType},
+            #{entity.orderCreateDt},
+            #{entity.orderCloseDt},
+            #{entity.firstPlanDt},
+            #{entity.servicePointId},
+            #{entity.dayIndex},
+            #{entity.createPlanTime},
+            #{entity.planCloseTime},
+            #{entity.quarter})
+        </foreach>
+    </insert>
+
+    <delete id="deleteCustomerOrderTimeData">
+        DELETE FROM rpt_order_customer_time
+        WHERE   system_id = #{systemId}
+        AND order_close_date >= #{beginDate}
+        AND <![CDATA[ order_close_date <= #{endDate}]]>
+        AND quarter = #{quarter}
+    </delete>
+
+    <select id="getCompletedOrderIds" resultType="com.kkl.kklplus.provider.rpt.entity.LongTwoTuple">
+        SELECT
+        a.id AS "aElement",
+        a.order_id AS "bElement"
+        FROM rpt_order_customer_time a
+        <where>
+            system_id = #{systemId}
+            AND order_close_date >= #{beginDate}
+            AND <![CDATA[ order_close_date <= #{endDate}]]>
+            AND quarter = #{quarter}
+        </where>
+        LIMIT 100000
+    </select>
+</mapper>

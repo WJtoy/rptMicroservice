@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.ServicePointChargeNewRptMapper">
+
+    <select id="getPayableAList" resultType="com.kkl.kklplus.provider.rpt.entity.RPTServicePointChargeEntity">
+        SELECT
+                fec.service_point_id        AS "servicePointId",
+                fecc.product_category_id    AS "productCategoryId",
+                sum(fec.service_charge + fec.express_charge + fec.travel_charge + fec.material_charge + fec.other_charge) AS payableA
+        FROM    fi_engineercharge fec
+                INNER JOIN fi_engineercharge_condition fecc ON fecc.id = fec.id
+        where   fec.create_date >= #{startDate}
+                AND <![CDATA[ fec.create_date < #{endDate} ]]>
+                AND fec.quarter = #{quarter}
+        GROUP BY servicePointId, productCategoryId
+        LIMIT   #{beginLimit}, #{endLimit}
+    </select>
+
+    <select id="getPayableBList" resultType="com.kkl.kklplus.provider.rpt.entity.RPTServicePointChargeEntity">
+        SELECT
+                fecm.service_point_id       AS "servicePointId",
+                femc.product_category_id    AS "productCategoryId",
+                sum(fecm.customer_time_liness_charge + fecm.insurance_charge + fecm.time_liness_charge + fecm.urgent_charge + fecm.praise_fee + fecm.tax_fee + fecm.info_fee+ fecm.deposit) AS payableB
+        FROM    fi_engineercharge_master fecm
+                INNER JOIN fi_engineercharge_master_condition femc ON femc.id = fecm.id
+        where   fecm.create_date >= #{startDate}
+                AND <![CDATA[ fecm.create_date < #{endDate} ]]>
+                AND fecm.quarter = #{quarter}
+        GROUP BY servicePointId, productCategoryId
+        LIMIT   #{beginLimit}, #{endLimit}
+    </select>
+
+    <select id="getPaidAmountList" resultType="com.kkl.kklplus.provider.rpt.entity.RPTServicePointChargeEntity">
+        SELECT
+                paid.servicepoint_id        AS "servicePointId",
+                paid.product_category_id    AS "productCategoryId",
+                sum(paid.m${selectedMonth}) AS paidAmount
+        FROM    fi_servicepoint_invoice_monthly_detail paid
+        WHERE 	paid.year = #{selectedYear}
+        GROUP BY servicePointId, productCategoryId
+        LIMIT   #{beginLimit}, #{endLimit}
+    </select>
+
+    <select id="getLastMonthBalanceList" resultType="com.kkl.kklplus.provider.rpt.entity.RPTServicePointChargeEntity">
+        SELECT
+                balance.servicepoint_id         AS "servicePointId",
+                balance.product_category_id     AS "productCategoryId",
+                sum(balance.m${selectedMonth})  AS lastMonthBalance
+        FROM 	rpt_servicepoint_balance_monthly_detail balance
+        WHERE 	balance.year = #{selectedYear}
+        GROUP BY servicePointId, productCategoryId
+        LIMIT   #{beginLimit}, #{endLimit}
+    </select>
+
+    <select id="getTheBalanceList" resultType="com.kkl.kklplus.provider.rpt.entity.RPTServicePointChargeEntity">
+        SELECT
+                balance.servicepoint_id         AS "servicePointId",
+                balance.product_category_id     AS "productCategoryId",
+                sum(balance.m${selectedMonth})  AS theBalance
+        FROM 	rpt_servicepoint_balance_monthly_detail balance
+        WHERE 	balance.year = #{selectedYear}
+        GROUP BY servicePointId, productCategoryId
+        LIMIT   #{beginLimit}, #{endLimit}
+    </select>
+
+    <select id="getCompletedChargeList" resultType="com.kkl.kklplus.provider.rpt.entity.RPTServicePointChargeEntity">
+        SELECT
+                fec.service_point_id        AS "servicePointId",
+                fecc.product_category_id    AS "productCategoryId",
+                sum(fec.service_charge+fec.express_charge+fec.travel_charge+fec.material_charge+fec.other_charge) AS completedCharge
+        FROM    fi_engineercharge fec
+                INNER JOIN fi_engineercharge_condition fecc ON fecc.id = fec.id
+        WHERE   fec.quarter = #{quarter}
+                AND fec.del_flag = 0
+                AND fec.charge_order_type = 0
+                AND fec.create_date >= #{beginDate} AND <![CDATA[ fec.create_date < #{endDate} ]]>
+        GROUP BY servicePointId, productCategoryId
+        LIMIT   #{beginLimit}, #{endLimit}
+    </select>
+
+    <select id="getReturnChargeList" resultType="com.kkl.kklplus.provider.rpt.entity.RPTServicePointChargeEntity">
+        SELECT
+                fec.service_point_id        AS "servicePointId",
+                fecc.product_category_id    AS "productCategoryId",
+                sum(fec.service_charge+fec.express_charge+fec.travel_charge+fec.material_charge+fec.other_charge) AS returnCharge
+        FROM    fi_engineercharge fec
+                INNER JOIN fi_engineercharge_condition fecc ON fecc.id = fec.id
+        WHERE   fec.quarter = #{quarter}
+                AND fec.del_flag = 0
+                AND fec.charge_order_type = 1
+                AND fec.create_date >= #{beginDate} AND <![CDATA[ fec.create_date < #{endDate} ]]>
+        GROUP BY servicePointId, productCategoryId
+        LIMIT   #{beginLimit}, #{endLimit}
+    </select>
+
+    <select id="getTimelineUrgentInsurancePraiseTaxInfoList"
+            resultType="com.kkl.kklplus.provider.rpt.entity.RPTServicePointChargeEntity">
+        SELECT
+                fem.service_point_id                    AS "servicePointId",
+                femc.product_category_id                AS "productCategoryId",
+                sum(fem.time_liness_charge)             AS timelinessCharge,
+                sum(fem.customer_time_liness_charge)    AS customerTimelinessCharge,
+                sum(fem.urgent_charge)                  AS urgentCharge,
+                sum(fem.insurance_charge)               AS insuranceCharge,
+                sum(fem.praise_fee)                     AS praiseFee,
+                sum(fem.tax_fee)                        AS taxFee,
+                sum(fem.info_fee)                       AS infoFee,
+                sum(fem.deposit)                        AS engineerDeposit
+        FROM    fi_engineercharge_master fem
+                INNER JOIN fi_engineercharge_master_condition femc ON femc.id = fem.id
+        WHERE   fem.quarter = #{quarter}
+                AND fem.del_flag = 0
+                AND fem.create_date >= #{beginDate} AND <![CDATA[ fem.create_date < #{endDate} ]]>
+        GROUP BY servicePointId, productCategoryId
+        LIMIT #{beginLimit}, #{endLimit}
+    </select>
+
+    <select id="getPlatformFeeList" resultType="com.kkl.kklplus.provider.rpt.entity.RPTServicePointChargeEntity">
+        SELECT
+                fsw.service_point_id    AS servicePointId,
+                SUM(platform_fee)       AS platformFee
+        FROM    fi_servicepoint_withdraw fsw
+        WHERE   fsw.quarter = #{quarter}
+                AND fsw.STATUS = 40
+                AND fsw.del_flag = 0
+                AND fsw.pay_date >= #{beginDate} AND  <![CDATA[ fsw.pay_date< #{endDate} ]]>
+        GROUP BY servicePointId
+        LIMIT   #{beginLimit}, #{endLimit}
+    </select>
+
+    <select id="getAllRechargeDepositFees" resultType="com.kkl.kklplus.provider.rpt.entity.RPTServicePointChargeEntity">
+        SELECT fc.service_point_id AS servicePointId,
+        SUM(fc.amount) AS rechargeDeposit
+        FROM fi_engineercurrency_deposit fc
+        WHERE
+        fc.action_type = 10
+        And fc.update_date >= #{beginDate}
+        AND <![CDATA[ fc.update_date <= #{endDate} ]]>
+        <if test="quarter != null">
+            AND fc.quarter = #{quarter}
+        </if>
+        group by servicePointId
+        LIMIT   #{beginLimit}, #{endLimit}
+    </select>
+
+    <select id="getAllEngineerDepositFees" resultType="com.kkl.kklplus.provider.rpt.entity.RPTServicePointChargeEntity">
+        SELECT fc.service_point_id AS servicePointId,
+        SUM(fc.amount) AS engineerDeposit
+        FROM fi_engineercurrency_deposit fc
+        WHERE
+        fc.action_type = 20
+        And fc.update_date >= #{beginDate}
+        AND <![CDATA[ fc.update_date <= #{endDate} ]]>
+        <if test="quarter != null">
+            AND fc.quarter = #{quarter}
+        </if>
+        group by servicePointId
+        LIMIT   #{beginLimit}, #{endLimit}
+    </select>
+
+    <select id="getOtherTravelChargeList" resultType="com.kkl.kklplus.provider.rpt.entity.RPTServicePointChargeEntity">
+        SELECT
+                sod.servicepoint_id AS "servicePointId",
+                soc.product_category_id AS "productCategoryId",
+                sum(sod.engineer_other_charge) AS engineerOtherCharge,
+                sum(sod.engineer_travel_charge) AS engineerTravelCharge
+        FROM    sd_orderdetail sod
+                INNER JOIN sd_order_condition soc ON soc.order_id = sod.order_id
+                INNER JOIN sd_order_status sos ON sos.order_id = sod.order_id
+        WHERE   sos.charge_date >= #{beginDate} AND  <![CDATA[ sos.charge_date < #{endDate} ]]>
+                AND sod.del_flag = 0
+        GROUP BY servicePointId, productCategoryId
+        LIMIT #{beginLimit},#{endLimit}
+    </select>
+
+    <select id="getCompleteQtyList" resultType="com.kkl.kklplus.provider.rpt.entity.RPTServicePointChargeEntity">
+        SELECT
+                sod.servicepoint_id AS "servicePointId",
+                soc.product_category_id AS "productCategoryId",
+                COUNT(distinct soc.order_id) AS completeQty
+        FROM 	sd_order_condition soc
+                INNER JOIN sd_orderdetail sod on sod.order_id = soc.order_id
+                INNER JOIN sd_order_status sos ON sos.order_id = soc.order_id
+        WHERE   sos.charge_date >= #{beginDate}
+                AND  <![CDATA[ sos.charge_date < #{endDate} ]]>
+                AND sod.del_flag = 0
+        GROUP BY servicePointId, productCategoryId
+        LIMIT    #{beginLimit}, #{endLimit}
+    </select>
+
+
+    <select id="getServicePointChargeIds" resultType="com.kkl.kklplus.provider.rpt.entity.RPTServicePointChargeEntity">
+        SELECT  id,
+                service_point_id,
+                product_category_id
+        FROM    rpt_servicepoint_charge
+        WHERE   quarter = #{quarter}
+                AND system_id = #{systemId}
+                AND yearmonth = #{yearMonth}
+        LIMIT    #{beginLimit}, #{endLimit}
+    </select>
+
+    <insert id="insert" parameterType="com.kkl.kklplus.provider.rpt.entity.RPTServicePointChargeEntity">
+        INSERT INTO rpt_servicepoint_charge(
+            system_id,
+            yearmonth,
+            service_point_id,
+            product_category_id,
+            province_id,
+            city_id,
+            county_id,
+            payment_type,
+            complete_qty,
+            last_month_balance,
+            pre_deposit,
+            completed_charge,
+            timeliness_charge,
+            customer_timeliness_charge,
+            urgent_charge,
+            praise_fee,
+            tax_fee,
+            info_fee,
+            engineer_deposit,
+            recharge_deposit,
+            pre_engineer_deposit,
+            pre_recharge_deposit,
+            insurance_charge,
+            return_charge,
+            payable_amount,
+            paid_amount,
+            platform_fee,
+            the_balance,
+            engineer_travel_charge,
+            engineer_other_charge,
+            cost_per_order,
+            app_flag,
+            quarter
+        )VALUES
+        (
+            #{systemId},
+            #{yearMonth},
+            #{servicePointId},
+            #{productCategoryId},
+            #{provinceId},
+            #{cityId},
+            #{countyId},
+            #{paymentType},
+            #{completeQty},
+            #{lastMonthBalance},
+            #{preDeposit},
+            #{completedCharge},
+            #{timelinessCharge},
+            #{customerTimelinessCharge},
+            #{urgentCharge},
+            #{praiseFee},
+            #{taxFee},
+            #{infoFee},
+            #{engineerDeposit},
+            #{rechargeDeposit},
+            #{preEngineerDeposit},
+            #{preRechargeDeposit},
+            #{insuranceCharge},
+            #{returnCharge},
+            #{payableAmount},
+            #{paidAmount},
+            #{platformFee},
+            #{theBalance},
+            #{engineerTravelCharge},
+            #{engineerOtherCharge},
+            #{costPerOrder},
+            #{appFlag},
+            #{quarter}
+        )
+    </insert>
+
+    <delete id="delete">
+        DELETE  FROM rpt_servicepoint_charge
+        WHERE   quarter = #{quarter}
+                AND system_id = #{systemId}
+                AND yearmonth = #{yearMonth}
+    </delete>
+
+    <update id="update" parameterType="com.kkl.kklplus.provider.rpt.entity.RPTServicePointChargeEntity">
+        UPDATE rpt_servicepoint_charge
+        <set>
+            <if test="provinceId != null and provinceId !=0">
+                province_id = #{provinceId},
+            </if>
+            <if test="cityId != null and cityId !=0">
+                city_id = #{cityId},
+            </if>
+            <if test="countyId != null and countyId !=0">
+                county_id = #{countyId},
+            </if>
+            <if test="paymentType != null and paymentType !=0">
+                payment_type = #{paymentType},
+            </if>
+            <if test="appFlag != null">
+                app_flag = #{appFlag},
+            </if>
+            complete_qty = #{completeQty},
+            last_month_balance = #{lastMonthBalance},
+            completed_charge = #{completedCharge},
+            timeliness_charge = #{timelinessCharge},
+            customer_timeliness_charge = #{customerTimelinessCharge},
+            urgent_charge = #{urgentCharge},
+            praise_fee = #{praiseFee},
+            tax_fee = #{taxFee},
+            info_fee = #{infoFee},
+            engineer_deposit = #{engineerDeposit},
+            recharge_deposit = #{rechargeDeposit},
+            pre_engineer_deposit = #{preEngineerDeposit},
+            pre_recharge_deposit = #{preRechargeDeposit},
+            insurance_charge = #{insuranceCharge},
+            return_charge = #{returnCharge},
+            payable_amount = #{payableAmount},
+            paid_amount = #{paidAmount},
+            platform_fee = #{platformFee},
+            the_balance = #{theBalance},
+            engineer_travel_charge = #{engineerTravelCharge},
+            engineer_other_charge = #{engineerOtherCharge},
+            cost_per_order = #{costPerOrder}
+        </set>
+        WHERE id = #{id} AND quarter = #{quarter}
+    </update>
+
+</mapper>

@@ -1,0 +1,553 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CustomerEveryDayCompleteMapper">
+
+
+    <!--省每日下单-->
+    <select id="hasProvinceCompleteOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTEveryDayCompleteEntity">
+        SELECT
+        province_id as provinceId,
+        count(id) as planOrder
+        FROM rpt_created_order
+        <where>
+            <choose>
+                <when test="areaType == 2">
+                    and province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and city_id=#{areaId}
+                </when>
+            </choose>
+            <if test="customerId!=null">
+                and  customer_id = #{customerId}
+            </if>
+            <if test="quarter!=null">
+                and  quarter = #{quarter}
+            </if>
+            <if test="systemId!=null ">
+                and system_id = #{systemId}
+            </if>
+            and order_create_date >= #{startDate}
+            and <![CDATA[ order_create_date <= #{endDate} ]]>
+        </where>
+        group by province_id order by planOrder desc
+        limit 2000
+    </select>
+    <!--市每日下单-->
+    <select id="hasCompleteOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTEveryDayCompleteEntity">
+        SELECT
+            province_id AS "provinceId",
+            city_id as "cityId",
+            count(id) as planOrder
+        FROM rpt_created_order
+        <where>
+        <choose>
+            <when test="areaType == 2">
+                and province_id=#{areaId}
+            </when>
+            <when test="areaType == 3">
+                and city_id=#{areaId}
+            </when>
+
+        </choose>
+
+        <if test="customerId!=null">
+            and  customer_id = #{customerId}
+        </if>
+        <if test="quarter!=null">
+            and   quarter = #{quarter}
+        </if>
+        <if test="systemId!=null ">
+            and  system_id = #{systemId}
+        </if>
+        and order_create_date >= #{startDate}
+        and <![CDATA[ order_create_date <= #{endDate} ]]>
+        </where>
+        group by province_id,city_id order by planOrder desc
+        LIMIT 2000
+    </select>
+
+    <!--每日完工数量-->
+    <select id="hasCompleteRateData" resultType="com.kkl.kklplus.entity.rpt.RPTEveryDayCompleteEntity">
+        SELECT
+        rco.province_id as provinceId,
+        rco.city_id as cityId,
+        count(rco.id) as completeOrder
+        FROM rpt_graded_order as rco
+        <where>
+            <choose>
+                <when test="areaType == 2">
+                    and rco.province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and rco.city_id=#{areaId}
+                </when>
+
+            </choose>
+
+            <if test="customerId!=null">
+                and  rco.customer_id = #{customerId}
+            </if>
+            <if test="quarter!=null">
+                and   rco.quarter = #{quarter}
+            </if>
+            <if test="systemId!=null ">
+                and rco.system_id = #{systemId}
+            </if>
+            and rco.close_date >= #{startDate}
+            and <![CDATA[ rco.close_date <= #{endDate} ]]>
+        </where>
+        group by rco.province_id,rco.city_id
+        limit 2000
+    </select>
+
+    <!--72时效完工数量-->
+    <select id="hasCompleteRate72Data" resultType="com.kkl.kklplus.entity.rpt.RPTEveryDayCompleteEntity">
+        SELECT
+        rco.province_id as provinceId,
+        rco.city_id as cityId,
+        count(rco.order_id) as rate72
+        FROM sd_order_condition as rco
+        <where>
+            <choose>
+                <when test="areaType == 2">
+                    and rco.province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and rco.city_id=#{areaId}
+                </when>
+            </choose>
+            <if test="customerId!=null">
+                and  rco.customer_id = #{customerId}
+            </if>
+            <choose>
+                <when test="quarters.size == 1">
+                    AND rco.quarter = #{quarters[0]}
+                </when>
+                <otherwise>
+                    AND rco.quarter IN
+                    <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">
+                        #{quarters[${index}]}
+                    </foreach>
+                </otherwise>
+            </choose>
+            and rco.grade_flag =1
+            and rco.close_date >= #{startDate}
+            and <![CDATA[ rco.close_date <= #{endDate} ]]>
+            and rco.create_date >= #{startDate}
+            and <![CDATA[ rco.create_date <= #{beforeEndDate} ]]>
+            and  <![CDATA[rco.time_liness<=72 ]]>
+        </where>
+        group by rco.province_id,rco.city_id
+        LIMIT 2000
+    </select>
+    <!--到货48小时-->
+    <select id="hasArrivalCompleteRateData" resultType="com.kkl.kklplus.entity.rpt.RPTEveryDayCompleteEntity">
+        SELECT
+        rco.province_id as provinceId,
+        rco.city_id as cityId,
+        count(rco.order_id) as arrival48
+        FROM sd_order_condition as rco
+        <where>
+            <choose>
+                <when test="areaType == 2">
+                    and rco.province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and rco.city_id=#{areaId}
+                </when>
+            </choose>
+            <if test="customerId!=null">
+                and  rco.customer_id = #{customerId}
+            </if>
+            <choose>
+                <when test="quarters.size == 1">
+                    AND rco.quarter = #{quarters[0]}
+                </when>
+                <otherwise>
+                    AND rco.quarter IN
+                    <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">
+                        #{quarters[${index}]}
+                    </foreach>
+                </otherwise>
+            </choose>
+            and rco.grade_flag =1
+            and rco.close_date >= #{startDate}
+            and <![CDATA[ rco.close_date <= #{endDate} ]]>
+            and rco.create_date >= #{startDate}
+            and <![CDATA[ rco.create_date <= #{beforeEndDate} ]]>
+            and rco.arrival_date is not null
+            and <![CDATA[rco.time_liness<=48 ]]>
+        </where>
+        group by rco.province_id,rco.city_id
+        LIMIT 2000
+    </select>
+
+
+    <!--未完工单-->
+    <select id="unCompleteOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTEveryDayCompleteEntity">
+        SELECT
+        rco.province_id as provinceId,
+        rco.city_id as cityId,
+        count(rco.order_id) as unCompletedOrder
+        FROM sd_order_condition as rco
+        <where>
+            <choose>
+                <when test="areaType == 2">
+                    and rco.province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and rco.city_id=#{areaId}
+                </when>
+            </choose>
+            <if test="customerId!=null">
+                and  rco.customer_id = #{customerId}
+            </if>
+            <choose>
+                <when test="quarters.size == 1">
+                    AND rco.quarter = #{quarters[0]}
+                </when>
+                <otherwise>
+                    AND rco.quarter IN
+                    <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">
+                        #{quarters[${index}]}
+                    </foreach>
+                </otherwise>
+            </choose>
+            and <![CDATA[ rco.create_date <= #{endDate} ]]>
+            and (rco.close_date IS NULL OR rco.close_date > #{endDate})
+        </where>
+        group by rco.province_id,rco.city_id
+        LIMIT 2000
+    </select>
+
+    <!--72h不含到货日期下单-->
+    <select id="unArrivalOrderData72" resultType="com.kkl.kklplus.entity.rpt.RPTEveryDayCompleteEntity">
+        SELECT
+        rco.province_id as provinceId,
+        rco.city_id as cityId,
+        count(rco.order_id) as planOrder
+        FROM sd_order_condition as rco
+        <where>
+            <choose>
+                <when test="areaType == 2">
+                    and rco.province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and rco.city_id=#{areaId}
+                </when>
+            </choose>
+            <if test="customerId!=null">
+                and  rco.customer_id = #{customerId}
+            </if>
+            <if test="quarter !=null ">
+                AND rco.quarter = #{quarter}
+            </if>
+            and rco.create_date >= #{startDate}
+            and <![CDATA[ rco.create_date <= #{endDate} ]]>
+            and rco.arrival_date IS NULL
+        </where>
+        group by rco.province_id,rco.city_id
+        LIMIT 2000
+    </select>
+
+
+    <!--72h只含到货日期下单-->
+    <select id="arrivalOrderData72" resultType="com.kkl.kklplus.entity.rpt.RPTEveryDayCompleteEntity">
+        SELECT
+        rco.province_id as provinceId,
+        rco.city_id as cityId,
+        count(rco.order_id) as planOrder
+        FROM sd_order_condition as rco
+        <where>
+            <choose>
+                <when test="areaType == 2">
+                    and rco.province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and rco.city_id=#{areaId}
+                </when>
+            </choose>
+            <if test="customerId!=null">
+                and  rco.customer_id = #{customerId}
+            </if>
+            <if test="quarter !=null ">
+                AND rco.quarter = #{quarter}
+            </if>
+            and rco.arrival_date >= #{startDate}
+            and <![CDATA[ rco.arrival_date <= #{endDate} ]]>
+        </where>
+        group by rco.province_id,rco.city_id
+        LIMIT 2000
+    </select>
+
+
+
+    <!--周 只含到货日期下单-->
+    <select id="arrivalOrderDataWeek" resultType="com.kkl.kklplus.entity.rpt.RPTEveryDayCompleteEntity">
+        SELECT
+        rco.province_id as provinceId,
+        rco.city_id as cityId,
+        count(rco.order_id) as planOrder
+        FROM sd_order_condition as rco
+        <where>
+            <choose>
+                <when test="areaType == 2">
+                    and rco.province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and rco.city_id=#{areaId}
+                </when>
+            </choose>
+            <if test="customerId!=null">
+                and  rco.customer_id = #{customerId}
+            </if>
+            <if test="quarter !=null ">
+                AND rco.quarter = #{quarter}
+            </if>
+            and rco.arrival_date >= #{startDate}
+            and <![CDATA[ rco.arrival_date <= #{endDate} ]]>
+        </where>
+        group by rco.province_id,rco.city_id
+        LIMIT 2000
+    </select>
+
+
+
+    <!--周 不含到货日期下单-->
+    <select id="unArrivalOrderDataWeek" resultType="com.kkl.kklplus.entity.rpt.RPTEveryDayCompleteEntity">
+        SELECT
+        rco.province_id as provinceId,
+        rco.city_id as cityId,
+        count(rco.order_id) as planOrder
+        FROM sd_order_condition as rco
+        <where>
+            <choose>
+                <when test="areaType == 2">
+                    and rco.province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and rco.city_id=#{areaId}
+                </when>
+            </choose>
+            <if test="customerId!=null">
+                and  rco.customer_id = #{customerId}
+            </if>
+            <if test="quarter !=null ">
+                AND rco.quarter = #{quarter}
+            </if>
+            and rco.create_date >= #{startDate}
+            and <![CDATA[ rco.create_date <= #{endDate} ]]>
+            and rco.arrival_date is null
+        </where>
+        group by rco.province_id,rco.city_id
+        LIMIT 2000
+    </select>
+
+
+
+    <!--到货72小时完工单-->
+    <select id="hasArrivalCompleteRateData72" resultType="com.kkl.kklplus.entity.rpt.RPTEveryDayCompleteEntity">
+        SELECT
+        rco.province_id as provinceId,
+        rco.city_id as cityId,
+        count(rco.order_id) as completeOrder
+        FROM sd_order_condition as rco
+        <where>
+            <choose>
+                <when test="areaType == 2">
+                    and rco.province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and rco.city_id=#{areaId}
+                </when>
+            </choose>
+            <if test="customerId!=null">
+                and  rco.customer_id = #{customerId}
+            </if>
+            <choose>
+                <when test="quarters.size == 1">
+                    AND rco.quarter = #{quarters[0]}
+                </when>
+                <otherwise>
+                    AND rco.quarter IN
+                    <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">
+                        #{quarters[${index}]}
+                    </foreach>
+                </otherwise>
+            </choose>
+            and rco.grade_flag =1
+            and rco.close_date >= #{startDate}
+            and <![CDATA[ rco.close_date <= #{endDate} ]]>
+            and rco.arrival_date >= #{startDate}
+            and <![CDATA[ rco.arrival_date <= #{beforeEndDate} ]]>
+            and <![CDATA[rco.time_liness <= 72 ]]>
+        </where>
+        group by rco.province_id,rco.city_id
+        LIMIT 2000
+    </select>
+
+    <!--无到货72小时完工单-->
+    <select id="unArrivalCompleteRateData72" resultType="com.kkl.kklplus.entity.rpt.RPTEveryDayCompleteEntity">
+        SELECT
+        rco.province_id as provinceId,
+        rco.city_id as cityId,
+        count(rco.order_id) as completeOrder
+        FROM sd_order_condition as rco
+        <where>
+            <choose>
+                <when test="areaType == 2">
+                    and rco.province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and rco.city_id=#{areaId}
+                </when>
+            </choose>
+            <if test="customerId!=null">
+                and  rco.customer_id = #{customerId}
+            </if>
+            <choose>
+                <when test="quarters.size == 1">
+                    AND rco.quarter = #{quarters[0]}
+                </when>
+                <otherwise>
+                    AND rco.quarter IN
+                    <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">
+                        #{quarters[${index}]}
+                    </foreach>
+                </otherwise>
+            </choose>
+            and rco.grade_flag =1
+            and rco.close_date >= #{startDate}
+            and <![CDATA[ rco.close_date <= #{endDate} ]]>
+            and rco.create_date >= #{startDate}
+            and <![CDATA[ rco.create_date <= #{beforeEndDate} ]]>
+            and rco.arrival_date is null
+            and <![CDATA[rco.time_liness <= 72 ]]>
+        </where>
+        group by rco.province_id,rco.city_id
+        LIMIT 2000
+    </select>
+
+
+
+    <!--到货 周 完工单-->
+    <select id="hasArrivalCompleteRateDataWeek" resultType="com.kkl.kklplus.entity.rpt.RPTEveryDayCompleteEntity">
+        SELECT
+        rco.province_id as provinceId,
+        rco.city_id as cityId,
+        count(rco.order_id) as completeOrder
+        FROM sd_order_condition as rco
+        <where>
+            <choose>
+                <when test="areaType == 2">
+                    and rco.province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and rco.city_id=#{areaId}
+                </when>
+            </choose>
+            <if test="customerId!=null">
+                and  rco.customer_id = #{customerId}
+            </if>
+            <choose>
+                <when test="quarters.size == 1">
+                    AND rco.quarter = #{quarters[0]}
+                </when>
+                <otherwise>
+                    AND rco.quarter IN
+                    <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">
+                        #{quarters[${index}]}
+                    </foreach>
+                </otherwise>
+            </choose>
+            and rco.grade_flag =1
+            and rco.close_date >= #{startDate}
+            and <![CDATA[ rco.close_date <= #{endDate} ]]>
+            and rco.arrival_date >= #{startDate}
+            and <![CDATA[ rco.arrival_date <= #{beforeEndDate} ]]>
+            and <![CDATA[rco.time_liness <= 168 ]]>
+        </where>
+        group by rco.province_id,rco.city_id
+        LIMIT 2000
+    </select>
+
+    <!--无到货周完成率:分母 第一天下单量 -->
+    <select id="unArrivalCompleteRateDataWeek" resultType="com.kkl.kklplus.entity.rpt.RPTEveryDayCompleteEntity">
+        SELECT
+        rco.province_id as provinceId,
+        rco.city_id as cityId,
+        count(rco.order_id) as completeOrder
+        FROM sd_order_condition as rco
+        <where>
+            <choose>
+                <when test="areaType == 2">
+                    and rco.province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and rco.city_id=#{areaId}
+                </when>
+            </choose>
+            <if test="customerId!=null">
+                and  rco.customer_id = #{customerId}
+            </if>
+            <choose>
+                <when test="quarters.size == 1">
+                    AND rco.quarter = #{quarters[0]}
+                </when>
+                <otherwise>
+                    AND rco.quarter IN
+                    <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">
+                        #{quarters[${index}]}
+                    </foreach>
+                </otherwise>
+            </choose>
+            and rco.grade_flag =1
+            <!-- and rco.close_date >= #{startDate}
+            and <![CDATA[ rco.close_date <= #{endDate} ]]>
+            -->
+            and rco.create_date >= #{startDate}
+            and <![CDATA[ rco.create_date <= #{beforeEndDate} ]]>
+            and rco.arrival_date is null
+            and <![CDATA[rco.time_liness <= 168 ]]>
+        </where>
+        group by rco.province_id,rco.city_id
+        LIMIT 2000
+    </select>
+
+
+
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM
+        rpt_created_order
+        <where>
+        <choose>
+            <when test="areaType == 2">
+                and province_id=#{areaId}
+            </when>
+            <when test="areaType == 3">
+                and city_id=#{areaId}
+            </when>
+
+        </choose>
+
+        <if test="customerId!=null">
+            and  customer_id = #{customerId}
+        </if>
+        <if test="quarter!=null">
+            and   quarter = #{quarter}
+        </if>
+        <if test="systemId!=null ">
+            and  system_id = #{systemId}
+        </if>
+        and order_create_date >= #{startDate}
+        and <![CDATA[ order_create_date <= #{endDate} ]]>
+        </where>
+    </select>
+
+
+</mapper>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.ReminderResponseTimeRptMapper">
+
+    <select id="getReminderResponseTimerListByPaging" resultType="com.kkl.kklplus.entity.rpt.RPTReminderResponseTimeEntity">
+        SELECT
+        a.order_no,
+        a.user_name,
+        a.user_phone,
+        a.province_id,
+        a.city_id,
+        a.area_id,
+        a.reminder_no,
+        a.kefu_id,
+        a.servicepoint_id,
+        cori.item_no AS "reminderTimes",
+        a.create_date AS "createDt",
+        cori.create_remark AS "reminder_remark",
+        cori.process_name AS "processBy",
+        cori.process_at AS "processDt",
+        cori.process_time_liness,
+        cori.process_remark,
+        a.order_close_at AS "completeDt",
+        a.order_time_liness,
+        a.engineer_id
+        FROM
+        cc_order_reminder a
+        INNER JOIN cc_order_reminder_item cori ON cori.id = a.item_id
+        <where>
+            <if test="beginDate != null and beginDate > 0">
+                a.create_date >= #{beginDate}
+            </if>
+            <if test="endDate != null and endDate > 0">
+                AND <![CDATA[a.create_date <= #{endDate} ]]>
+            </if>
+            <if test="orderNo != null and orderNo != ''.toString()">
+                AND a.order_no like CONCAT('%', #{orderNo}, '%')
+            </if>
+            <if test="areaId !=null and areaId !=0">
+                and (a.province_id = #{areaId} or a.city_id = #{areaId} or a.area_id = #{areaId})
+            </if>
+            <if test="reminderNo != null and reminderNo != ''.toString()">
+                AND a.reminder_no like CONCAT('%', #{reminderNo}, '%')
+            </if>
+            <if test="reminderTimes != null and reminderTimes > 0">
+                AND cori.item_no = #{reminderTimes}
+            </if>
+        </where>
+        order by createDt
+    </select>
+
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM
+        cc_order_reminder a
+        INNER JOIN cc_order_reminder_item cori ON cori.id = a.item_id
+        <where>
+            <if test="beginDate != null and beginDate > 0">
+                a.create_date >= #{beginDate}
+            </if>
+            <if test="endDate != null and endDate > 0">
+                AND <![CDATA[a.create_date <= #{endDate} ]]>
+            </if>
+            <if test="orderNo != null and orderNo != ''.toString()">
+                AND a.order_no like CONCAT('%', #{orderNo}, '%')
+            </if>
+            <if test="areaId !=null and areaId !=0">
+                and (a.province_id = #{areaId} or a.city_id = #{areaId} or a.area_id = #{areaId})
+            </if>
+            <if test="reminderNo != null and reminderNo != ''.toString()">
+                AND a.reminder_no like CONCAT('%', #{reminderNo}, '%')
+            </if>
+            <if test="reminderTimes != null and reminderTimes > 0">
+                AND cori.item_no = #{reminderTimes}
+            </if>
+        </where>
+    </select>
+</mapper>

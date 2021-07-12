@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CustomerRevenueRptMapper">
+
+    <select id="getCustomerRevenueList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerRevenueEntity">
+        SELECT
+        customer_id AS "customerId",
+        sum(finish_order) AS "finishOrder",
+        sum(receivable_charge) AS "receivableCharge",
+        sum(payable_charge) AS "payableCharge",
+        sum(engineer_deposit) AS "engineerDeposit",
+        sum(engineer_insurance_charge) AS "engineerInsuranceCharge",
+        sum(payable_charge+engineer_deposit+engineer_insurance_charge) AS "noPayableCharge"
+        FROM rpt_customer_revenue
+        WHERE
+         system_id = #{systemId}
+        AND create_date >= #{startDate}
+        AND <![CDATA[ create_date <= #{endDate}]]>
+        <if test="customerId != null and customerId != 0">
+            and customer_id = #{customerId}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and product_category_id in
+                    <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{productCategoryIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        AND quarter = #{quarter}
+        group by customerId
+    </select>
+
+    <select id="getFinishOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerRevenueEntity">
+        select
+        fcc.customer_id AS "customerId",
+        fccc.product_category_id AS "productCategoryId",
+        count(fcc.id) AS finishOrder
+        from fi_customercharge fcc
+        INNER JOIN fi_customercharge_condition fccc ON fccc.id = fcc.id
+        where fcc.create_date >= #{startDate}
+        AND <![CDATA[ fcc.create_date < #{endDate} ]]>
+        and fcc.charge_order_type = 0
+        and fcc.del_flag = 0
+        and fcc.quarter = #{quarter}
+        group by customerId,productCategoryId
+        LIMIT 200000
+    </select>
+
+    <select id="getReceivableCharge" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerRevenueEntity">
+        SELECT
+        fcc.customer_id AS "customerId",
+        fccc.product_category_id AS "productCategoryId",
+        sum(
+        fcc.service_charge + fcc.express_charge + fcc.travel_charge + fcc.material_charge + fcc.time_liness_charge + fcc.urgent_charge +
+        fcc.other_charge + fcc.praise_fee
+        ) AS receivableCharge
+        FROM
+        fi_customercharge fcc
+        INNER JOIN fi_customercharge_condition fccc ON fccc.id = fcc.id
+        where fcc.create_date >= #{startDate}
+        AND <![CDATA[ fcc.create_date < #{endDate} ]]>
+        and fcc.quarter = #{quarter}
+        GROUP BY
+        customerId,productCategoryId
+        LIMIT 200000
+    </select>
+
+    <select id="getPayableChargeA" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerRevenueEntity">
+        SELECT
+        fec.customer_id AS "customerId",
+        fecc.product_category_id AS "productCategoryId",
+        sum(
+        fec.service_charge + fec.express_charge + fec.travel_charge + fec.material_charge + fec.other_charge
+        ) AS payableCharge
+        FROM
+        fi_engineercharge fec
+        INNER JOIN fi_engineercharge_condition fecc ON fecc.id = fec.id
+        where fec.create_date >= #{startDate}
+        AND <![CDATA[ fec.create_date < #{endDate} ]]>
+        and fec.quarter = #{quarter}
+        GROUP BY
+        customerId,productCategoryId
+        LIMIT 200000
+    </select>
+
+    <select id="getPayableChargeB" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerRevenueEntity">
+        SELECT
+        fecm.customer_id AS "customerId",
+        femc.product_category_id AS "productCategoryId",
+        sum(fecm.insurance_charge) as engineerInsuranceCharge ,sum(fecm.deposit) as engineerDeposit,
+        sum(
+        fecm.customer_time_liness_charge +  fecm.time_liness_charge + fecm.urgent_charge + fecm.praise_fee + fecm.tax_fee + fecm.info_fee ) as payableCharge
+        FROM
+        fi_engineercharge_master fecm
+        INNER JOIN fi_engineercharge_master_condition femc ON femc.id = fecm.id
+        where fecm.create_date >= #{startDate}
+        AND <![CDATA[ fecm.create_date < #{endDate} ]]>
+        and fecm.quarter = #{quarter}
+        GROUP BY
+        customerId,productCategoryId
+        LIMIT 200000
+    </select>
+
+    <insert id="insertCustomerRevenueData" parameterType="java.util.List">
+        INSERT INTO rpt_customer_revenue(
+        system_id,
+        customer_id,
+        create_date,
+        product_category_id,
+        finish_order,
+        receivable_charge,
+        payable_charge,
+        engineer_deposit,
+        engineer_insurance_charge,
+        quarter
+        )VALUES
+        <foreach collection="list" item="entity" separator=",">(
+            #{entity.systemId},
+            #{entity.customerId},
+            #{entity.createDate},
+            #{entity.productCategoryId},
+            #{entity.finishOrder},
+            #{entity.receivableCharge},
+            #{entity.payableCharge},
+            #{entity.engineerDeposit},
+            #{entity.engineerInsuranceCharge},
+            #{entity.quarter})
+        </foreach>
+    </insert>
+
+    <delete id="deleteCustomerRevenueFromRptDB">
+        DELETE FROM rpt_customer_revenue
+        WHERE   system_id = #{systemId}
+        AND create_date >= #{startDate}
+        AND <![CDATA[ create_date <= #{endDate}]]>
+        AND quarter = #{quarter}
+    </delete>
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        FROM rpt_customer_revenue
+        WHERE
+        system_id = #{systemId}
+        AND create_date >= #{startDate}
+        AND <![CDATA[ create_date <= #{endDate}]]>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and product_category_id in
+                    <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{productCategoryIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        AND quarter = #{quarter}
+    </select>
+</mapper>

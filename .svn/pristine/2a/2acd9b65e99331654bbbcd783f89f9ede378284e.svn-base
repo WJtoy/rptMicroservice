@@ -1,0 +1,438 @@
+package com.kkl.kklplus.provider.rpt.service;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
+
+import com.kkl.kklplus.entity.rpt.RPTAreaOrderPlanDailyEntity;
+import com.kkl.kklplus.entity.rpt.RPTEveryDayCompleteEntity;
+import com.kkl.kklplus.entity.rpt.RPTEveryDayCompleteSearch;
+import com.kkl.kklplus.entity.rpt.search.RPTAreaOrderPlanDailySearch;
+import com.kkl.kklplus.entity.rpt.web.RPTArea;
+import com.kkl.kklplus.provider.rpt.common.service.AreaCacheService;
+
+
+import com.kkl.kklplus.provider.rpt.mapper.CustomerEveryDayCompleteMapper;
+import com.kkl.kklplus.provider.rpt.utils.DateUtils;
+import com.kkl.kklplus.provider.rpt.utils.Exceptions;
+import com.kkl.kklplus.provider.rpt.utils.QuarterUtils;
+import com.kkl.kklplus.provider.rpt.utils.RptCommonUtils;
+import com.kkl.kklplus.provider.rpt.utils.excel.ExportExcel;
+import com.kkl.kklplus.utils.StringUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * @Auther wj
+ * @Date 2021/5/21 17:19
+ */
+
+@Service
+@Slf4j
+@Transactional(propagation = Propagation.NOT_SUPPORTED)
+public class EveryDayCompleteService  extends RptBaseService{
+
+    @Autowired
+    private CustomerEveryDayCompleteMapper customerEveryDayCompleteMapper;
+
+    @Autowired
+    private AreaCacheService areaCacheService;
+
+
+    public Map<String, List<RPTEveryDayCompleteEntity>> getEveryDayComplete(RPTEveryDayCompleteSearch search){
+        Date endDate = DateUtils.getEndOfDay(new Date(search.getEndDate()));
+
+        //Date startDate = DateUtils.addDays(endDate, 0);
+        Date startDate  = DateUtils.getStartOfDay(endDate);
+        int systemId = RptCommonUtils.getSystemId();
+        search.setSystemId(systemId);
+        String quarter = QuarterUtils.getSeasonQuarter(startDate);
+        String endQuarter = QuarterUtils.getSeasonQuarter(endDate);
+        if (!quarter.equals(endQuarter)) {
+            quarter = null;
+        }
+        search.setQuarter(quarter);
+        search.setStartDate(startDate.getTime());
+        search.setEndDate(endDate.getTime());
+        Map<String, List<RPTEveryDayCompleteEntity>> map = Maps.newHashMap();
+        List<RPTEveryDayCompleteEntity> proList = customerEveryDayCompleteMapper.hasProvinceCompleteOrderData(search);//省下单
+        List<RPTEveryDayCompleteEntity> rptList = customerEveryDayCompleteMapper.hasCompleteOrderData(search);  //市下单
+        List<RPTEveryDayCompleteEntity> rptList1 = customerEveryDayCompleteMapper.hasCompleteRateData(search);  //省市完工单
+        List<RPTEveryDayCompleteEntity> rptList2 = customerEveryDayCompleteMapper.hasCompleteRate72Data(startDate,endDate,search.getAreaType(),search.getAreaId(),search.getCustomerId(),search.getQuarter());
+        List<RPTEveryDayCompleteEntity> rptList3 = customerEveryDayCompleteMapper.hasArrivalCompleteRateData(startDate,endDate,search.getAreaType(),search.getAreaId(),search.getCustomerId(),search.getQuarter());
+        List<RPTEveryDayCompleteEntity> provinceList = Lists.newArrayList();
+
+        List<RPTEveryDayCompleteEntity> cityList = new ArrayList<>();
+        if (rptList.size()>0) {
+
+            Map<Long, List<RPTEveryDayCompleteEntity>> cityOrderMap = rptList.stream().collect(Collectors.groupingBy(RPTEveryDayCompleteEntity::getCityId));
+
+            Map<Long, RPTArea> provinceMap = areaCacheService.getAllProvinceMap();
+            Map<Long, RPTArea> cityMap = areaCacheService.getAllCityMap();
+
+            RPTArea province;
+            RPTArea city;
+            String cityName;
+            Long provinceId;
+            Long cityId;
+            RPTEveryDayCompleteEntity rptEntity;
+            try {
+                for (RPTEveryDayCompleteEntity entity12:proList){
+                    rptEntity = new RPTEveryDayCompleteEntity();
+
+                    provinceId = entity12.getProvinceId();
+                    province = provinceMap.get(provinceId);
+                    if (province != null) {
+                        rptEntity.setProvinceName(province.getName());
+                        rptEntity.setProvinceId(provinceId);
+
+                            if (rptEntity.getProvinceId().equals(entity12.getProvinceId())) {
+                                rptEntity.setPlanOrder(entity12.getPlanOrder());
+
+                            }
+                        }
+                        if (rptList1.size()>0){
+                            for (RPTEveryDayCompleteEntity entity1 : rptList1){
+                                if (rptEntity.getProvinceId().equals(entity1.getProvinceId())) {
+                                    rptEntity.setCompleteOrder(rptEntity.getCompleteOrder()+entity1.getCompleteOrder());
+
+                                }
+                            }
+                            rptEntity.setCompleteRate(new BigDecimal((rptEntity.getCompleteOrder()/rptEntity.getPlanOrder().doubleValue())*100).setScale(2, BigDecimal.ROUND_HALF_UP).toString()+"%");
+                        }
+                        if (rptList2.size()>0) {
+                            /*int suma = rptList2.stream().map(e -> e.getRate72()==null?0:e.getRate72()).reduce(Integer::sum).get();
+                            rptEntity.setRate72(suma);*/
+                            for (RPTEveryDayCompleteEntity entity2 : rptList2) {
+                                if (rptEntity.getProvinceId().equals(entity2.getProvinceId())) {
+                                    rptEntity.setRate72((rptEntity.getRate72()==null?0:rptEntity.getRate72())+entity2.getRate72());
+
+                                }
+                            }
+                            rptEntity.setCompleteRate72(new BigDecimal((rptEntity.getRate72()==null?0:rptEntity.getRate72()/rptEntity.getPlanOrder().doubleValue())*100).setScale(2, BigDecimal.ROUND_HALF_UP).toString()+"%");
+
+                        }
+                        if (rptList3.size()>0) {
+                            for (RPTEveryDayCompleteEntity entity3 : rptList3) {
+                                if (rptEntity.getProvinceId().equals( entity3.getProvinceId())) {
+                                    rptEntity.setArrival48((rptEntity.getArrival48()==null?0:rptEntity.getArrival48())+entity3.getArrival48());
+                                }
+                            }
+                            rptEntity.setArrivalCompleteRate48(new BigDecimal((rptEntity.getArrival48()==null?0:rptEntity.getArrival48()/rptEntity.getPlanOrder().doubleValue())*100).setScale(2, BigDecimal.ROUND_HALF_UP).toString()+"%");
+
+                        }
+                    provinceList.add(rptEntity);
+                }
+
+
+                for (List<RPTEveryDayCompleteEntity> entity : cityOrderMap.values()) {
+                    rptEntity = new RPTEveryDayCompleteEntity();
+                    provinceId = entity.get(0).getProvinceId();
+                    province = provinceMap.get(provinceId);
+                    cityId = entity.get(0).getCityId();
+                    city = cityMap.get(cityId);
+                    if (city != null) {
+                        cityName = city.getName();
+                        rptEntity.setProvinceId(provinceId);
+                        rptEntity.setProvinceName(province.getName());
+                        rptEntity.setCityId(cityId);
+                        rptEntity.setCityName(cityName);
+
+                        for (RPTEveryDayCompleteEntity entityNew : entity){
+                            if (rptEntity.getCityId().equals(entityNew.getCityId())) {
+                                rptEntity.setPlanOrder(entityNew.getPlanOrder());
+                            }
+                        }
+                        if (rptList1.size()>0){
+
+                            for (RPTEveryDayCompleteEntity entity1 : rptList1){
+                                if (rptEntity.getCityId().equals(entity1.getCityId())) {
+                                    rptEntity.setCompleteOrder(entity1.getCompleteOrder());
+                                    rptEntity.setCompleteRate(new BigDecimal((rptEntity.getCompleteOrder()/rptEntity.getPlanOrder().doubleValue())*100).setScale(2, BigDecimal.ROUND_HALF_UP).toString()+"%");
+                                }
+                            }
+                        }
+                        if (rptList2.size()>0) {
+                            for (RPTEveryDayCompleteEntity entity2 : rptList2) {
+                                if (rptEntity.getCityId().equals(entity2.getCityId())) {
+                                    rptEntity.setCompleteRate72(new BigDecimal((entity2.getRate72()==null?0:entity2.getRate72()/rptEntity.getPlanOrder().doubleValue())*100).setScale(2, BigDecimal.ROUND_HALF_UP).toString()+"%");
+                                }
+                            }
+                        }
+                        if (rptList3.size()>0) {
+                            for (RPTEveryDayCompleteEntity entity3 : rptList3) {
+                                if (rptEntity.getCityId().equals( entity3.getCityId())) {
+                                    rptEntity.setArrivalCompleteRate48(new BigDecimal((entity3.getArrival48()==null?0:entity3.getArrival48()/rptEntity.getPlanOrder().doubleValue())*100).setScale(2, BigDecimal.ROUND_HALF_UP).toString()+"%");
+                                }
+                            }
+                        }
+                    }
+                    cityList.add(rptEntity);
+                }
+                cityList = cityList.stream().sorted(Comparator.comparing(RPTEveryDayCompleteEntity::getProvinceId)
+                        .thenComparing(RPTEveryDayCompleteEntity :: getCityId)
+                        .thenComparing(RPTEveryDayCompleteEntity :: getPlanOrder)).collect(Collectors.toList());
+            } catch (Exception e) {
+                log.info("异常{}",e.getMessage());
+            }
+
+        }else {     //todo 当天只有完工没有下单
+            if (rptList1.size()>0) {
+                RPTArea province;
+                RPTArea city;
+                Long provinceId;
+                Map<Long, RPTArea> provinceMap = areaCacheService.getAllProvinceMap();
+                Map<Long, RPTArea> cityMap = areaCacheService.getAllCityMap();
+                Map<Long, List<RPTEveryDayCompleteEntity>> provinceOrderMap = rptList1.stream().collect(Collectors.groupingBy(RPTEveryDayCompleteEntity::getProvinceId));
+                RPTEveryDayCompleteEntity rptEntity ;
+                for (Long proId : provinceOrderMap.keySet()){
+                    rptEntity = new RPTEveryDayCompleteEntity();
+                    province = provinceMap.get(proId);
+                    if (province != null) {
+                        rptEntity.setProvinceName(province.getName());
+                        rptEntity.setProvinceId(proId);
+
+                    }
+                    //int suma = rptList1.stream().map(e -> e.getCompleteOrder() == null ? 0 : e.getCompleteOrder()).reduce(Integer::sum).get();
+                    provinceOrderMap.get(proId).size();
+                    rptEntity.setProvinceName(province.getName());
+                    rptEntity.setProvinceId(proId);
+                    rptEntity.setCompleteOrder(provinceOrderMap.get(proId).stream().map(e -> e.getCompleteOrder() == null ? 0 : e.getCompleteOrder()).reduce(Integer::sum).get());
+                    rptEntity.setCompleteRate("#REF!");
+                    rptEntity.setCompleteRate72("#REF!");
+                    rptEntity.setArrivalCompleteRate48( "#REF!");
+                    provinceList.add(rptEntity);
+                }
+
+                for (RPTEveryDayCompleteEntity entity12 : rptList1) {
+
+                    RPTEveryDayCompleteEntity rptEntity1= new RPTEveryDayCompleteEntity();
+                    provinceId = entity12.getProvinceId();
+                    province = provinceMap.get(provinceId);
+
+                    if (province != null) {
+                        rptEntity1.setProvinceName(province.getName());
+                        rptEntity1.setProvinceId(provinceId);
+                        city = cityMap.get(entity12.getCityId());
+                        if (city!=null){
+                            rptEntity1.setCityId(city.getId());
+                            rptEntity1.setCityName(city.getName());
+                         }
+                    }
+                        rptEntity1.setCompleteOrder(entity12.getCompleteOrder());
+                        rptEntity1.setCompleteRate72("#REF!");
+                        rptEntity1.setArrivalCompleteRate48("#REF!");
+                        rptEntity1.setCompleteRate("#REF!");
+                    cityList.add(rptEntity1);
+                }
+                cityList = cityList.stream().sorted(Comparator.comparing(RPTEveryDayCompleteEntity::getProvinceId)
+                        .thenComparing(RPTEveryDayCompleteEntity :: getCityId)
+                        .thenComparing(RPTEveryDayCompleteEntity :: getPlanOrder)).collect(Collectors.toList());
+            }
+        }
+        map.put(RPTEveryDayCompleteEntity.MAP_KEY_PROVINCELIST, provinceList);
+        map.put(RPTEveryDayCompleteEntity.MAP_KEY_CITYLIST, cityList);
+        return map;
+    }
+
+
+    /**
+     * 检查报表是否有数据存在
+     */
+    public boolean hasReportData(String searchConditionJson) {
+        boolean result = true;
+        RPTEveryDayCompleteSearch searchCondition = redisGsonService.fromJson(searchConditionJson, RPTEveryDayCompleteSearch.class);
+        searchCondition.setSystemId(RptCommonUtils.getSystemId());
+        if (searchCondition.getStartDate() != null && searchCondition.getEndDate() != null) {
+            Integer rowCount = customerEveryDayCompleteMapper.hasReportData(searchCondition);
+            result = rowCount > 0;
+        }
+        return result;
+    }
+
+    /**
+     * 省市导出
+     *
+     * @return
+     */
+    public SXSSFWorkbook areaOrderCompleteRateRptExport(String searchConditionJson, String reportTitle) {
+        SXSSFWorkbook xBook = null;
+        try {
+            RPTEveryDayCompleteSearch searchCondition = redisGsonService.fromJson(searchConditionJson, RPTEveryDayCompleteSearch.class);
+            Map<String, List<RPTEveryDayCompleteEntity>> entityMap = getEveryDayComplete(searchCondition);
+
+            ExportExcel exportExcel = new ExportExcel();
+            xBook = new SXSSFWorkbook(500);
+            Sheet xSheet = xBook.createSheet(reportTitle);
+            xSheet.setDefaultColumnWidth(EXECL_CELL_WIDTH_10);
+            Map<String, CellStyle> xStyle = exportExcel.createStyles(xBook);
+
+            int rowIndex = 0;
+            Row titleRow = xSheet.createRow(rowIndex++);
+            titleRow.setHeightInPoints(EXECL_CELL_HEIGHT_TITLE);
+            ExportExcel.createCell(titleRow, 0, xStyle, ExportExcel.CELL_STYLE_NAME_TITLE, reportTitle);
+            xSheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
+
+            Row headFirstRow = xSheet.createRow(rowIndex++);
+            headFirstRow.setHeightInPoints(EXECL_CELL_HEIGHT_HEADER);
+
+            xSheet.addMergedRegion(new CellRangeAddress(1, 2, 0, 0));
+            ExportExcel.createCell(headFirstRow, 0, xStyle, ExportExcel.CELL_STYLE_NAME_HEADER, "省");
+
+            xSheet.addMergedRegion(new CellRangeAddress(1, 2, 1, 1));
+            ExportExcel.createCell(headFirstRow, 1, xStyle, ExportExcel.CELL_STYLE_NAME_HEADER, "市");
+
+            xSheet.addMergedRegion(new CellRangeAddress(1, 1, 2, 6));
+            ExportExcel.createCell(headFirstRow, 2, xStyle, ExportExcel.CELL_STYLE_NAME_HEADER, DateUtils.getDay(DateUtils.timeStampToDate(searchCondition.getStartDate())));
+            Row headSecondRow = xSheet.createRow(rowIndex++);
+            headSecondRow.setHeightInPoints(EXECL_CELL_HEIGHT_TITLE);
+
+            xSheet.createFreezePane(0, rowIndex); // 冻结单元格(x, y)
+            ExportExcel.createCell(headSecondRow, 2, xStyle, ExportExcel.CELL_STYLE_NAME_HEADER, "下单");
+
+            ExportExcel.createCell(headSecondRow, 3, xStyle, ExportExcel.CELL_STYLE_NAME_HEADER, "完成单");
+
+            ExportExcel.createCell(headSecondRow, 4, xStyle, ExportExcel.CELL_STYLE_NAME_HEADER, "完成率");
+
+            ExportExcel.createCell(headSecondRow, 5, xStyle, ExportExcel.CELL_STYLE_NAME_HEADER, "72H完成率");
+
+            ExportExcel.createCell(headSecondRow, 6, xStyle, ExportExcel.CELL_STYLE_NAME_HEADER, "到货48H完成率");
+
+
+
+            List<RPTEveryDayCompleteEntity> pList = entityMap.get(RPTEveryDayCompleteEntity.MAP_KEY_PROVINCELIST);
+            List<RPTEveryDayCompleteEntity> cList = entityMap.get(RPTEveryDayCompleteEntity.MAP_KEY_CITYLIST);
+
+            // 写入数据
+            Row dataRow = null;
+            Cell dataCell = null;
+            if (pList != null && pList.size() > 0) {
+                int pCount = pList.size();
+                // 循环读取所有的省
+                for (int i = 0; i < pCount; i++) {
+                    RPTEveryDayCompleteEntity province = pList.get(i);
+
+                    dataRow = xSheet.createRow(rowIndex++);
+                    dataRow.setHeightInPoints(EXECL_CELL_HEIGHT_DATA);
+                    int pColumnIndex = 0;
+
+                    dataCell = ExportExcel.createCell(dataRow, pColumnIndex++, xStyle, ExportExcel.CELL_STYLE_NAME_DATA);
+                    dataCell.setCellValue(null == province.getProvinceName() ? "" : province.getProvinceName());
+                    ExportExcel.createCell(dataRow, pColumnIndex++, xStyle, ExportExcel.CELL_STYLE_NAME_DATA, "");
+                    ExportExcel.createCell(dataRow, pColumnIndex++, xStyle, ExportExcel.CELL_STYLE_NAME_DATA, province.getPlanOrder());
+                    ExportExcel.createCell(dataRow, pColumnIndex++, xStyle, ExportExcel.CELL_STYLE_NAME_DATA, province.getCompleteOrder());
+                    ExportExcel.createCell(dataRow, pColumnIndex++, xStyle, ExportExcel.CELL_STYLE_NAME_DATA, province.getCompleteRate()==""?"0.00%":province.getCompleteRate());
+                    ExportExcel.createCell(dataRow, pColumnIndex++, xStyle, ExportExcel.CELL_STYLE_NAME_DATA, province.getCompleteRate72()==""?"0.00%":province.getCompleteRate72());
+                    ExportExcel.createCell(dataRow, pColumnIndex++, xStyle, ExportExcel.CELL_STYLE_NAME_DATA, province.getArrivalCompleteRate48()==""?"0.00%":province.getArrivalCompleteRate48());
+
+                    //循环读取省下的市
+                    for (RPTEveryDayCompleteEntity city : cList) {
+                        if (city.getProvinceId().equals(province.getProvinceId())) {
+
+                            dataRow = xSheet.createRow(rowIndex++);
+                            dataRow.setHeightInPoints(EXECL_CELL_HEIGHT_DATA);
+                            int cColumnIndex = 0;
+
+                            ExportExcel.createCell(dataRow, cColumnIndex++, xStyle, ExportExcel.CELL_STYLE_NAME_DATA, "");
+
+                            dataCell = ExportExcel.createCell(dataRow, cColumnIndex++, xStyle, ExportExcel.CELL_STYLE_NAME_DATA, "");
+                            dataCell.setCellValue(null == city.getCityName() ? "" : city.getCityName());
+
+                            ExportExcel.createCell(dataRow, cColumnIndex++, xStyle, ExportExcel.CELL_STYLE_NAME_DATA, city.getPlanOrder());
+                            ExportExcel.createCell(dataRow, cColumnIndex++, xStyle, ExportExcel.CELL_STYLE_NAME_DATA, city.getCompleteOrder());
+                            ExportExcel.createCell(dataRow, cColumnIndex++, xStyle, ExportExcel.CELL_STYLE_NAME_DATA, city.getCompleteRate()==""?"0.00%":city.getCompleteRate());
+                            ExportExcel.createCell(dataRow, cColumnIndex++, xStyle, ExportExcel.CELL_STYLE_NAME_DATA, city.getCompleteRate72()==""?"0.00%":city.getCompleteRate72());
+                            ExportExcel.createCell(dataRow, cColumnIndex++, xStyle, ExportExcel.CELL_STYLE_NAME_DATA, city.getArrivalCompleteRate48()==""?"0.00%":city.getArrivalCompleteRate48());
+                        }
+
+                    }// 循环读取省下的市
+
+                }// 循环读取所有的省
+/*
+                dataRow = xSheet.createRow(rowIndex);
+                dataRow.setHeightInPoints(EXECL_CELL_HEIGHT_DATA);
+                int columnIndex = 3;
+
+                ExportExcel.createCell(dataRow, columnIndex++, xStyle, ExportExcel.CELL_STYLE_NAME_DATA, "");*/
+            }
+        } catch (Exception e) {
+            log.error("【AreaOrderPlanDailyRptService.areaOrderPlanDayRptExport】省市每日完工时效报表写入excel失败, errorMsg: {}", Exceptions.getStackTraceAsString(e));
+            return null;
+        }
+        return xBook;
+    }
+
+
+
+    /**
+     * 写入
+     *
+     * @param rptEntity
+     * @param total
+     * @param rptEntityClass
+     * @param entityList
+     * @return
+     * @throws NoSuchMethodException
+     * @throws IllegalAccessException
+     * @throws InvocationTargetException
+     */
+    private double writeDailyOrders(RPTAreaOrderPlanDailyEntity rptEntity, double total, Class rptEntityClass, List<RPTAreaOrderPlanDailyEntity> entityList) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        int dayIndex;
+        String dateStr;
+        int day;
+        String strSetMethodName;
+        Method sumDailyReportSetMethod;
+        double daySum;
+        for (RPTAreaOrderPlanDailyEntity entity : entityList) {
+            dayIndex = entity.getDayIndex();
+            daySum = entity.getOrderSum();
+            if (dayIndex != 0) {
+                dateStr = String.valueOf(dayIndex);
+                day = StringUtils.toInteger(dateStr);
+                strSetMethodName = "setD" + day;
+                sumDailyReportSetMethod = rptEntityClass.getMethod(strSetMethodName, Double.class);
+                total += daySum;
+                sumDailyReportSetMethod.invoke(rptEntity, daySum);
+            }
+
+        }
+        return total;
+    }
+    /**
+     * 写入
+     *
+     * @return
+     * @throws NoSuchMethodException
+     * @throws IllegalAccessException
+     * @throws InvocationTargetException
+     */
+    private int writeDailyPlanOrders(int days, Map<String, CellStyle> xStyle, Row dataRow, RPTAreaOrderPlanDailyEntity entity, int pColumnIndex, Class provinceClass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        for (int dayIndex = 1; dayIndex <= days; dayIndex++) {
+            String strGetMethodName = "getD" + dayIndex;
+
+            Method method = provinceClass.getMethod(strGetMethodName);
+            Object objGetD = method.invoke(entity);
+            Double d = StringUtils.toDouble(objGetD);
+            String strD = String.format("%.0f", d);
+
+            ExportExcel.createCell(dataRow, pColumnIndex++, xStyle, ExportExcel.CELL_STYLE_NAME_DATA, strD);
+        }
+        return pColumnIndex;
+    }
+
+}

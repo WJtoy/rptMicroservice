@@ -1,0 +1,537 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="edd2b429-936d-4de6-978c-b5cfe12e58be" name="Default Changelist" comment="修改每日完工报表，未完工单列按三个季度分片获取">
+      <change afterPath="$PROJECT_DIR$/src/test/com.kkl.kklplus.provider.rpt" afterDir="true" />
+      <change afterPath="$PROJECT_DIR$/src/test/com.kkl.kklplus.provider.rpt/RptTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/service/CustomerPerformanceRptService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/service/CustomerPerformanceRptService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DatabaseView">
+    <option name="SHOW_INTERMEDIATE" value="true" />
+    <option name="GROUP_DATA_SOURCES" value="true" />
+    <option name="GROUP_SCHEMA" value="true" />
+    <option name="GROUP_CONTENTS" value="false" />
+    <option name="SORT_POSITIONED" value="false" />
+    <option name="SHOW_EMPTY_GROUPS" value="false" />
+    <option name="AUTO_SCROLL_FROM_SOURCE" value="false" />
+    <option name="HIDDEN_KINDS">
+      <set />
+    </option>
+    <expand />
+    <select />
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="kklplus-provider-rpt" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="FxmlFile" />
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHome" value="D:/Item/maven/apache-maven-3.6.3" />
+        <option name="userSettingsFile" value="D:\Item\maven\apache-maven-3.6.3\conf\settings.xml" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="ProjectId" id="1spw0HNUtFfTgicGiVrwPOFFAU9" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ExpandSpringBootJavaOptionsPanel" value="true" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder0" value="0" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder1" value="1" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder2" value="2" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder3" value="3" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder4" value="4" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder5" value="5" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth0" value="308" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth1" value="152" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth2" value="242" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth3" value="342" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth4" value="541" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth5" value="263" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder0" value="0" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder1" value="1" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder2" value="2" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder3" value="3" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder4" value="4" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder5" value="5" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth0" value="308" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth1" value="308" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth2" value="308" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth3" value="308" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth4" value="308" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth5" value="308" />
+    <property name="MyBatisLogPluginindexNum" value="1687" />
+    <property name="MyBatisLogPluginparameters" value="Parameters:" />
+    <property name="MyBatisLogPluginpreparing" value="Preparing:" />
+    <property name="MyBatisLogPluginrunning" value="true" />
+    <property name="RequestMappingsPanelOrder0" value="0" />
+    <property name="RequestMappingsPanelOrder1" value="1" />
+    <property name="RequestMappingsPanelOrder2" value="2" />
+    <property name="RequestMappingsPanelWidth0" value="75" />
+    <property name="RequestMappingsPanelWidth1" value="75" />
+    <property name="RequestMappingsPanelWidth2" value="75" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+  </component>
+  <component name="RunManager" selected="Spring Boot.ProviderRPTApplication">
+    <configuration name="RptTest.test" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="kklplus-provider-rpt" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="MAIN_CLASS_NAME" value="RptTest" />
+      <option name="METHOD_NAME" value="test" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ProviderRPTApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+      <module name="kklplus-provider-rpt" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.kkl.kklplus.provider.rpt.ProviderRPTApplication" />
+      <option name="ACTIVE_PROFILES" value="dev" />
+      <option name="VM_PARAMETERS" value="-Dfile.encoding=UTF-8 -Xms256m -Xmx1303m " />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="JUnit.RptTest.test" />
+      <item itemvalue="Spring Boot.ProviderRPTApplication" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.RptTest.test" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration" cleanupOnStartRun="true">
+    <configuration>C:\Users\admin\AppData\Roaming\Subversion</configuration>
+    <supportedVersion>125</supportedVersion>
+  </component>
+  <component name="SvnFileUrlMappingImpl">
+    <option name="myMappingRoots">
+      <list>
+        <SvnCopyRootSimple>
+          <option name="myVcsRoot" value="D:\public\KKLPlusProviderRPT" />
+          <option name="myCopyRoot" value="D:\public\KKLPlusProviderRPT" />
+        </SvnCopyRootSimple>
+      </list>
+    </option>
+    <option name="myMoreRealMappingRoots">
+      <list>
+        <SvnCopyRootSimple>
+          <option name="myVcsRoot" value="D:\public\KKLPlusProviderRPT" />
+          <option name="myCopyRoot" value="D:\public\KKLPlusProviderRPT" />
+        </SvnCopyRootSimple>
+      </list>
+    </option>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="edd2b429-936d-4de6-978c-b5cfe12e58be" name="Default Changelist" comment="" />
+      <created>1621582613397</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1621582613397</updated>
+      <workItem from="1621582620590" duration="1810000" />
+      <workItem from="1621584479968" duration="5728000" />
+      <workItem from="1621818435741" duration="26623000" />
+      <workItem from="1621904842948" duration="23881000" />
+      <workItem from="1621991453788" duration="28594000" />
+      <workItem from="1622077308095" duration="36113000" />
+      <workItem from="1622251588509" duration="21000" />
+      <workItem from="1622251626837" duration="27007000" />
+      <workItem from="1622509401128" duration="21322000" />
+      <workItem from="1622596199395" duration="25917000" />
+      <workItem from="1622682295311" duration="26820000" />
+      <workItem from="1623027877655" duration="87323000" />
+      <workItem from="1623729019327" duration="94893000" />
+      <workItem from="1624238915891" duration="21538000" />
+      <workItem from="1624325751820" duration="3447000" />
+      <workItem from="1624329237801" duration="18738000" />
+      <workItem from="1624411070137" duration="560000" />
+      <workItem from="1624411654975" duration="9238000" />
+      <workItem from="1624440568216" duration="34011000" />
+      <workItem from="1624867344929" duration="19892000" />
+      <workItem from="1625015997178" duration="699000" />
+      <workItem from="1625017303218" duration="56826000" />
+      <workItem from="1625534866570" duration="9892000" />
+      <workItem from="1625713135682" duration="751000" />
+      <workItem from="1625721262234" duration="44272000" />
+    </task>
+    <task id="LOCAL-00001">
+      <created>1622685772630</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1622685772630</updated>
+    </task>
+    <task id="LOCAL-00002" summary="每日完工时效报表：去除多余的代码，添加和调整代码注释">
+      <created>1622691922805</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1622691922805</updated>
+    </task>
+    <task id="LOCAL-00003" summary="每日完工时效报表：去掉区域查询条件">
+      <created>1622709203830</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1622709203830</updated>
+    </task>
+    <task id="LOCAL-00004" summary="修改业务报表，有关联md_customer_sales表的修改报表数据所属customer_id是其下属所有业务负责的客户">
+      <created>1623838543822</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1623838543822</updated>
+    </task>
+    <task id="LOCAL-00005" summary="业务员业绩排名报表进行调整和添加注释">
+      <created>1623894028619</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1623894028619</updated>
+    </task>
+    <task id="LOCAL-00006" summary="修改客户应收汇总报表，如是业务主管则显示其下属所属客户数据，如是业务员显示其自己所管的客户数据">
+      <created>1624006203445</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1624006203445</updated>
+    </task>
+    <task id="LOCAL-00007" summary="修改工单费用报表，客户每日下单明细，每日冻结明细，每月冻结明细，每月下单明细，优化每日完工时效报表">
+      <created>1625017773926</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1625017773926</updated>
+    </task>
+    <task id="LOCAL-00008" summary="每日完工时效报表，未完工查询去掉状态条件">
+      <created>1625033134031</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1625033134031</updated>
+    </task>
+    <task id="LOCAL-00009" summary="修改每日完工报表分片为空的判断">
+      <created>1625132312951</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1625132312951</updated>
+    </task>
+    <task id="LOCAL-00010" summary="修改每日完工报表，未完工单列按三个季度分片获取">
+      <created>1625463413506</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1625463413506</updated>
+    </task>
+    <task id="LOCAL-00011" summary="开发明细报表 查询和导出去掉客户列&#10;每日完工时效报表 新增需求，无到货72H完成率,无到货周完成率,到货72H完成率,到货周完成率">
+      <created>1625823098771</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1625823098771</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="每日完工时效报表：去除多余的代码，添加和调整代码注释" />
+    <MESSAGE value="每日完工时效报表：去掉区域查询条件" />
+    <MESSAGE value="修改业务报表，有关联md_customer_sales表的修改报表数据所属customer_id是其下属所有业务负责的客户" />
+    <MESSAGE value="业务员业绩排名报表进行调整和添加注释" />
+    <MESSAGE value="修改客户应收汇总报表，" />
+    <MESSAGE value="修改客户应收汇总报表，如是业务主管则显示其下属所属客户数据，如是业务员显示其自己所管的客户数据" />
+    <MESSAGE value="修改工单费用报表，客户每日下单明细，每日冻结明细，每月冻结明细，每月下单明细，优化每日完工时效报表" />
+    <MESSAGE value="每日完工时效报表，未完工查询去掉状态条件" />
+    <MESSAGE value="修改每日完工报表分片为空的判断" />
+    <MESSAGE value="修改每日完工报表，未完工单列按三个季度分片获取" />
+    <MESSAGE value="开发明细报表 查询和导出去掉客户列&#10;每日完工时效报表 新增需求，无到货72H完成率,无到货周完成率,到货72H完成率,到货周完成率" />
+    <option name="LAST_COMMIT_MESSAGE" value="开发明细报表 查询和导出去掉客户列&#10;每日完工时效报表 新增需求，无到货72H完成率,无到货周完成率,到货72H完成率,到货周完成率" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="552" y="178" key="#Notifications" timestamp="1624328260181">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="552" y="178" key="#Notifications/0.0.1920.1040@0.0.1920.1040" timestamp="1624328260181" />
+    <state x="552" y="178" key="#Project_Structure" timestamp="1625212799102">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="552" y="178" key="#Project_Structure/0.0.1920.1040@0.0.1920.1040" timestamp="1625212799102" />
+    <state x="552" y="178" key="#SQL_Dialects" timestamp="1621998202016">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="552" y="178" key="#SQL_Dialects/0.0.1920.1040@0.0.1920.1040" timestamp="1621998202016" />
+    <state x="414" y="175" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1625804247903">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="414" y="175" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1625804247903" />
+    <state x="765" y="204" key="#com.intellij.ide.util.MemberChooser" timestamp="1625218851383">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="765" y="204" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1040@0.0.1920.1040" timestamp="1625218851383" />
+    <state x="682" y="404" width="555" height="240" key="#com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesDialog.classes" timestamp="1621588832499">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="682" y="404" width="555" height="240" key="#com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesDialog.classes/0.0.1920.1040@0.0.1920.1040" timestamp="1621588832499" />
+    <state x="690" y="266" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1625190084057">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="690" y="266" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1625190084057" />
+    <state x="501" y="256" width="939" height="596" key="#xdebugger.evaluate" timestamp="1624003965584">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="501" y="256" width="939" height="596" key="#xdebugger.evaluate/0.0.1920.1040@0.0.1920.1040" timestamp="1624003965584" />
+    <state x="534" y="103" key="CommitChangelistDialog2" timestamp="1625825069741">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="534" y="103" key="CommitChangelistDialog2/0.0.1920.1040@0.0.1920.1040" timestamp="1625825069741" />
+    <state x="136" y="143" width="1536" height="860" key="DiffContextDialog" timestamp="1626051971772">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="136" y="143" width="1536" height="860" key="DiffContextDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1626051971772" />
+    <state x="740" y="275" key="FileChooserDialogImpl" timestamp="1625212683133">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="740" y="275" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1625212683133" />
+    <state width="1877" height="373" key="GridCell.Tab.0.bottom" timestamp="1625825080560">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="373" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1625825080560" />
+    <state width="1877" height="373" key="GridCell.Tab.0.center" timestamp="1625825080560">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="373" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1625825080560" />
+    <state width="1877" height="373" key="GridCell.Tab.0.left" timestamp="1625825080560">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="373" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1625825080560" />
+    <state width="1877" height="373" key="GridCell.Tab.0.right" timestamp="1625825080560">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="373" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1625825080560" />
+    <state width="1877" height="367" key="GridCell.Tab.1.bottom" timestamp="1625807900263">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="367" key="GridCell.Tab.1.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1625807900263" />
+    <state width="1877" height="367" key="GridCell.Tab.1.center" timestamp="1625807900262">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="367" key="GridCell.Tab.1.center/0.0.1920.1040@0.0.1920.1040" timestamp="1625807900262" />
+    <state width="1877" height="367" key="GridCell.Tab.1.left" timestamp="1625807900262">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="367" key="GridCell.Tab.1.left/0.0.1920.1040@0.0.1920.1040" timestamp="1625807900262" />
+    <state width="1877" height="367" key="GridCell.Tab.1.right" timestamp="1625807900262">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="367" key="GridCell.Tab.1.right/0.0.1920.1040@0.0.1920.1040" timestamp="1625807900262" />
+    <state width="1877" height="367" key="GridCell.Tab.2.bottom" timestamp="1625807900263">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="367" key="GridCell.Tab.2.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1625807900263" />
+    <state width="1877" height="367" key="GridCell.Tab.2.center" timestamp="1625807900263">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="367" key="GridCell.Tab.2.center/0.0.1920.1040@0.0.1920.1040" timestamp="1625807900263" />
+    <state width="1877" height="367" key="GridCell.Tab.2.left" timestamp="1625807900263">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="367" key="GridCell.Tab.2.left/0.0.1920.1040@0.0.1920.1040" timestamp="1625807900263" />
+    <state width="1877" height="367" key="GridCell.Tab.2.right" timestamp="1625807900263">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="367" key="GridCell.Tab.2.right/0.0.1920.1040@0.0.1920.1040" timestamp="1625807900263" />
+    <state x="490" y="175" key="Maven.ArtifactSearchDialog" timestamp="1621586893069">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="490" y="175" key="Maven.ArtifactSearchDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1621586893069" />
+    <state x="1" y="93" key="MergeDialog" timestamp="1625188492373">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="1" y="93" key="MergeDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1625188492373" />
+    <state x="669" y="235" key="MultipleFileMergeDialog" timestamp="1625188492380">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="669" y="235" key="MultipleFileMergeDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1625188492380" />
+    <state x="730" y="242" key="RollbackChangesDialog" timestamp="1624008639528">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="730" y="242" key="RollbackChangesDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1624008639528" />
+    <state x="461" y="162" key="SettingsEditor" timestamp="1625212759195">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="461" y="162" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1625212759195" />
+    <state width="968" height="528" key="XDebugger.FullValuePopup" timestamp="1624328385751">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="968" height="528" key="XDebugger.FullValuePopup/0.0.1920.1040@0.0.1920.1040" timestamp="1624328385751" />
+    <state x="92" y="92" width="1736" height="856" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1626083178937">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="92" y="92" width="1736" height="856" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1626083178937" />
+    <state x="92" y="92" width="1736" height="856" key="com.intellij.history.integration.ui.views.SelectionHistoryDialog" timestamp="1623821821532">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="92" y="92" width="1736" height="856" key="com.intellij.history.integration.ui.views.SelectionHistoryDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1623821821532" />
+    <state x="640" y="344" key="com.intellij.ide.util.TipDialog" timestamp="1625713285496">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="640" y="344" key="com.intellij.ide.util.TipDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1625713285496" />
+    <state x="773" y="365" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1626083154011">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="773" y="365" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1040@0.0.1920.1040" timestamp="1626083154011" />
+    <state x="475" y="280" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1624249200608">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="475" y="280" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/0.0.1920.1040@0.0.1920.1040" timestamp="1624249200608" />
+    <state x="726" y="226" width="684" height="636" key="find.popup" timestamp="1625708410058">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="726" y="226" width="684" height="636" key="find.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1625708410058" />
+    <state x="616" y="240" key="run.anything.popup" timestamp="1625131787768">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="616" y="240" key="run.anything.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1625131787768" />
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1624270225200">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1624270225200" />
+    <state x="779" y="418" key="svn.passwordDialog" timestamp="1623203165941">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="779" y="418" key="svn.passwordDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1623203165941" />
+    <state x="682" y="431" key="vcs.readOnlyHandler.ReadOnlyStatusDialog" timestamp="1622522893367">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="682" y="431" key="vcs.readOnlyHandler.ReadOnlyStatusDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1622522893367" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/service/RebuildMiddleTableService.java</url>
+          <line>139</line>
+          <option name="timeStamp" value="38" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/controller/RebuildMiddleTableTaskController.java</url>
+          <line>31</line>
+          <option name="timeStamp" value="39" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/service/RebuildMiddleTableService.java</url>
+          <line>173</line>
+          <option name="timeStamp" value="40" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/mq/sender/RPTRebuildMiddleTableTaskMQSender.java</url>
+          <line>39</line>
+          <option name="timeStamp" value="41" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/service/CompletedOrderRptService.java</url>
+          <line>446</line>
+          <option name="timeStamp" value="42" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/service/CompletedOrderRptService.java</url>
+          <line>402</line>
+          <option name="timeStamp" value="43" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/service/CompletedOrderRptService.java</url>
+          <line>397</line>
+          <option name="timeStamp" value="44" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/service/CompletedOrderRptService.java</url>
+          <line>371</line>
+          <option name="timeStamp" value="45" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/service/RebuildMiddleTableService.java</url>
+          <line>196</line>
+          <option name="timeStamp" value="46" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/service/CancelledOrderNewRptService.java</url>
+          <line>64</line>
+          <option name="timeStamp" value="58" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/controller/CancelledOrderNewRptController.java</url>
+          <line>30</line>
+          <option name="timeStamp" value="59" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/service/CustomerOrderDailyRptService.java</url>
+          <line>71</line>
+          <option name="timeStamp" value="60" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/controller/CustomerPerformanceRptController.java</url>
+          <line>35</line>
+          <option name="timeStamp" value="63" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/service/CustomerReceivableSummaryRptService.java</url>
+          <line>52</line>
+          <option name="timeStamp" value="78" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/ms/md/service/MSCustomerService.java</url>
+          <line>216</line>
+          <option name="timeStamp" value="79" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/service/CustomerReceivableSummaryRptService.java</url>
+          <line>81</line>
+          <option name="timeStamp" value="89" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/service/CustomerReceivableSummaryRptService.java</url>
+          <line>210</line>
+          <option name="timeStamp" value="91" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/kkl/kklplus/provider/rpt/service/EveryDayCompleteService.java</url>
+          <line>123</line>
+          <option name="timeStamp" value="97" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

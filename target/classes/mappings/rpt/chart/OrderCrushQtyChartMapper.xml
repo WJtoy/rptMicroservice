@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.chart.mapper.OrderCrushQtyChartMapper">
+
+    <select id="getOrderCrushQtyData" resultType="com.kkl.kklplus.provider.rpt.chart.entity.RPTOrderCrushQtyEntity">
+        SELECT
+        order_crush_qty AS 'orderCrushQty',
+        once_crush_qty AS 'onceCrushQty',
+        repeatedly_crush_qty AS 'repeatedlyCrushQty',
+        completed_crush_qty AS 'completedCrushQty',
+        completed_once_crush AS 'completedOnceCrush',
+        completed_repeatedly_crush AS 'completedRepeatedlyCrush',
+        completed_24hour AS 'completed24hour',
+        completed_48hour AS 'completed48hour',
+        over48hour_completed AS 'over48hourCompleted'
+        FROM rpt_order_crush_qty
+        WHERE system_id = #{systemId}
+        and create_date >= #{startDate}
+        and <![CDATA[ create_date < #{endDate} ]]>
+    </select>
+
+    <select id="getPlainOrderQty" resultType="java.lang.Integer">
+        SELECT
+        customer_plan
+        FROM rpt_order_qty_daily
+        WHERE
+        system_id = #{systemId}
+        AND create_date >= #{startDate}
+        AND <![CDATA[ create_date <= #{endDate}]]>
+    </select>
+    <select id="getOrderCrushQty" resultType="java.lang.Integer">
+        SELECT count(0)
+        from sd_order_crush
+        where
+        create_date >= #{startDate}
+        and <![CDATA[ create_date < #{endDate} ]]>
+        and last_flag = 1
+    </select>
+
+
+    <select id="getOnceCrushQty" resultType="java.lang.Integer">
+        SELECT count(0)
+        from sd_order_crush
+        where
+        create_date >= #{startDate}
+        and <![CDATA[ create_date < #{endDate} ]]>
+        and last_flag = 1
+        and item_no = 1
+    </select>
+
+
+    <select id="getRepeatedlyCrushQty" resultType="java.lang.Integer">
+        SELECT count(0)
+        from sd_order_crush
+        where
+        create_date >= #{startDate}
+        and <![CDATA[ create_date < #{endDate} ]]>
+        and last_flag = 1
+        and item_no > 1
+    </select>
+
+    <select id="getCompletedCrushQty" resultType="java.lang.Integer">
+        SELECT count(0)
+        from sd_order_crush socr
+        INNER JOIN sd_order_condition soc on soc.order_id = socr.order_id
+        where
+        soc.close_date >=  #{startDate}
+        and <![CDATA[ soc.close_date < #{endDate} ]]>
+        and soc.grade_flag > 0
+        and last_flag = 1
+    </select>
+
+    <select id="getCompletedOnceCrush" resultType="java.lang.Integer">
+        SELECT count(0)
+        from sd_order_crush socr
+        INNER JOIN sd_order_condition soc on soc.order_id = socr.order_id
+        where
+        soc.close_date >=  #{startDate}
+        and <![CDATA[ soc.close_date < #{endDate} ]]>
+        and soc.grade_flag > 0
+        and last_flag = 1
+        and item_no = 1
+    </select>
+
+    <select id="getCompletedRepeatedlyCrush" resultType="java.lang.Integer">
+        SELECT count(0)
+        from sd_order_crush socr
+        INNER JOIN sd_order_condition soc on soc.order_id = socr.order_id
+        where
+        soc.close_date >=  #{startDate}
+        and <![CDATA[ soc.close_date < #{endDate} ]]>
+        and soc.grade_flag > 0
+        and last_flag = 1
+        and item_no > 1
+    </select>
+
+    <select id="getCompletedOrderCrush" resultType="com.kkl.kklplus.provider.rpt.chart.entity.RPTOrderCrushQtyEntity">
+        SELECT  soc.order_id AS 'orderId',socr.create_date AS 'crushCreateDate',soc.close_date AS 'orderCloseDate'
+        from sd_order_crush socr
+        INNER JOIN sd_order_condition soc on soc.order_id = socr.order_id
+        where
+        soc.close_date >=  #{startDate}
+        and <![CDATA[ soc.close_date < #{endDate} ]]>
+        and soc.grade_flag > 0
+        and item_no = 1
+    </select>
+
+    <insert id="insertOrderCrushQtyData">
+        INSERT INTO rpt_order_crush_qty(
+        system_id,
+        create_date,
+        order_crush_qty,
+        once_crush_qty,
+        repeatedly_crush_qty,
+        completed_crush_qty,
+        completed_once_crush,
+        completed_repeatedly_crush,
+        completed_24hour,
+        completed_48hour,
+        over48hour_completed
+        )VALUES (
+        #{systemId},
+        #{createDate},
+        #{orderCrushQty},
+        #{onceCrushQty},
+        #{repeatedlyCrushQty},
+        #{completedCrushQty},
+        #{completedOnceCrush},
+        #{completedRepeatedlyCrush},
+        #{completed24hour},
+        #{completed48hour},
+        #{over48hourCompleted}
+        )
+    </insert>
+
+    <delete id="deleteOrderCrushQtyFromRptDB">
+        DELETE FROM rpt_order_crush_qty
+        WHERE system_id = #{systemId}
+        AND create_date >= #{startDate}
+        AND <![CDATA[ create_date <= #{endDate}]]>
+    </delete>
+</mapper>

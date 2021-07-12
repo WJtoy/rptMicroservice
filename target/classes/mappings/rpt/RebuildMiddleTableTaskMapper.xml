@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.RebuildMiddleTableTaskMapper">
+
+    <sql id="RptRebuildMiddleTableTaskColumns">
+        a.id,
+        a.system_id,
+        a.middle_table_id,
+        a.middle_table_type,
+        a.operation_type,
+        a.begin_date,
+        a.end_date,
+        a.selected_year,
+        a.selected_month,
+        a.status,
+        a.task_create_date,
+        a.task_complete_date
+    </sql>
+
+    <select id="get" resultType="com.kkl.kklplus.entity.rpt.RPTRebuildMiddleTableTaskEntity">
+        SELECT
+              <include refid="RptRebuildMiddleTableTaskColumns"/>
+        FROM rpt_rebuild_middle_table_task a
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="getTaskList" resultType="com.kkl.kklplus.entity.rpt.RPTRebuildMiddleTableTaskEntity">
+        SELECT
+              <include refid="RptRebuildMiddleTableTaskColumns"/>
+        FROM  rpt_rebuild_middle_table_task a
+        <where>
+              a.system_id = #{systemId}
+            <if test="middleTableId != null and middleTableId != 0">
+                AND a.middle_table_id = #{middleTableId}
+            </if>
+        </where>
+        ORDER BY a.id DESC
+    </select>
+
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO rpt_rebuild_middle_table_task
+        (
+            system_id,
+            middle_table_id,
+            middle_table_type,
+            operation_type,
+            begin_date,
+            end_date,
+            selected_year,
+            selected_month,
+            status,
+            task_create_date
+        )
+        VALUES
+        (
+            #{systemId},
+            #{middleTableId},
+            #{middleTableType},
+            #{operationType},
+            #{beginDate},
+            #{endDate},
+            #{selectedYear},
+            #{selectedMonth},
+            #{status},
+            #{taskCreateDate}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.kkl.kklplus.entity.rpt.RPTRebuildMiddleTableTaskEntity">
+        UPDATE rpt_rebuild_middle_table_task
+        <set>
+            status = #{status},
+            task_complete_date = #{taskCompleteDate}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+</mapper>

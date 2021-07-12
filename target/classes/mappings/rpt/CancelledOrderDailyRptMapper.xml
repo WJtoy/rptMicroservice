@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CancelledOrderDailyRptMapper">
+
+
+    <select id="getListFromWebDB" resultType="com.kkl.kklplus.entity.rpt.RPTCancelledOrderDailyEntity">
+        SELECT  soc.order_id,
+        soc.customer_id,
+        soc.product_category_id,
+        soc.kefu_id as 'keFuId',
+        soc.create_date as 'orderCreateDate',
+        soc.close_date as 'orderCloseDate',
+        soc.servicepoint_id as 'servicePointId',
+        soc.province_id,
+        soc.city_id,
+        soc.area_id as 'countyId',
+        soc.status,
+        so.data_source
+        FROM  sd_order_condition soc
+        INNER JOIN sd_order_head so on so.id = soc.order_id
+        INNER JOIN sd_order_status sos on sos.order_id = soc.order_id
+        WHERE  soc.status > 85 AND sos.cancel_approve_date >= #{startDate} and <![CDATA[ sos.cancel_approve_date <= #{endDate} ]]>
+        LIMIT #{pageIndex},#{size}
+    </select>
+
+    <select id="findOrderIdByCloseDate" resultType="java.lang.Long">
+        SELECT order_id
+        FROM  rpt_cancelled_order_daily
+        WHERE
+             order_close_date >= #{startCloseDt}
+        and <![CDATA[ order_close_date <= #{endCloseDt}]]>
+        and system_id = #{systemId}
+        <if test="quarter != null and quarter != ''.toString()">
+            AND quarter = #{quarter}
+        </if>
+        LIMIT #{pageIndex},#{size}
+    </select>
+
+    <select id="getByOrderId" resultType="java.lang.Long">
+        SELECT id
+        FROM  rpt_cancelled_order_daily
+        WHERE order_id = #{orderId}
+        AND   system_id = #{systemId}
+        AND   quarter = #{quarter}
+        LIMIT 1
+    </select>
+
+    <insert id="insert">
+        INSERT INTO rpt_cancelled_order_daily
+        (
+            order_id,
+            system_id,
+            province_id,
+            city_id,
+            county_id,
+            product_category_id,
+            customer_id,
+            kefu_id,
+            data_source,
+            service_point_id,
+            order_create_date,
+            day_index,
+            order_close_date,
+            status,
+            quarter
+        )
+        VALUES
+        (
+            #{orderId},
+            #{systemId},
+            #{provinceId},
+            #{cityId},
+            #{countyId},
+            #{productCategoryId},
+            #{customerId},
+            #{keFuId},
+            #{dataSource},
+            #{servicePointId},
+            #{orderCreateDt},
+            #{dayIndex},
+            #{orderCloseDt},
+            #{status},
+            #{quarter}
+        )
+    </insert>
+
+    <delete id="deleteByCloseDate">
+        DELETE FROM rpt_cancelled_order_daily
+        where order_close_date >= #{startCloseDt}
+        and <![CDATA[ order_close_date <= #{endCloseDt} ]]>
+        and quarter = #{quarter}
+        and system_id = #{systemId}
+    </delete>
+
+    <delete id="deleteById">
+        DELETE
+          FROM rpt_cancelled_order_daily
+          WHERE id = #{id}
+          AND   quarter = #{quarter}
+    </delete>
+
+</mapper>

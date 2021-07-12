@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.chart.mapper.OrderPlanDailyChartMapper">
+
+    <select id="getOrderPlanDailyData" resultType="com.kkl.kklplus.provider.rpt.chart.entity.RPTOrderPlanDailyEntity">
+        SELECT
+        yearmonth AS "yearMonth",
+        day_index AS "dayIndex",
+        count(0) AS "daySum"
+        from rpt_created_order
+        where system_id = #{systemId}
+        and order_create_date >=  #{startDate}
+        AND <![CDATA[ order_create_date <= #{endDate}]]>
+        <if test="quarters != null and quarters.size > 0">
+            <choose>
+                <when test="quarters.size == 1">
+                    AND quarter = #{quarters[0]}
+                </when>
+                <otherwise>
+                    AND quarter IN <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">${quarter}</foreach>
+                </otherwise>
+            </choose>
+        </if>
+        GROUP BY yearMonth,dayIndex
+        ORDER BY yearMonth,dayIndex
+    </select>
+    
+    <select id="getProductCategoryPlanDailyData"
+            resultType="com.kkl.kklplus.provider.rpt.chart.entity.RPTOrderPlanDailyEntity">
+        SELECT
+        product_category_id AS "productCategoryId",
+        yearmonth AS "yearMonth",
+        day_index AS "dayIndex",
+        count(0) AS "daySum"
+        from rpt_created_order
+        where system_id = #{systemId}
+        and order_create_date >=  #{startDate}
+        AND <![CDATA[ order_create_date <= #{endDate}]]>
+        <if test="quarters != null and quarters.size > 0">
+            <choose>
+                <when test="quarters.size == 1">
+                    AND quarter = #{quarters[0]}
+                </when>
+                <otherwise>
+                    AND quarter IN <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">${quarter}</foreach>
+                </otherwise>
+            </choose>
+        </if>
+        GROUP BY productCategoryId,yearMonth,dayIndex
+        ORDER BY yearMonth,dayIndex
+    </select>
+
+    <select id="getCustomerPlanQtyData" resultType="com.kkl.kklplus.provider.rpt.chart.entity.RPTOrderPlanDailyEntity">
+        SELECT
+        customer_id AS "customerId",
+        count(0) AS "daySum"
+        from rpt_created_order
+        where system_id = #{systemId}
+        and order_create_date >=  #{startDate}
+        AND <![CDATA[ order_create_date <= #{endDate}]]>
+        <if test="quarters != null and quarters.size > 0">
+            <choose>
+                <when test="quarters.size == 1">
+                    AND quarter = #{quarters[0]}
+                </when>
+                <otherwise>
+                    AND quarter IN <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">${quarter}</foreach>
+                </otherwise>
+            </choose>
+        </if>
+        GROUP BY customerId
+    </select>
+
+    <select id="getProductCategoryCustomerPlanQty"
+            resultType="com.kkl.kklplus.provider.rpt.chart.entity.RPTOrderPlanDailyEntity">
+        SELECT
+        product_category_id AS "productCategoryId",
+        customer_id AS "customerId",
+        count(0) AS "daySum"
+        from rpt_created_order
+        where system_id = #{systemId}
+        and order_create_date >=  #{startDate}
+        AND <![CDATA[ order_create_date <= #{endDate}]]>
+        <if test="quarters != null and quarters.size > 0">
+            <choose>
+                <when test="quarters.size == 1">
+                    AND quarter = #{quarters[0]}
+                </when>
+                <otherwise>
+                    AND quarter IN <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">${quarter}</foreach>
+                </otherwise>
+            </choose>
+        </if>
+        GROUP BY productCategoryId,customerId
+    </select>
+</mapper>

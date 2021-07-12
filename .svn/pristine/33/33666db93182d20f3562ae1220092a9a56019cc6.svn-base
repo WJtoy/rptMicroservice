@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CustomerReceivableSummaryRptMapper">
+
+    <select id="getCustomerSalesList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerSalesMappingEntity">
+        SELECT customer_id
+        FROM rpt_md_customer_sales mcs
+        WHERE
+        mcs.system_id = #{systemId}
+        LIMIT 200000
+    </select>
+
+    <select id="getCustomerReceivableByPage" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerReceivableSummaryEntity">
+        SELECT
+        a.customer_id as customerId , sum(a.last_month_uncompleted_qty) as preNoFinishQty, sum(a.new_qty) as newQty, sum(a.completed_qty) as finishQty,
+        sum(a.returned_qty) as returnQty, sum(a.cancelled_qty) as cancelQty, sum(a.uncompleted_qty) as noFinishQty
+        FROM rpt_customer_order_qty_monthly a
+        <where>
+            a.system_id = #{systemId}
+            AND a.yearmonth = #{yearMonth}
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        AND a.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        AND a.product_category_id IN
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="customerIds != null and customerIds.size > 0">
+                <choose>
+                    <when test="customerIds.size == 1">
+                      AND  a.customer_id = #{customerIds[0]}
+                    </when>
+                    <otherwise>
+                        AND  a.customer_id IN
+                        <foreach collection="customerIds" item="customerId" index="index" open="(" close=")" separator=",">
+                            #{customerId}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+        group by customerId
+    </select>
+
+    <select id="getCustomerBalanceData" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerReceivableSummaryEntity">
+        SELECT
+        a.customer_id as customerId , sum(a.last_month_balance) as preBalance, sum(a.recharge_amount) as rechargeAmount, sum(a.completed_order_charge) as orderPaymentAmount,
+        sum(a.write_off_charge) as diffCharge, sum(a.timeliness_charge) as customerTimeLinessCharge, sum(a.urgent_charge) as customerUrgentCharge,
+        sum(a.balance) as balance,  sum(a.block_amount) as block_amount, sum(a.praise_fee) as praiseFee
+        FROM rpt_customer_finance_monthly a
+        <where>
+            a.system_id = #{systemId}
+            AND a.yearmonth = #{yearMonth}
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        AND a.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        AND a.product_category_id IN
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="customerIds != null and customerIds.size > 0">
+                <choose>
+                    <when test="customerIds.size == 1">
+                        AND   a.customer_id = #{customerIds[0]}
+                    </when>
+                    <otherwise>
+                        AND  a.customer_id IN
+                        <foreach collection="customerIds" item="customerId" index="index" open="(" close=")" separator=",">
+                            #{customerId}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+        group by customerId
+    </select>
+
+    <select id="getCurrentCreditList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerReceivableSummaryEntity">
+        SELECT
+        a.id as customerId , a.credit as currentCredit, a.deposit as currentDeposit
+        FROM md_customer_finance a
+        <where>
+            <if test="customerIds != null and customerIds.size > 0">
+                <choose>
+                    <when test="customerIds.size == 1">
+                        a.id = #{customerIds[0]}
+                    </when>
+                    <otherwise>
+                          a.id IN
+                        <foreach collection="customerIds" item="customerId" index="index" open="(" close=")" separator=",">
+                            #{customerId}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </select>
+
+
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM rpt_customer_finance_monthly a
+        <where>
+            a.system_id = #{systemId}
+            AND a.yearmonth = #{yearMonth}
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        AND a.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        AND a.product_category_id IN
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="customerId != null ">
+            AND   a.customer_id = #{customerId}
+            </if>
+        </where>
+    </select>
+
+
+
+    <select id="hasReportList" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM md_customer_finance a
+        <where>
+            a.id = #{customerId}
+        </where>
+    </select>
+</mapper>

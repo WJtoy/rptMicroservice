@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.TravelChargeRankRptMapper">
+    <sql id="RptTravelChargeColumns">
+        system_id,
+        province_id,
+        city_id,
+        county_id,
+        product_category_id,
+        yearmonth,
+        service_point_id,
+        service_point_no,
+        service_point_name,
+        primary_engineer_name,
+        contact_info,
+        address,
+        payment_type,
+        app_flag,
+        service_area_names,
+        service_area_ids,
+        completed_qty,
+        completed_order_charge,
+        write_off_charge,
+        engineer_travel_charge,
+        engineer_other_charge,
+        average_charge,
+        remarks
+    </sql>
+    <select id="getCompletedOrderCharge" resultType="com.kkl.kklplus.entity.rpt.RPTTravelChargeRankEntity">
+        SELECT  fec.service_point_id AS servicePointId,fecc.product_category_id AS productCategoryId ,
+        sum(fec.service_charge+fec.express_charge+fec.travel_charge+fec.material_charge+fec.other_charge) AS completedOrderCharge
+        FROM    fi_engineercharge fec
+        INNER JOIN fi_engineercharge_condition fecc on fecc.id = fec.id
+        WHERE   fec.del_flag = 0  AND fec.quarter = #{quarter}
+        AND fec.charge_order_type = 0
+        AND fec.create_date >= #{beginDate} AND <![CDATA[ fec.create_date < #{endDate} ]]>
+        GROUP BY servicePointId,productCategoryId
+        LIMIT 200000
+    </select>
+
+    <!-- 网点退补总金额 -->
+    <select id="getWriteOffCharge" resultType="com.kkl.kklplus.entity.rpt.RPTTravelChargeRankEntity">
+        SELECT  fec.service_point_id AS servicePointId,fecc.product_category_id AS productCategoryId ,
+        sum(fec.service_charge+fec.express_charge+fec.travel_charge+fec.material_charge+fec.other_charge) AS writeOffCharge
+        FROM    fi_engineercharge fec
+        INNER JOIN fi_engineercharge_condition fecc on fecc.id = fec.id
+        WHERE   fec.del_flag = 0  AND fec.quarter = #{quarter}
+        AND fec.charge_order_type = 1
+        AND fec.create_date >= #{beginDate} AND <![CDATA[ fec.create_date < #{endDate} ]]>
+        GROUP BY servicePointId,productCategoryId
+        LIMIT 200000
+    </select>
+
+
+    <select id="getTravelAndOtherCharge" resultType="com.kkl.kklplus.entity.rpt.RPTTravelChargeRankEntity">
+        SELECT	sod.servicepoint_id AS servicePointId,
+        soc.product_category_id AS productCategoryId,
+        sum(sod.engineer_other_charge) AS engineerOtherCharge, sum(sod.engineer_travel_charge) AS engineerTravelCharge
+        FROM 	sd_order_condition soc
+        INNER JOIN sd_orderdetail sod on sod.order_id = soc.order_id
+        INNER JOIN sd_order_status sos ON sos.order_id = soc.order_id
+        WHERE  sos.charge_date >= #{beginDate}
+        AND  <![CDATA[ sos.charge_date < #{endDate} ]]>
+        AND sod.del_flag = 0
+        GROUP BY servicePointId,productCategoryId
+        LIMIT 200000
+    </select>
+
+    <select id="getCompleteQty"  resultType="com.kkl.kklplus.entity.rpt.RPTTravelChargeRankEntity">
+        SELECT	sod.servicepoint_id AS servicePointId,
+                soc.product_category_id AS productCategoryId,
+                COUNT(distinct soc.order_id) AS completedQty
+        FROM 	sd_order_condition soc
+        INNER JOIN sd_orderdetail sod on sod.order_id = soc.order_id
+        INNER JOIN sd_order_status sos ON sos.order_id = soc.order_id
+        WHERE sos.charge_date >= #{beginDate}
+        AND  <![CDATA[ sos.charge_date < #{endDate} ]]>
+        AND sod.del_flag = 0
+        GROUP BY servicePointId,productCategoryId
+        LIMIT 200000
+    </select>
+
+<!--    <select id="getServicePointServiceAreaIds" resultType="com.kkl.kklplus.provider.rpt.entity.LongTwoTuple">-->
+<!--        SELECT 	msa.servicepoint_id AS aElement,-->
+<!--                msa.area_id         AS bElement-->
+<!--        FROM 	md_servicepoint_area_1 msa-->
+<!--        <where>-->
+<!--            <if test="servicePointIds != null and servicePointIds.size > 0">-->
+<!--                msa.servicepoint_id in-->
+<!--                <foreach collection="servicePointIds" item="id" open="(" separator="," close=")">-->
+<!--                    #{id}-->
+<!--                </foreach>-->
+<!--            </if>-->
+<!--        </where>-->
+<!--        LIMIT 200000-->
+<!--    </select>-->
+
+
+    <!-- 查询网点的服务区域 -->
+<!--    <select id="getServicePointServiceAreas" parameterType="java.util.Map" resultType="com.kkl.kklplus.provider.rpt.entity.ServicePointServiceAreaEntity">-->
+<!--        SELECT 	msa.servicepoint_id AS servicePointId,-->
+<!--        sa.name AS areaName,-->
+<!--        sa.id AS areaId-->
+<!--        FROM 	md_servicepoint_area_1 msa-->
+<!--        INNER JOIN sys_area_1 sa on sa.id = msa.area_id-->
+<!--        WHERE 	sa.type = 4-->
+<!--        <if test="servicePointIds != null and servicePointIds.size > 0">-->
+<!--            AND msa.servicepoint_id in-->
+<!--            <foreach collection="servicePointIds" item="id" open="(" separator="," close=")">-->
+<!--                #{id}-->
+<!--            </foreach>-->
+<!--        </if>-->
+<!--        LIMIT 200000-->
+<!--    </select>-->
+
+    <insert id="insertTravelChargeRank" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO rpt_travel_charge_rank
+        (
+        <include refid="RptTravelChargeColumns"/>
+        )
+        VALUES
+        (
+        #{systemId},
+        #{provinceId},
+        #{cityId},
+        #{countyId},
+        #{productCategoryId},
+        #{yearmonth},
+        #{servicePointId},
+        #{servicePointNo},
+        #{servicePointName},
+        #{primaryEngineerName},
+        #{contactInfo},
+        #{address},
+        #{paymentType},
+        #{appFlag},
+        #{serviceAreaNames},
+        #{serviceAreaIds},
+        #{completedQty},
+        #{completedOrderCharge},
+        #{writeOffCharge},
+        #{engineerTravelCharge},
+        #{engineerOtherCharge},
+        #{averageCharge},
+        #{remarks}
+        )
+    </insert>
+
+
+
+    <update id="updateTravelChargeRank">
+        UPDATE rpt_travel_charge_rank
+        <set>
+            completed_qty = #{completedQty},
+            completed_order_charge = completed_order_charge + #{completedOrderCharge},
+            write_off_charge = write_off_charge + #{writeOffCharge},
+            engineer_travel_charge = #{engineerTravelCharge},
+            engineer_other_charge = #{engineerOtherCharge},
+            average_charge = #{averageCharge}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteTravelChargeRankRpt">
+        DELETE FROM rpt_travel_charge_rank
+        WHERE system_id = #{systemId}
+        AND yearmonth = #{yearmonth}
+    </delete>
+
+    <select id="getServicePointIds" resultType="com.kkl.kklplus.entity.rpt.RPTTravelChargeRankEntity">
+        SELECT id AS "id",service_point_id AS "servicePointId",product_category_id AS "productCategoryId",
+                engineer_travel_charge AS "engineerTravelCharge",engineer_other_charge AS "engineerOtherCharge",
+                completed_qty AS "completedQty"
+        FROM rpt_travel_charge_rank
+        WHERE yearmonth = #{yearMonth}
+        AND system_id = #{systemId}
+        Limit 200000
+    </select>
+
+    <select id="hasReportData" resultType="Integer">
+        SELECT
+        COUNT(0)
+        FROM rpt_travel_charge_rank
+        <where>
+            yearmonth = #{yearMonth}
+            and system_id = #{systemId}
+            <if test="areaId!=null and areaId!=0">
+                and ( province_id = #{areaId} or city_id = #{areaId} or county_id = #{areaId})
+            </if>
+            <if test="productCategoryIds.size()== 0">
+                AND product_category_id = 0
+            </if>
+            <if test="productCategoryIds.size() > 0">
+                AND product_category_id in
+                <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                         separator="," close=")">
+                    #{productCategoryIds}
+                </foreach>
+            </if>
+            <if test="servicePointNo != null and servicePointNo!=''.toString()">
+                AND service_point_no = #{servicePointNo}
+            </if>
+            <if test="servicePointName != null and servicePointName!=''.toString()">
+                AND service_point_name = #{servicePointName}
+            </if>
+            <if test="contactInfo != null and contactInfo!=''.toString()">
+                AND contact_info = #{contactInfo}
+            </if>
+            <if test="appFlag != null">
+                AND app_flag = #{appFlag}
+            </if>
+            <if test="completeQty != null">
+                AND completed_qty >= #{completeQty}
+            </if>
+            <if test="paymentType != null">
+                AND payment_type = #{paymentType}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="getTravelChargeRankList"
+            resultType="com.kkl.kklplus.entity.rpt.RPTTravelChargeRankEntity">
+    SELECT service_point_id,service_point_no,service_point_name,
+            product_category_id,primary_engineer_name,contact_info,
+            address,payment_type,app_flag,service_area_names,
+            completed_qty,completed_order_charge,write_off_charge,
+            engineer_travel_charge,engineer_other_charge,average_charge,remarks
+    FROM rpt_travel_charge_rank
+    WHERE yearmonth = #{yearMonth}
+    AND system_id = #{systemId}
+        <if test="areaId!=null and areaId!=0">
+            and ( province_id = #{areaId} or city_id = #{areaId} or county_id = #{areaId})
+        </if>
+        <if test="servicePointNo != null and servicePointNo!=''.toString()">
+            AND service_point_no = #{servicePointNo}
+        </if>
+        <if test="servicePointName != null and servicePointName!=''.toString()">
+            AND service_point_name = #{servicePointName}
+        </if>
+        <if test="contactInfo != null and contactInfo!=''.toString()">
+            AND contact_info = #{contactInfo}
+        </if>
+        <if test="appFlag != null">
+            AND app_flag = #{appFlag}
+        </if>
+        <if test="completeQty != null">
+            AND completed_qty >= #{completeQty}
+        </if>
+        <if test="paymentType != null">
+            AND payment_type = #{paymentType}
+        </if>
+        <if test="productCategoryIds.size()== 0">
+            AND product_category_id = 0
+        </if>
+        <if test="productCategoryIds.size() > 0">
+            AND product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+    order by average_charge DESC
+    </select>
+</mapper>

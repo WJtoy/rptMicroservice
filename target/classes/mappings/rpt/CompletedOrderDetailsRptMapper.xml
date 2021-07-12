@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CompletedOrderDetailsRptMapper">
+
+    <sql id="completedOrderColumns">
+        a.id,
+        a.system_id,
+        a.order_id,
+        a.order_no,
+        a.customer_id                           AS "customer.id",
+        a.customer_code                         AS "customer.code",
+        a.customer_name                         AS "customer.name",
+        a.customer_payment_type_name            AS "customer.paymentType.label",
+        a.contract_date                         AS "customer.contractDt",
+        a.sales_name                            AS "customer.sales.name",
+        a.payment_type                          AS "paymentType.value",
+        a.shop_name                             AS "shop.label",
+        a.expect_charge,
+        a.description,
+        a.user_name,
+        a.user_phone,
+        a.user_address,
+        a.kefu_name                             AS "keFu.name",
+        a.create_date                           AS "createDt",
+        a.plan_date                             AS "planDt",
+        a.appointment_date                      AS "appointmentDt",
+        a.close_date                            AS "closeDt",
+        a.charge_date                           AS "chargeDt",
+        a.engineer_insurance_charge,
+        a.engineer_timeLiness_charge,
+        a.engineer_customer_timeliness_charge,
+        a.engineer_urgent_charge,
+        a.engineer_praise_fee,
+        a.engineer_tax_fee,
+        a.engineer_info_fee,
+        a.engineer_deposit,
+        a.customer_timeliness_charge,
+        a.customer_urgent_charge,
+        a.customer_praise_fee,
+        a.customer_timeliness,
+        a.engineer_subtotal_charge,
+        a.customer_subtotal_charge,
+        a.status                                AS "status.value",
+        a.status_label                          AS "status.label",
+        a.warranty_status,
+        a.app_complete_type                     AS "appCompleteType.label",
+        a.order_item_pb,
+        a.order_detail_pb,
+        a.service_point_pb,
+        a.engineer_pb,
+        a.quarter
+    </sql>
+
+    <sql id="customerWriteOffColumns">
+        a.id,
+        a.system_id,
+        a.order_id,
+        a.order_no,
+        a.payment_type                AS "paymentType.value",
+        a.expect_charge,
+        a.blocked_charge,
+        a.customer_id                 AS "customer.id",
+        a.customer_name               AS "customer.name",
+        a.customer_code               AS "customer.code",
+        a.contract_date               AS "customer.contractDt",
+        a.sales_name                  AS "customer.sales.name",
+        a.shop_name                   AS "shop.label",
+        a.user_name,
+        a.user_phone,
+        a.user_address,
+        a.status                      AS "status.value",
+        a.status_label                AS "status.label",
+        a.warranty_status,
+        a.description,
+        a.create_by_name              AS "createBy.name",
+        a.create_date                 AS "createDt",
+        a.close_date                  AS "closeDt",
+        a.charge_date                 AS "chargeDt",
+        a.kefu_name                   AS "keFu.name",
+        a.plan_date                   AS "planDt",
+        a.appointment_date            AS "appointmentDt",
+        a.write_off_remarks,
+        a.service_charge,
+        a.material_charge,
+        a.express_charge,
+        a.travel_charge,
+        a.other_charge,
+        a.praise_fee                 AS "customerPraiseFee",
+        a.timeliness_charge          AS "customerTimelinessCharge",
+        a.urgent_charge              AS "customerUrgentCharge",
+        a.order_item_pb,
+        a.order_detail_pb,
+        a.quarter
+    </sql>
+
+    <sql id="servicePointWriteOffColumns">
+        a.id,
+        a.system_id,
+        a.order_id,
+        a.service_point_id,
+        a.engineer_id,
+        a.order_no,
+        a.payment_type                AS "paymentType.value",
+        a.expect_charge,
+        a.blocked_charge,
+        a.product_category_id         AS "productCategory.id",
+        a.customer_id                 AS "customer.id",
+        a.customer_name               AS "customer.name",
+        a.customer_code               AS "customer.code",
+        a.contract_date               AS "customer.contractDt",
+        a.customer_payment_type_name  AS "customer.paymentType.label",
+        a.sales_name                  AS "customer.sales.name",
+        a.shop_name                   AS "shop.label",
+        a.user_name,
+        a.user_phone,
+        a.user_address,
+        a.status                      AS "status.value",
+        a.status_label                AS "status.label",
+        a.warranty_status,
+        a.description,
+        a.create_by_name              AS "createBy.name",
+        a.create_date                 AS "createDt",
+        a.close_date                  AS "closeDt",
+        a.charge_date                 AS "chargeDt",
+        a.kefu_name                   AS "keFu.name",
+        a.plan_date                   AS "planDt",
+        a.appointment_date            AS "appointmentDt",
+        a.write_off_remarks,
+        a.service_charge,
+        a.material_charge,
+        a.express_charge,
+        a.travel_charge,
+        a.other_charge,
+        a.praise_fee                  AS "engineerPraiseFee",
+        a.tax_fee                     AS "engineerTaxFee",
+        a.info_fee                    AS "engineerInfoFee",
+        a.order_item_pb,
+        a.order_detail_pb,
+        a.service_point_pb,
+        a.engineer_pb,
+        a.quarter
+    </sql>
+
+    <!--获取总数-->
+    <select id="getCompletedOrderSum" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        FROM rpt_completed_order a
+        <where>
+            <if test="quarter != null and quarter != ''.toString()">
+                a.quarter = #{quarter}
+            </if>
+            AND a.system_id = #{systemId}
+            <if test="customerId != null and customerId > 0">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and a.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and a.product_category_id in
+                        <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{productCategoryIds}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="paymentType != null and paymentType > 0">
+                AND a.payment_type = #{paymentType}
+            </if>
+            <if test="beginDate != null and beginDate > 0">
+                AND a.charge_date >= #{beginDate}
+            </if>
+            <if test="endDate != null and endDate > 0">
+                AND <![CDATA[ a.charge_date <= #{endDate} ]]>
+            </if>
+            <if test="warrantyStatus != null and warrantyStatus != 0">
+                AND a.warranty_status = ${warrantyStatus}
+            </if>
+        </where>
+    </select>
+
+    <select id="getCustomerWriteOffSum" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        FROM rpt_customer_write_off a
+        <where>
+            <if test="quarter != null and quarter != ''.toString()">
+                a.quarter = #{quarter}
+            </if>
+            AND a.system_id = #{systemId}
+            <if test="customerId != null and customerId > 0">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and a.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and a.product_category_id in
+                        <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{productCategoryIds}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="paymentType != null and paymentType > 0">
+                AND a.payment_type = #{paymentType}
+            </if>
+            <if test="beginDate != null and beginDate > 0">
+                AND a.write_off_create_date >= #{beginDate}
+            </if>
+            <if test="endDate != null and endDate > 0">
+                AND <![CDATA[ a.write_off_create_date <= #{endDate} ]]>
+            </if>
+            <if test="warrantyStatus != null and warrantyStatus != 0 ">
+                AND a.warranty_status = ${warrantyStatus}
+            </if>
+        </where>
+    </select>
+
+    <select id="getServicePointWriteOffSum" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        FROM rpt_servicepoint_write_off a
+        <where>
+            <if test="quarter != null and quarter != ''.toString()">
+                a.quarter = #{quarter}
+            </if>
+            AND a.system_id = #{systemId}
+            <if test="customerId != null and customerId > 0">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and a.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and a.product_category_id in
+                        <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{productCategoryIds}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="paymentType != null and paymentType > 0">
+                AND a.payment_type = #{paymentType}
+            </if>
+            <if test="beginDate != null and beginDate > 0">
+                AND a.write_off_create_date >= #{beginDate}
+            </if>
+            <if test="endDate != null and endDate > 0">
+                AND <![CDATA[ a.write_off_create_date <= #{endDate} ]]>
+            </if>
+            <if test="warrantyStatus != null and warrantyStatus != 0">
+                AND a.warranty_status = ${warrantyStatus}
+            </if>
+        </where>
+    </select>
+
+
+
+
+    <!--获取数据-->
+    <select id="getCompletedOrderList" resultType="com.kkl.kklplus.entity.rpt.RPTCompletedOrderDetailsEntity">
+        SELECT
+        <include refid="completedOrderColumns"/>
+        FROM rpt_completed_order a
+        <where>
+            <if test="quarter != null and quarter != ''.toString()">
+                a.quarter = #{quarter}
+            </if>
+            AND a.system_id = #{systemId}
+            <if test="customerId != null and customerId > 0">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and product_category_id in
+                        <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{productCategoryIds}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="paymentType != null and paymentType > 0">
+                AND a.payment_type = #{paymentType}
+            </if>
+            <if test="beginDate != null and beginDate > 0">
+                AND a.charge_date >= #{beginDate}
+            </if>
+            <if test="endDate != null and endDate > 0">
+                AND <![CDATA[ a.charge_date <= #{endDate} ]]>
+            </if>
+            <if test="warrantyStatus != null and warrantyStatus != 0">
+                AND a.warranty_status = ${warrantyStatus}
+            </if>
+        </where>
+        ORDER BY a.customer_name,a.order_id
+        LIMIT #{beginLimit},#{endLimit}
+    </select>
+
+
+    <select id="getCustomerWriteOffList" resultType="com.kkl.kklplus.entity.rpt.RPTCompletedOrderDetailsEntity">
+        SELECT
+        <include refid="customerWriteOffColumns"/>
+        FROM rpt_customer_write_off a
+        <where>
+            <if test="quarter != null and quarter != ''.toString()">
+                a.quarter = #{quarter}
+            </if>
+            AND a.system_id = #{systemId}
+            <if test="customerId != null and customerId > 0">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and product_category_id in
+                        <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{productCategoryIds}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="paymentType != null and paymentType > 0">
+                AND a.payment_type = #{paymentType}
+            </if>
+            <if test="beginDate != null and beginDate > 0">
+                AND a.write_off_create_date >= #{beginDate}
+            </if>
+            <if test="endDate != null and endDate > 0">
+                AND <![CDATA[ a.write_off_create_date <= #{endDate} ]]>
+            </if>
+            <if test="warrantyStatus != null and warrantyStatus != 0">
+                AND a.warranty_status = ${warrantyStatus}
+            </if>
+        </where>
+        ORDER BY a.order_id
+        LIMIT #{beginLimit},#{endLimit}
+    </select>
+
+
+    <select id="getServicePointWriteOffList" resultType="com.kkl.kklplus.entity.rpt.RPTCompletedOrderDetailsEntity">
+        SELECT
+        <include refid="servicePointWriteOffColumns"/>
+        FROM rpt_servicepoint_write_off a
+        <where>
+            <if test="quarter != null and quarter != ''.toString()">
+                a.quarter = #{quarter}
+            </if>
+            AND a.system_id = #{systemId}
+            <if test="customerId != null and customerId > 0">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and product_category_id in
+                        <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{productCategoryIds}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="paymentType != null and paymentType > 0">
+                AND a.payment_type = #{paymentType}
+            </if>
+            <if test="beginDate != null and beginDate > 0">
+                AND a.write_off_create_date >= #{beginDate}
+            </if>
+            <if test="endDate != null and endDate > 0">
+                AND <![CDATA[ a.write_off_create_date <= #{endDate} ]]>
+            </if>
+            <if test="warrantyStatus != null and warrantyStatus != 0">
+                AND a.warranty_status = ${warrantyStatus}
+            </if>
+        </where>
+        ORDER BY a.order_id
+        LIMIT #{beginLimit},#{endLimit}
+    </select>
+</mapper>

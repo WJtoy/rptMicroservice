@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.ServicePointPraiseDetailsRptMapper">
+
+    <select id="getServicePointPraiseDetailsPage" resultType="com.kkl.kklplus.entity.rpt.RPTKeFuPraiseDetailsEntity">
+        SELECT
+        area_id AS areaId,order_no AS orderNo, workcard_id AS workCardId, parent_biz_order_id AS parentBizOrderId,
+        create_date AS createDt, `status` AS "status.value", servicepoint_praise_fee AS  praiseFee,engineer_id,
+        apply_servicepoint_praise_fee AS applyPraiseFee,
+        user_name AS userName, user_address AS userAddress, user_phone AS userPhone
+        FROM cp_order_praise
+        <where>
+            <if test="beginDate != null and beginDate > 0">
+                create_date >= #{beginDate}
+            </if>
+            <if test="endDate != null and endDate > 0">
+                AND <![CDATA[create_date <= #{endDate} ]]>
+            </if>
+            <if test="servicePointId != null and servicePointId > 0">
+                AND servicepoint_id = #{servicePointId}
+            </if>
+            <if test="status != null and status > 0">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="getServicePointPraiseSum" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        FROM cp_order_praise
+        <where>
+            <if test="beginDate != null and beginDate > 0">
+                 create_date >= #{beginDate}
+            </if>
+            <if test="endDate != null and endDate > 0">
+                AND <![CDATA[create_date <= #{endDate} ]]>
+            </if>
+            <if test="servicePointId != null and servicePointId > 0">
+                AND servicepoint_id = #{servicePointId}
+            </if>
+            <if test="status != null and status > 0">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
+
+</mapper>

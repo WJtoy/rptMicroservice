@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CustomerPraiseDetailsRptMapper">
+    <select id="getCustomerPraiseDetailsPage" resultType="com.kkl.kklplus.entity.rpt.RPTKeFuPraiseDetailsEntity">
+        SELECT
+        cop.customer_id AS customerId,order_no AS orderNo, workcard_id AS workCardId,
+        area_id AS areaId, parent_biz_order_id AS parentBizOrderId, create_date AS createDt, `status` AS "status.value",
+        customer_praise_fee AS  praiseFee, apply_customer_praise_fee AS applyPraiseFee,
+        user_name AS userName, user_address AS userAddress, user_phone AS userPhone
+        FROM cp_order_praise cop
+        <if test="salesId != null and salesId != 0">
+        INNER JOIN md_customer_sales mcs ON mcs.customer_id = cop.customer_id
+            <if test="subFlag ==3" >
+                inner join sys_user_sub as sus on sus.sub_user_id = mcs.sales_id and sus.type = 7
+            </if>
+        </if>
+        <where>
+            <if test="salesId != null and salesId != 0">
+                <choose>
+                    <when test="subFlag == 3">
+                        and sus.user_id= #{salesId}
+                    </when>
+                    <otherwise>
+                        and mcs.sales_id=#{salesId}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="customerId != null and customerId != 0">
+                AND cop.customer_id = #{customerId}
+            </if>
+            <if test="beginDate != null and beginDate > 0">
+                AND cop.create_date >= #{beginDate}
+            </if>
+            <if test="status != null and status > 0">
+                AND cop.status = #{status}
+            </if>
+            <if test="endDate != null and endDate > 0">
+                AND <![CDATA[cop.create_date <= #{endDate} ]]>
+            </if>
+        </where>
+    </select>
+
+
+
+    <select id="getCustomerPraiseSum" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        FROM cp_order_praise cop
+        <if test="salesId != null and salesId != 0">
+        INNER JOIN md_customer_sales mcs ON mcs.customer_id = cop.customer_id
+            <if test="subFlag ==3" >
+                inner join sys_user_sub as sus on sus.sub_user_id = mcs.sales_id and sus.type = 7
+            </if>
+
+        </if>
+        <where>
+            <if test="salesId != null and salesId != 0">
+                <choose>
+                    <when test="subFlag == 3">
+                        and sus.user_id= #{salesId}
+                    </when>
+                    <otherwise>
+                        and mcs.sales_id=#{salesId}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="customerId != null and customerId != 0">
+                AND cop.customer_id = #{customerId}
+            </if>
+            <if test="beginDate != null and beginDate > 0">
+                AND cop.create_date >= #{beginDate}
+            </if>
+            <if test="status != null and status > 0">
+                AND cop.status = #{status}
+            </if>
+            <if test="endDate != null and endDate > 0">
+                AND <![CDATA[cop.create_date <= #{endDate} ]]>
+            </if>
+        </where>
+    </select>
+</mapper>

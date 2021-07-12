@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.common.mapper.MDCustomerSalesMapper">
+
+    <select id="getSalesIdList" resultType="java.lang.Long">
+        SELECT sales_id
+        FROM md_customer_sales_1
+        WHERE
+            sub_flag = 1
+        LIMIT 5000
+    </select>
+
+
+</mapper>

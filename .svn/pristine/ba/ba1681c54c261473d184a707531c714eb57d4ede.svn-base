@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.AreaOrderPlanDailyRptMapper">
+
+    <select id="getProvinceOrderPlanDay" resultType="com.kkl.kklplus.entity.rpt.RPTAreaOrderPlanDailyEntity">
+        SELECT
+        province_id AS "provinceId",
+        day_index AS "dayIndex",
+        count(id) AS orderSum
+        FROM
+        rpt_created_order
+        <where>
+            system_id = #{systemId}
+            <if test="dataSource != 0">
+                AND data_source = #{dataSource}
+            </if>
+            AND order_create_date >= #{startDate}
+            AND <![CDATA[ order_create_date <= #{endDate}]]>
+            <if test="customerId != null">
+                and customer_id = #{customerId}
+            </if>
+            <choose>
+                <when test="areaType == 2">
+                    and province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and city_id=#{areaId}
+                </when>
+                <when test="areaType == 4">
+                    and county_id=#{areaId}
+                </when>
+            </choose>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and product_category_id in
+                        <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{productCategoryIds}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="quarter != null and quarter != ''.toString()">
+                and quarter = #{quarter}
+            </if>
+        </where>
+        group by provinceId,dayIndex
+        LIMIT 2000
+    </select>
+
+    <select id="getCityOrderPlanDay" resultType="com.kkl.kklplus.entity.rpt.RPTAreaOrderPlanDailyEntity">
+        SELECT
+        province_id AS "provinceId",
+        city_id AS "cityId",
+        day_index AS "dayIndex",
+        count(id) AS orderSum
+        FROM
+        rpt_created_order
+        <where>
+            system_id = #{systemId}
+            <if test="dataSource != 0">
+            AND data_source = #{dataSource}
+            </if>
+            AND order_create_date >= #{startDate}
+            AND <![CDATA[ order_create_date <= #{endDate}]]>
+            <if test="customerId != null">
+                and customer_id = #{customerId}
+            </if>
+            <choose>
+                <when test="areaType == 2">
+                    and province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and city_id=#{areaId}
+                </when>
+                <when test="areaType == 4">
+                    and county_id=#{areaId}
+                </when>
+            </choose>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and product_category_id in
+                        <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{productCategoryIds}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="quarter != null and quarter != ''.toString()">
+                and quarter = #{quarter}
+            </if>
+        </where>
+        group by provinceId,cityId,dayIndex
+        LIMIT 12000
+    </select>
+
+    <select id="getAreaOrderPlanDay" resultType="com.kkl.kklplus.entity.rpt.RPTAreaOrderPlanDailyEntity">
+        SELECT
+        province_id AS "provinceId",
+        city_id AS "cityId",
+        county_id AS "areaId",
+        day_index AS "dayIndex",
+        count(id) AS orderSum
+        FROM
+        rpt_created_order
+        <where>
+                system_id = #{systemId}
+            <if test="dataSource != 0">
+                AND data_source = #{dataSource}
+            </if>
+            AND order_create_date >= #{startDate}
+            AND <![CDATA[ order_create_date <= #{endDate}]]>
+            <if test="customerId != null">
+                and customer_id = #{customerId}
+            </if>
+            <choose>
+                <when test="areaType == 2">
+                    and province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and city_id=#{areaId}
+                </when>
+                <when test="areaType == 4">
+                    and county_id=#{areaId}
+                </when>
+            </choose>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and product_category_id in
+                        <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{productCategoryIds}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="quarter != null and quarter != ''.toString()">
+                and quarter = #{quarter}
+            </if>
+        </where>
+        group by provinceId,cityId,areaId,dayIndex
+        LIMIT 120000
+    </select>
+
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM
+        rpt_created_order
+        <where>
+            system_id = #{systemId}
+            <if test="dataSource != 0">
+                AND data_source = #{dataSource}
+            </if>
+            AND order_create_date >= #{startDate}
+            AND <![CDATA[ order_create_date <= #{endDate}]]>
+            <if test="customerId != null">
+                and customer_id = #{customerId}
+            </if>
+            <choose>
+                <when test="areaType == 2">
+                    and province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and city_id=#{areaId}
+                </when>
+                <when test="areaType == 4">
+                    and county_id=#{areaId}
+                </when>
+            </choose>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and product_category_id in
+                        <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{productCategoryIds}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="quarter != null and quarter != ''.toString()">
+                and quarter = #{quarter}
+            </if>
+        </where>
+    </select>
+</mapper>

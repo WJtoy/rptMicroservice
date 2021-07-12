@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.DepositRechargeSummaryMapper">
+    <select id="getOnlineRechargeSummaryList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerRechargeSummaryEntity">
+        SELECT fc.service_point_id AS customerId,
+        SUM(fc.amount) AS onlineRechargeAmount
+        FROM fi_engineercurrency_deposit fc
+        WHERE
+        fc.action_type = 10
+        <if test="customerId!= null">
+           AND fc.service_point_id= #{customerId}
+        </if>
+        And fc.update_date >= #{beginDate}
+        AND <![CDATA[ fc.update_date <= #{endDate} ]]>
+        <if test="quarter != null">
+         AND fc.quarter = #{quarter}
+        </if>
+        group by customerId
+    </select>
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        select
+        count(0)
+        FROM fi_engineercurrency_deposit fc
+        WHERE
+        fc.update_date >= #{beginDate}
+        AND <![CDATA[ fc.update_date <= #{endDate} ]]>
+        AND fc.action_type = 10
+        <if test="customerId!= null">
+            AND fc.service_point_id = #{customerId}
+        </if>
+        <if test="quarter != null">
+            AND fc.quarter = #{quarter}
+        </if>
+    </select>
+
+
+    <select id="getDepositRechargeDetailsPage" resultType="com.kkl.kklplus.entity.rpt.RPTRechargeRecordEntity">
+        SELECT fc.service_point_id AS customerId,fc.currency_no ,fc.amount,
+        fc.action_type as 'actionType.value', fc.create_date,
+        fc.update_date,fc.remarks
+
+        FROM fi_engineercurrency_deposit fc
+        WHERE
+        <if test="customerId!= null">
+            fc.service_point_id = #{customerId} And
+        </if>
+        fc.update_date >= #{beginDate}
+        AND <![CDATA[ fc.update_date <= #{endDate} ]]>
+        <choose>
+            <when test="actionType != null">
+                And fc.action_type = #{actionType}
+            </when>
+            <otherwise>
+                And fc.action_type = 10
+            </otherwise>
+        </choose>
+        <if test="quarters != null and quarters.size > 0">
+            <choose>
+                <when test="quarters.size == 1">
+                    AND fc.quarter = #{quarters[0]}
+                </when>
+                <otherwise>
+                    AND fc.quarter IN <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">#{quarter}</foreach>
+                </otherwise>
+            </choose>
+        </if>
+    </select>
+
+    <select id="getDepositRechargeDetailsList" resultType="com.kkl.kklplus.entity.rpt.RPTRechargeRecordEntity">
+        SELECT fc.service_point_id AS customerId,fc.currency_no ,fc.amount,
+        fc.action_type as 'actionType.value', fc.create_date,
+        fc.update_date,fc.remarks
+
+        FROM fi_engineercurrency_deposit fc
+        WHERE
+        <if test="customerId!= null">
+            fc.service_point_id = #{customerId} And
+        </if>
+        fc.update_date >= #{beginDate}
+        AND <![CDATA[ fc.update_date <= #{endDate} ]]>
+        <choose>
+            <when test="actionType != null">
+                And fc.action_type = #{actionType}
+            </when>
+            <otherwise>
+                And fc.action_type = 10
+            </otherwise>
+        </choose>
+        <if test="quarters != null and quarters.size > 0">
+            <choose>
+                <when test="quarters.size == 1">
+                    AND fc.quarter = #{quarters[0]}
+                </when>
+                <otherwise>
+                    AND fc.quarter IN <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">${quarter}</foreach>
+                </otherwise>
+            </choose>
+        </if>
+        limit 200000
+    </select>
+
+    <select id="hasDepositReportData" resultType="java.lang.Long">
+        select
+        fc.id
+        FROM fi_engineercurrency_deposit fc
+        WHERE
+        <if test="customerId!= null">
+            fc.service_point_id = #{customerId} And
+        </if>
+        fc.update_date >= #{beginDate}
+        AND <![CDATA[ fc.update_date <= #{endDate} ]]>
+        <choose>
+            <when test="actionType != null">
+                And fc.action_type = #{actionType}
+            </when>
+            <otherwise>
+                And fc.action_type = 10
+            </otherwise>
+        </choose>
+        <if test="quarters != null and quarters.size > 0">
+            <choose>
+                <when test="quarters.size == 1">
+                    AND fc.quarter = #{quarters[0]}
+                </when>
+                <otherwise>
+                    AND fc.quarter IN <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">${quarter}</foreach>
+                </otherwise>
+            </choose>
+        </if>
+        limit 1
+    </select>
+</mapper>

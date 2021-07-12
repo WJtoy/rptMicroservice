@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CancelledOrderRptMapper">
+
+    <select id="getCancelledOrderListFromWebDB" resultType="com.kkl.kklplus.entity.rpt.RPTCancelledOrderEntity">
+        SELECT
+              soc.order_id, soc.order_no,soc.kefu_id AS 'kefu.id',so.workcard_id AS 'workCardId', so.parent_biz_order_id,
+              so.data_source AS 'dataSource.value', sof.order_payment_type AS 'paymentType.value', sof.expect_charge, sof.blocked_charge,
+              soc.product_category_id AS 'productCategory.id',
+
+              soc.customer_id AS 'customer.id', so.shop_id AS 'shop.value',
+
+              soc.user_name, soc.phone1 AS 'userPhone', CONCAT(soc.area_name,' ', soc.address) AS 'userAddress',
+              soc.status AS 'status.value', so.description AS 'description', soc.create_by AS 'createBy.id',
+              soc.create_date AS 'createDate',
+
+              sos.cancel_apply_by AS 'cancelApplyBy.id', sos.cancel_apply_date AS 'cancelApplyDate', sos.cancel_responsible  AS 'cancelResponsible.value',
+              sos.cancel_apply_comment, sos.cancel_approve_by AS 'cancelApproveBy.id', sos.cancel_approve_date AS 'closeDate',
+
+              so.orderitem_json AS 'orderItemPb'
+        FROM sd_order_condition soc
+            INNER JOIN sd_order_head so ON so.id = soc.order_id
+            INNER JOIN sd_order_status sos ON sos.order_id = soc.order_id
+            INNER JOIN sd_order_fee sof ON sof.order_id = soc.order_id
+        WHERE <!-- soc.status > 80 --> soc.status > 85 AND sos.cancel_approve_date >= #{beginDate} and <![CDATA[ sos.cancel_approve_date < #{endDate} ]]>
+        ORDER BY soc.order_id
+        LIMIT	200000
+    </select>
+
+    <select id="getCancelledOrderListFromWebMQ" resultType="com.kkl.kklplus.entity.rpt.RPTCancelledOrderEntity">
+        SELECT
+        soc.order_id, soc.order_no,soc.kefu_id AS 'kefu.id',so.workcard_id AS 'workCardId', so.parent_biz_order_id,
+        so.data_source AS 'dataSource.value', sof.order_payment_type AS 'paymentType.value', sof.expect_charge, sof.blocked_charge,
+        soc.product_category_id AS 'productCategory.id',
+
+        soc.customer_id AS 'customer.id', so.shop_id AS 'shop.value',
+
+        soc.user_name, soc.phone1 AS 'userPhone', CONCAT(soc.area_name,' ', soc.address) AS 'userAddress',
+        soc.status AS 'status.value', so.description AS 'description', soc.create_by AS 'createBy.id',
+        soc.create_date AS 'createDate',
+
+        sos.cancel_apply_by AS 'cancelApplyBy.id', sos.cancel_apply_date AS 'cancelApplyDate', sos.cancel_responsible  AS 'cancelResponsible.value',
+        sos.cancel_apply_comment, sos.cancel_approve_by AS 'cancelApproveBy.id', sos.cancel_approve_date AS 'closeDate',
+
+        so.orderitem_json AS 'orderItemPb'
+        FROM sd_order_condition soc
+        INNER JOIN sd_order_head so ON so.id = soc.order_id
+        INNER JOIN sd_order_status sos ON sos.order_id = soc.order_id
+        INNER JOIN sd_order_fee sof ON sof.order_id = soc.order_id
+        WHERE soc.order_id = #{orderId}
+    </select>
+
+    <insert id="insert" parameterType="com.kkl.kklplus.entity.rpt.RPTCancelledOrderEntity">
+        INSERT INTO rpt_cancelled_order
+        (
+            system_id,
+            order_id,
+            order_no,
+            workcard_id,
+            parent_biz_order_id,
+            data_source,
+            payment_type,
+            expect_charge,
+            blocked_charge,
+            product_category_id,
+            customer_id,
+            customer_name,
+            sales_name,
+            kefu_id,
+            kefu_name,
+            kefu_phone,
+            shop_name,
+            user_name,
+            user_phone,
+            user_address,
+            status,
+            status_label,
+            description,
+            create_by_name,
+            create_date,
+            cancel_apply_by_name,
+            cancel_apply_date,
+            cancel_responsible,
+            cancel_responsible_label,
+            cancel_apply_comment,
+            cancel_approve_by_name,
+            close_date,
+            order_item_pb,
+            quarter
+        )
+        VALUES
+        (
+            #{systemId},
+            #{orderId},
+            #{orderNo},
+            #{workCardId},
+            #{parentBizOrderId},
+            #{dataSource.value},
+            #{paymentType.value},
+            #{expectCharge},
+            #{blockedCharge},
+            #{productCategory.id},
+            #{customer.id},
+            #{customer.name},
+            #{customer.sales.name},
+            #{kefu.id},
+            #{kefu.name},
+            #{kefu.phone},
+            #{shop.label},
+            #{userName},
+            #{userPhone},
+            #{userAddress},
+            #{status.value},
+            #{status.label},
+            #{description},
+            #{createBy.name},
+            #{createDt},
+            #{cancelApplyBy.name},
+            #{cancelApplyDt},
+            #{cancelResponsible.value},
+            #{cancelResponsible.label},
+            #{cancelApplyComment},
+            #{cancelApproveBy.name},
+            #{closeDt},
+            #{orderItemPb},
+            #{quarter}
+        )
+    </insert>
+    
+    <sql id="cancelledOrderColumns">
+        a.id,
+        a.order_id,
+        a.order_no,
+        a.workcard_id               AS "workCardId",
+        a.parent_biz_order_id,
+        a.data_source               AS "dataSource.value",
+        a.payment_type              AS "paymentType.value",
+        a.expect_charge,
+        a.blocked_charge,
+        a.product_category_id       AS "productCategory.id",
+        a.customer_id               AS "customer.id",
+        a.customer_name             AS "customer.name",
+        a.sales_name                AS "customer.sales.name",
+        a.shop_name                 AS "shop.label",
+        a.kefu_name                 AS "kefu.name",
+        a.kefu_phone                AS "kefu.phone",
+        a.user_name,
+        a.user_phone,
+        a.user_address,
+        a.status                    AS "status.value",
+        a.status_label              AS "status.label",
+        a.description,
+        a.create_by_name            AS "createBy.name",
+        a.create_date               AS "createDt",
+        a.cancel_apply_by_name      AS "cancelApplyBy.name",
+        a.cancel_apply_date         AS "cancelApplyDt",
+        a.cancel_responsible        AS "cancelResponsible.value",
+        a.cancel_responsible_label  AS "cancelResponsible.label",
+        a.cancel_apply_comment,
+        a.cancel_approve_by_name    AS "cancelApproveBy.name",
+        a.close_date                AS "closeDt",
+        a.order_item_pb,
+        a.quarter
+    </sql>
+    
+    
+    <select id="getCancelledOrderListByPaging" resultType="com.kkl.kklplus.entity.rpt.RPTCancelledOrderEntity">
+        SELECT
+              <include refid="cancelledOrderColumns"/>
+        FROM rpt_cancelled_order a
+        <where>
+            <if test="quarter != null and quarter != ''.toString()">
+                a.quarter = #{quarter}
+            </if>
+                AND a.system_id = #{systemId}
+            <if test="customerId != null and customerId > 0">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="productCategoryIds != null and productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and a.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and a.product_category_id in
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="status != null and status > 0">
+                AND a.status = #{status}
+            </if>
+            <if test="paymentType != null and paymentType > 0">
+                AND a.payment_type = #{paymentType}
+            </if>
+            <if test="cancelResponsible != null and cancelResponsible > 0">
+                AND a.cancel_responsible = #{cancelResponsible}
+            </if>
+            <if test="beginCreateDate != null and beginCreateDate > 0">
+                AND a.create_date >= #{beginCreateDate}
+            </if>
+            <if test="endCreateDate != null and endCreateDate > 0">
+                AND <![CDATA[ a.create_date <= #{endCreateDate} ]]>
+            </if>
+            <if test="beginCloseDate != null and beginCloseDate > 0">
+                AND a.close_date >= #{beginCloseDate}
+            </if>
+            <if test="endCloseDate != null and endCloseDate > 0">
+                AND <![CDATA[ a.close_date <= #{endCloseDate} ]]>
+            </if>
+        </where>
+        ORDER BY a.order_id
+    </select>
+
+
+    <select id="getCancelledOrderListNewByPaging" resultType="com.kkl.kklplus.entity.rpt.RPTCancelledOrderEntity">
+        SELECT
+        <include refid="cancelledOrderColumns"/>
+        FROM rpt_cancelled_order a
+        <if test="salesId!=null and salesId != 0">
+            INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = a.customer_id and mcs.system_id = #{systemId}
+            <if test="subFlag ==3" >
+            inner join rpt_sys_user_sub as sus on sus.sub_user_id = mcs.sales_id and sus.type = 7
+            </if>
+        </if>
+        <where>
+            <if test="quarter != null and  quarter != ''.toString()">
+                a.quarter = #{quarter}
+            </if>
+            AND a.system_id = #{systemId}
+            <if test="customerId != null and customerId > 0">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="salesId != null and salesId != 0">
+                <choose>
+                    <when test="subFlag == 3">
+                        and sus.user_id= #{salesId}
+                    </when>
+                    <otherwise>
+                        and mcs.sales_id=#{salesId}
+                    </otherwise>
+                </choose>
+            </if>
+
+
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and a.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and a.product_category_id in
+                        <foreach item="item" index="index" collection="search.productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="status != null and status > 0">
+                AND a.status = #{status}
+            </if>
+            <if test="cancelResponsible != null and cancelResponsible > 0">
+                AND a.cancel_responsible = #{cancelResponsible}
+            </if>
+            <if test="beginCreateDate != null and beginCreateDate > 0">
+                AND a.create_date >= #{beginCreateDate}
+            </if>
+            <if test="endCreateDate != null and endCreateDate > 0">
+                AND <![CDATA[ a.create_date <= #{endCreateDate} ]]>
+            </if>
+            <if test="beginCloseDate != null and beginCloseDate > 0">
+                AND a.close_date >= #{beginCloseDate}
+            </if>
+            <if test="endCloseDate != null and endCloseDate > 0">
+                AND <![CDATA[ a.close_date <= #{endCloseDate} ]]>
+            </if>
+        </where>
+        ORDER BY a.order_id
+    </select>
+
+    <select id="getCancelledOrderList" resultType="com.kkl.kklplus.entity.rpt.RPTCancelledOrderEntity">
+        SELECT
+              <include refid="cancelledOrderColumns"/>
+        FROM rpt_cancelled_order a
+        <where>
+            system_id = #{systemId}
+            AND a.close_date >= #{beginDate}
+            AND <![CDATA[ a.close_date <= #{endDate} ]]>
+            AND a.customer_id = #{customerId}
+            <if test="quarter != null and quarter != ''.toString()">
+             AND   a.quarter = #{quarter}
+            </if>
+        </where>
+        ORDER BY a.order_id
+        LIMIT 100000
+    </select>
+
+
+    <select id="getCancelledOrderIds" resultType="com.kkl.kklplus.provider.rpt.entity.LongTwoTuple">
+        SELECT
+              a.id        AS "aElement",
+              a.order_id  AS "bElement"
+        FROM  rpt_cancelled_order a
+        WHERE a.quarter = #{quarter}
+              AND a.system_id = #{systemId}
+              AND a.close_date >= #{beginCloseDate}
+              AND <![CDATA[ a.close_date <= #{endCloseDate} ]]>
+        LIMIT 200000
+    </select>
+
+    <delete id="deleteCancelledOrders">
+        DELETE FROM rpt_cancelled_order
+        WHERE quarter = #{quarter}
+              AND system_id = #{systemId}
+              AND close_date >= #{beginCloseDate}
+              AND <![CDATA[ close_date <= #{endCloseDate} ]]>
+    </delete>
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        FROM rpt_cancelled_order a
+        <where>
+            <if test="quarter != null and quarter != ''.toString()">
+                a.quarter = #{quarter}
+            </if>
+            AND a.system_id = #{systemId}
+            <if test="customerId != null and customerId > 0">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and a.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and a.product_category_id in
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="status != null and status > 0">
+                AND a.status = #{status}
+            </if>
+            <if test="paymentType != null and paymentType > 0">
+                AND a.payment_type = #{paymentType}
+            </if>
+            <if test="cancelResponsible != null and cancelResponsible > 0">
+                AND a.cancel_responsible = #{cancelResponsible}
+            </if>
+            <if test="beginCreateDate != null and beginCreateDate > 0">
+                AND a.create_date >= #{beginCreateDate}
+            </if>
+            <if test="endCreateDate != null and endCreateDate > 0">
+                AND <![CDATA[ a.create_date <= #{endCreateDate} ]]>
+            </if>
+            <if test="beginCloseDate != null and beginCloseDate > 0">
+                AND a.close_date >= #{beginCloseDate}
+            </if>
+            <if test="endCloseDate != null and endCloseDate > 0">
+                AND <![CDATA[ a.close_date <= #{endCloseDate} ]]>
+            </if>
+        </where>
+    </select>
+
+
+    <select id="hasReportNewData" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        FROM rpt_cancelled_order a
+        <if test="salesId != null and salesId != 0">
+            INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = a.customer_id  and mcs.system_id = #{systemId}
+            <if test="subFlag ==3" >
+                inner join rpt_sys_user_sub as sus on sus.sub_user_id = mcs.sales_id and sus.type = 7
+            </if>
+
+        </if>
+        <where>
+            <if test="quarter != null and quarter != ''.toString()">
+                a.quarter = #{quarter}
+            </if>
+            AND a.system_id = #{systemId}
+            <if test="customerId != null and customerId > 0">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="salesId != null and salesId != 0">
+                <choose>
+                    <when test="subFlag == 3">
+                        and sus.user_id= #{salesId}
+                    </when>
+                    <otherwise>
+                        and mcs.sales_id=#{salesId}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and a.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and a.product_category_id in
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="status != null and status > 0">
+                AND a.status = #{status}
+            </if>
+            <if test="cancelResponsible != null and cancelResponsible > 0">
+                AND a.cancel_responsible = #{cancelResponsible}
+            </if>
+            <if test="beginCreateDate != null and beginCreateDate > 0">
+                AND a.create_date >= #{beginCreateDate}
+            </if>
+            <if test="endCreateDate != null and endCreateDate > 0">
+                AND <![CDATA[ a.create_date <= #{endCreateDate} ]]>
+            </if>
+            <if test="beginCloseDate != null and beginCloseDate > 0">
+                AND a.close_date >= #{beginCloseDate}
+            </if>
+            <if test="endCloseDate != null and endCloseDate > 0">
+                AND <![CDATA[ a.close_date <= #{endCloseDate} ]]>
+            </if>
+        </where>
+    </select>
+
+</mapper>

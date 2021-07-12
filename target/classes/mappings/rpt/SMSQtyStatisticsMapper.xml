@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.SMSQtyStatisticsMapper">
+
+    <select id="getMessageType" resultType="com.kkl.kklplus.entity.rpt.RPTSMSQtyStatisticsEntity">
+        SELECT day_index,
+        SUM(CASE sms_type when'10' then sms_qty else 0 end) as created,
+        SUM(CASE sms_type when '20' THEN sms_qty else 0 END) AS planned,
+        SUM(CASE sms_type when '30' THEN sms_qty else 0 END) AS acceptedApp,
+        SUM(CASE sms_type when '40' THEN sms_qty else 0 END) AS servicePoint,
+        SUM(CASE sms_type when '50' THEN sms_qty else 0 END) AS pending,
+        SUM(CASE sms_type when '60' THEN sms_qty else 0 END) AS pendingApp,
+        SUM(CASE sms_type when '70' THEN sms_qty else 0 END) AS verificationCode,
+        SUM(CASE sms_type when '80' THEN sms_qty else 0 END) AS orderDetailPage,
+        SUM(CASE sms_type when '90' THEN sms_qty else 0 END) AS callBack,
+        SUM(CASE sms_type when '100' THEN sms_qty else 0 END) AS cancelled
+        from rpt_sms_qty
+        WHERE
+        system_id = #{systemId}
+        AND send_date >= #{startDate}
+        AND <![CDATA[ send_date <= #{endDate}]]>
+        group by day_index
+    </select>
+
+    <select id="getSmsQtyRpt" resultType="com.kkl.kklplus.provider.rpt.entity.SmsQtyEntity">
+        SELECT rsq.day_index,rsq.sms_type,rsq.sms_qty
+        FROM rpt_sms_qty rsq
+        WHERE
+        system_id = #{systemId}
+        AND send_date >= #{startDate}
+        AND <![CDATA[ send_date <= #{endDate}]]>
+        ORDER BY day_index
+    </select>
+
+    <insert id="insert" parameterType="com.kkl.kklplus.provider.rpt.entity.SmsQtyEntity">
+        INSERT INTO rpt_sms_qty(
+        system_id,
+        day_index,
+        send_date,
+        sms_type,
+        sms_qty
+        )
+        VALUES (
+        #{systemId},
+        #{dayIndex},
+        #{sendDate},
+        #{smsType},
+        #{smsQty}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.kkl.kklplus.provider.rpt.entity.SmsQtyEntity">
+        UPDATE rpt_sms_qty
+        set sms_qty = #{smsQty}
+        WHERE sms_type = #{smsType}
+        AND day_index = #{dayIndex}
+        AND system_id = #{systemId}
+    </update>
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        from rpt_sms_qty
+        WHERE
+        system_id = #{systemId}
+        AND send_date >= #{startDate}
+        AND <![CDATA[ send_date <= #{endDate}]]>
+    </select>
+
+    <select id="getSysSmsQtyData" resultType="com.kkl.kklplus.provider.rpt.entity.SmsQtyEntity">
+        SELECT rsq.send_date AS "smsSendDate",rsq.type AS "smsType",rsq.qty AS "smsQty"
+        FROM web_rpt_sms_qty rsq
+        WHERE send_date >= #{startDate}
+        AND <![CDATA[ send_date <= #{endDate}]]>
+    </select>
+
+    <delete id="delete">
+        DELETE FROM rpt_sms_qty
+        WHERE   system_id = #{systemId}
+        AND send_date >= #{beginDate}
+        AND <![CDATA[ send_date <= #{endDate}]]>
+    </delete>
+</mapper>

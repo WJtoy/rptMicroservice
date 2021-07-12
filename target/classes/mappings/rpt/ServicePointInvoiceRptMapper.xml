@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.ServicePointInvoiceRptMapper">
+    <select id="getServicePointInvoicePage"  resultType="com.kkl.kklplus.entity.rpt.RPTServicePointInvoiceEntity">
+        select
+        fsw.service_point_id as 'servicePointId',
+        fsw.bank as 'bank.value', fsw.bank_owner, fsw.bank_no,
+        fsw.payment_type as 'paymentType.value', fsw.create_date, fsw.pay_date,
+        fsw.id  as 'withdrawId', fsw.withdraw_no, fsw.pay_amount, fsw.remarks,fsw.platform_fee,fsw.status
+        from fi_servicepoint_withdraw  fsw
+        <where>
+            fsw.del_flag = 0
+            <if test="status != null and status != 0 ">
+                and fsw.status = #{status}
+            </if>
+            <if test="servicePointId != null">
+                and fsw.service_point_id = #{servicePointId}
+            </if>
+            <if test="withdrawNo != null and withdrawNo != ''">
+                and fsw.withdraw_no like concat('%', #{withdrawNo}, '%')
+            </if>
+            <if test="paymentType != null">
+                and fsw.payment_type = #{paymentType}
+            </if>
+            <if test="bank != null">
+                and fsw.bank = #{bank}
+            </if>
+            <if test="beginDate != null">
+                and fsw.create_date >= #{beginDate}
+            </if>
+            <if test="endDate != null">
+                and <![CDATA[ fsw.create_date <= #{endDate} ]]>
+            </if>
+            <if test="beginInvoiceDate != null">
+                and fsw.pay_date >= #{beginInvoiceDate}
+            </if>
+            <if test="endInvoiceDate != null">
+                and <![CDATA[ fsw.pay_date <= #{endInvoiceDate} ]]>
+            </if>
+            <if test="quarters != null and quarters.size > 0">
+                <choose>
+                    <when test="quarters.size == 1">
+                        AND fsw.quarter = #{quarters[0]}
+                    </when>
+                    <otherwise>
+                        AND fsw.quarter IN <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">${quarter}</foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            order by fsw.pay_date desc, fsw.id
+        </where>
+    </select>
+
+    <select id="getServicePointInvoiceList"  resultType="com.kkl.kklplus.entity.rpt.RPTServicePointInvoiceEntity">
+        select
+        fsw.service_point_id as 'servicePointId',
+        fsw.bank as 'bank.value', fsw.bank_owner, fsw.bank_no,
+        fsw.payment_type as 'paymentType.value', fsw.create_date, fsw.pay_date,
+        fsw.id  as 'withdrawId', fsw.withdraw_no, fsw.pay_amount, fsw.remarks,fsw.platform_fee,fsw.status
+        from fi_servicepoint_withdraw  fsw
+        <where>
+            fsw.del_flag = 0
+            <if test="status != null and status != 0 ">
+                and fsw.status = #{status}
+            </if>
+            <if test="servicePointId != null">
+                and fsw.service_point_id = #{servicePointId}
+            </if>
+            <if test="withdrawNo != null and withdrawNo != ''">
+                and fsw.withdraw_no like concat('%', #{withdrawNo}, '%')
+            </if>
+            <if test="paymentType != null">
+                and fsw.payment_type = #{paymentType}
+            </if>
+            <if test="bank != null">
+                and fsw.bank = #{bank}
+            </if>
+            <if test="beginDate != null">
+                and fsw.create_date >= #{beginDate}
+            </if>
+            <if test="endDate != null">
+                and <![CDATA[ fsw.create_date <= #{endDate} ]]>
+            </if>
+            <if test="beginInvoiceDate != null">
+                and fsw.pay_date >= #{beginInvoiceDate}
+            </if>
+            <if test="endInvoiceDate != null">
+                and <![CDATA[ fsw.pay_date <= #{endInvoiceDate} ]]>
+            </if>
+            <if test="quarters != null and quarters.size > 0">
+                <choose>
+                    <when test="quarters.size == 1">
+                        AND fsw.quarter = #{quarters[0]}
+                    </when>
+                    <otherwise>
+                        AND fsw.quarter IN <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">${quarter}</foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            order by fsw.pay_date desc
+            limit 200000
+        </where>
+    </select>
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        select
+        count(0)
+        from 	fi_servicepoint_withdraw   fsw
+        <where>
+            fsw.del_flag = 0
+            <if test="status != null and status != 0 ">
+                and fsw.status = #{status}
+            </if>
+            <if test="servicePointId != null">
+                and fsw.service_point_id = #{servicePointId}
+            </if>
+            <if test="withdrawNo != null and withdrawNo != ''">
+                and fsw.withdraw_no like concat('%', #{withdrawNo}, '%')
+            </if>
+            <if test="paymentType != null">
+                and fsw.payment_type = #{paymentType}
+            </if>
+            <if test="bank != null">
+                and fsw.bank = #{bank}
+            </if>
+            <if test="beginDate != null">
+                and fsw.create_date >= #{beginDate}
+            </if>
+            <if test="endDate != null">
+                and <![CDATA[ fsw.create_date <= #{endDate} ]]>
+            </if>
+            <if test="beginInvoiceDate != null">
+                and fsw.pay_date >= #{beginInvoiceDate}
+            </if>
+            <if test="endInvoiceDate != null">
+                and <![CDATA[ fsw.pay_date <= #{endInvoiceDate} ]]>
+            </if>
+            <if test="quarters != null and quarters.size > 0">
+                <choose>
+                    <when test="quarters.size == 1">
+                        AND fsw.quarter = #{quarters[0]}
+                    </when>
+                    <otherwise>
+                        AND fsw.quarter IN <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">${quarter}</foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </select>
+
+</mapper>

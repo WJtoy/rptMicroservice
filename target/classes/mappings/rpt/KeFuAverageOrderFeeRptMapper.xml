@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.KeFuAverageOrderFeeRptMapper">
+
+    <sql id="RptSpecialChargeColumns">
+        customer_id,
+        province_id,
+        city_id,
+        county_id AS "areaId",
+        sum(o1+o2+o3+o4+o5+o6+o7+o8+o9+o10+o11+o12+o13+o14+o15+o16+o17+o18+o19+o20+o21+o22+o23+o24+o25+o26+o27+o28+o29+o30+o31) as orderFee,
+        sum(t1+t2+t3+t4+t5+t6+t7+t8+t9+t10+t11+t12+t13+t14+t15+t16+t17+t18+t19+t20+t21+t22+t23+t24+t25+t26+t27+t28+t29+t30+t31) as travelFee
+    </sql>
+
+
+    <select id="getSpecialOrderFeeList" resultType="com.kkl.kklplus.entity.rpt.RPTKeFuAverageOrderFeeEntity">
+        SELECT
+        <include refid="RptSpecialChargeColumns"/>
+        FROM rpt_customer_area_special_charge
+        WHERE
+        yearmonth = #{yearMonth}
+        and system_id =#{systemId}
+        <if test="customerId != null and customerId != 0">
+            AND customer_id = #{customerId}
+        </if>
+        <choose>
+            <when test="areaType == 2">
+                and province_id=#{areaId}
+            </when>
+            <when test="areaType == 3">
+                and city_id=#{areaId}
+            </when>
+            <when test="areaType == 4">
+                and county_id=#{areaId}
+            </when>
+        </choose>
+        <if test="productCategoryIds.size() != 0">
+            and product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        <if test="quarter != null and quarter != ''.toString()">
+            AND quarter = #{quarter}
+        </if>
+        group by customer_id,province_id,city_id,areaId
+    </select>
+
+
+    <select id="getGradedOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTKeFuAverageOrderFeeEntity">
+        SELECT
+        province_id,
+        city_id,
+        customer_id,
+        county_id AS "areaId",
+        count(id) AS orderSum
+        FROM
+        rpt_graded_order
+        WHERE
+        quarter = #{quarter}
+        AND yearmonth = #{yearMonth}
+        AND system_id = #{systemId}
+        <if test="customerId != null and customerId != 0">
+            AND customer_id = #{customerId}
+        </if>
+        <choose>
+            <when test="areaType == 2">
+                and province_id=#{areaId}
+            </when>
+            <when test="areaType == 3">
+                and city_id=#{areaId}
+            </when>
+            <when test="areaType == 4">
+                and county_id=#{areaId}
+            </when>
+        </choose>
+        <if test="productCategoryIds.size() != 0">
+            and product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        group by customer_id,province_id,city_id,areaId
+        LIMIT 200000
+    </select>
+
+
+    <select id="getKeFuCustomer" resultType="Long">
+        SELECT
+        customer_id
+        FROM rpt_sys_user_customer
+        WHERE
+        <if test="keFuId != null and keFuId != 0">
+             user_id = #{keFuId}
+        </if>
+        and system_id = #{systemId}
+    </select>
+
+    <select id="getVipCustomer" resultType="Long">
+        SELECT
+        customer_id
+        FROM rpt_md_customer_info_1
+        WHERE
+         vip_flag = 1
+         and system_id = #{systemId}
+    </select>
+
+
+    <select id="getKeFuAreaA" resultType="com.kkl.kklplus.entity.rpt.RPTKeFuAverageOrderFeeEntity">
+    SELECT city_id
+    FROM rpt_sys_user_region_1
+    WHERE city_id > 0
+    and area_id = 0
+    and user_id = #{keFuId}
+    and system_id = #{systemId}
+    LIMIT 50000
+    </select>
+
+    <select id="getKeFuAreaB" resultType="com.kkl.kklplus.entity.rpt.RPTKeFuAverageOrderFeeEntity">
+     SELECT province_id
+     FROM rpt_sys_user_region_1
+     WHERE province_id > 0
+     and city_id = 0
+     and user_id = #{keFuId}
+     and system_id = #{systemId}
+     LIMIT 50000
+    </select>
+
+    <select id="getKeFuAreaC" resultType="java.lang.Integer">
+    SELECT count(0)
+    FROM rpt_sys_user_region_1
+    WHERE
+    city_id = 0
+    AND province_id = 0
+    and user_id = #{keFuId}
+    and system_id = #{systemId}
+    LIMIT 50000
+    </select>
+
+    <select id="getKeFuAreaD" resultType="com.kkl.kklplus.entity.rpt.RPTKeFuAverageOrderFeeEntity">
+    SELECT area_id
+    FROM rpt_sys_user_region_1
+    WHERE area_id > 0
+    and user_id = #{keFuId}
+    and system_id = #{systemId}
+    LIMIT 50000
+    </select>
+
+
+    <select id="getOrderSum" resultType="com.kkl.kklplus.entity.rpt.RPTKeFuAverageOrderFeeEntity">
+        SELECT
+        customer_id,
+        count(id) AS orderSum
+        FROM
+        rpt_graded_order
+        WHERE
+        quarter = #{quarter}
+        AND yearmonth = #{yearMonth}
+        AND system_id = #{systemId}
+        <if test="customerId != null and customerId != 0">
+            AND customer_id = #{customerId}
+        </if>
+        <choose>
+            <when test="areaType == 2">
+                and province_id=#{areaId}
+            </when>
+            <when test="areaType == 3">
+                and city_id=#{areaId}
+            </when>
+            <when test="areaType == 4">
+                and county_id=#{areaId}
+            </when>
+        </choose>
+        <if test="productCategoryIds.size() != 0">
+            and product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        group by customer_id
+        LIMIT 200000
+    </select>
+
+
+    <select id="getVipOrderSum" resultType="com.kkl.kklplus.entity.rpt.RPTKeFuAverageOrderFeeEntity">
+        SELECT
+        customer_id,
+        count(id) AS orderSum
+        FROM
+        rpt_graded_order
+        WHERE
+        quarter = #{quarter}
+        AND yearmonth = #{yearMonth}
+        AND system_id = #{systemId}
+        <if test="keFuId != null and keFuId != 0">
+            AND kefu_id = #{keFuId}
+        </if>
+        <if test="customerId != null and customerId != 0">
+            AND customer_id = #{customerId}
+        </if>
+        <choose>
+            <when test="areaType == 2">
+                and province_id=#{areaId}
+            </when>
+            <when test="areaType == 3">
+                and city_id=#{areaId}
+            </when>
+            <when test="areaType == 4">
+                and county_id=#{areaId}
+            </when>
+        </choose>
+        <if test="productCategoryIds.size() != 0">
+            and product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        group by customer_id
+        LIMIT 200000
+    </select>
+</mapper>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.ExploitDetailRptMapper">
+    <select id="getExploitDetailList" resultType="com.kkl.kklplus.entity.rpt.RPTExploitDetailEntity">
+        SELECT
+        soc.product_category_id,
+        soc.order_id,
+        soc.order_no,
+        socd.status AS "orderStatus.value",
+        soc.create_name,
+        soc.create_date,
+        soc.close_name,
+        soc.close_date,
+        socd.order_service_type AS "serviceType.id",
+        socd.customer_id,
+        soc.user_name,
+        soc.user_phone,
+        soc.user_address,
+        soc.province_id,
+        soc.city_id,
+        soc.area_id,
+        sof.engineer_travel_charge,
+        sof.engineer_other_charge
+        FROM sd_order_crush soc
+        inner join sd_order_condition socd ON socd.order_id = soc.order_id
+        inner join sd_order_fee sof ON sof.order_id = soc.order_id
+        <where>
+            <if test="createBeginDate != null">
+                AND soc.create_date >= #{createBeginDate}
+            </if>
+            <if test="createEndDate != null">
+                AND <![CDATA[ soc.create_date <= #{createEndDate}]]>
+            </if>
+            <if test="closeBeginDate != null">
+                AND soc.close_date >= #{closeBeginDate}
+            </if>
+            <if test="closeEndDate != null">
+                AND <![CDATA[ soc.close_date <= #{closeEndDate}]]>
+            </if>
+            <if test="customerId != null">
+                and socd.customer_id = #{customerId}
+            </if>
+            <if test="isPhone == 1">
+                and soc.user_phone = #{userPhone}
+            </if>
+            <if test="orderNoSearchType == 1">
+                AND soc.order_no = #{orderNo}
+            </if>
+            <choose>
+                <when test="areaType == 2">
+                    and soc.province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and soc.city_id=#{areaId}
+                </when>
+                <when test="areaType == 4">
+                    and soc.area_id=#{areaId}
+                </when>
+            </choose>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and soc.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and soc.product_category_id in
+                        <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{productCategoryIds}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </select>
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        FROM sd_order_crush soc
+        inner join sd_order_condition socd ON socd.order_id = soc.order_id
+        <where>
+            <if test="createBeginDate != null">
+                AND soc.create_date >= #{createBeginDate}
+            </if>
+            <if test="createEndDate != null">
+                AND <![CDATA[ soc.create_date <= #{createEndDate}]]>
+            </if>
+            <if test="closeBeginDate != null">
+                AND soc.close_date >= #{closeBeginDate}
+            </if>
+            <if test="closeEndDate != null">
+                AND <![CDATA[ soc.close_date <= #{closeEndDate}]]>
+            </if>
+            <if test="customerId != null">
+                and socd.customer_id = #{customerId}
+            </if>
+            <if test="isPhone == 1">
+                and soc.user_phone = #{userPhone}
+            </if>
+            <if test="orderNoSearchType == 1">
+                AND soc.order_no = #{orderNo}
+            </if>
+            <choose>
+                <when test="areaType == 2">
+                    and soc.province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and soc.city_id=#{areaId}
+                </when>
+                <when test="areaType == 4">
+                    and soc.area_id=#{areaId}
+                </when>
+            </choose>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and soc.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and soc.product_category_id in
+                        <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{productCategoryIds}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </select>
+</mapper>

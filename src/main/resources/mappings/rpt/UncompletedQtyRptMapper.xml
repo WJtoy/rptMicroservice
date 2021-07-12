@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.UncompletedQtyRptMapper">
+
+    <!-- 查询客户的未完工的工单信息 -->
+    <select id="getUncompletedQtyList" resultType="com.kkl.kklplus.entity.rpt.RPTUncompletedQtyEntity">
+        SELECT
+        soc.customer_id AS customerId,
+        count(0) AS uncompletedQty
+        FROM sd_order_condition soc
+        INNER JOIN sd_order_status sos ON soc.order_id=sos.order_id
+        <where>
+            <![CDATA[ soc.create_date < #{endDate} ]]>
+            AND (sos.cancel_approve_date IS NULL OR sos.cancel_approve_date > #{endDate})
+            AND (sos.charge_date IS NULL OR sos.charge_date > #{endDate})
+            <if test="quarter != null">
+                AND soc.quarter = #{quarter}
+            </if>
+        </where>
+        group by customerId
+    </select>
+
+
+    <select id="getUncompletedOrderList" resultType="com.kkl.kklplus.entity.rpt.RPTUncompletedOrderEntity">
+        SELECT
+        soc.order_id,
+        soc.order_no,
+        soc.create_by AS "createBy.id",
+        '' AS "createBy.name",
+        soc.create_date,
+        soc.customer_id AS "customer.id",
+        servicepoint_id AS "servicePoint.id",
+        engineer_id AS "engineer.id",
+        so.description,
+        so.orderitem_json AS "orderItemPb",
+        soc.user_name,
+        soc.phone1 AS "userPhone",
+        soc.province_id AS "province.id",
+        soc.city_id AS "city.id",
+        soc.area_id AS "distinct.id",
+        soc.area_id,
+        soc.address AS "userAddress",
+        sof.expect_charge,
+        sof.blocked_charge,
+        so.data_source AS "dataSource.value",
+        soc.pending_type AS "pendingType.value",
+        soc.status AS "status.value",
+        so.workcard_id AS "workCardId",
+        so.shop_id AS "shop.value",
+        so.parent_biz_order_id AS "parentBizOrderId"
+        FROM sd_order_condition soc
+        INNER JOIN sd_order_head so ON so.id = soc.order_id
+        INNER JOIN sd_order_fee sof ON soc.order_id=sof.order_id
+        INNER JOIN sd_order_status sos ON soc.order_id=sos.order_id
+        <where>
+            <![CDATA[ soc.create_date < #{endDate} ]]>
+            AND (sos.cancel_approve_date IS NULL OR sos.cancel_approve_date > #{endDate})
+            AND (sos.charge_date IS NULL OR sos.charge_date > #{endDate})
+            <if test="quarter != null">
+                AND soc.quarter = #{quarter}
+            </if>
+        </where>
+        ORDER BY soc.order_id
+    </select>
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        FROM sd_order_condition soc
+        INNER JOIN sd_order_status sos ON soc.order_id=sos.order_id
+        <where>
+            <![CDATA[ soc.create_date < #{endDate} ]]>
+            AND (sos.cancel_approve_date IS NULL OR sos.cancel_approve_date > #{endDate})
+            AND (sos.charge_date IS NULL OR sos.charge_date > #{endDate})
+            <if test="quarter != null">
+                AND soc.quarter = #{quarter}
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CustomerOrderDailyRptMapper">
+
+    <!-- 查询系统中的完工单-->
+    <select id="getCustomerNewOrderDailyList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerNewOrderDailyRptEntity">
+      SELECT
+        soc.customer_id, soc.order_id, soc.order_no, so.shop_id, so.workcard_id, so.parent_biz_order_id, soc.create_by AS "orderCreateById",
+        so.orderitem_json AS "orderItemPb", sof.expect_charge, sof.blocked_charge, so.description,soc.user_name,so.data_source AS "dataSourceId",
+        soc.service_phone,  soc.area_name, soc.service_address, soc.create_date AS "orderCreateDate", soc.status AS "statusValue"
+      FROM sd_order_condition soc
+      inner join sd_order_head so on so.id = soc.order_id
+      inner join sd_order_fee sof on sof.order_id = soc.order_id
+      <if test="saleId!=null and saleId!=0">
+          inner join md_customer_sales mcs on mcs.customer_id = soc.customer_id
+          <if test="subFlag ==3" >
+              inner join sys_user_sub as sus on sus.sub_user_id = mcs.sales_id and sus.type = 7
+          </if>
+      </if>
+      WHERE
+        soc.quarter = #{quarter} and
+        <if test="customerId!=null and customerId!=0">
+            soc.customer_id = #{customerId} and
+        </if>
+        <if test="saleId != null and saleId != 0">
+            <choose>
+                <when test="subFlag == 3">
+                    and sus.user_id= #{saleId}
+                </when>
+                <otherwise>
+                    and mcs.sales_id=#{saleId}
+                </otherwise>
+            </choose>
+        </if>
+        soc.create_date >= #{beginDate} and <![CDATA[ soc.create_date <= #{endDate} ]]>
+        order by soc.order_id
+    </select>
+
+    <select id="hasReportData" resultType="Integer">
+        SELECT
+              COUNT(0)
+        FROM sd_order_condition soc
+            <if test="saleId!=null and saleId!=0">
+                INNER JOIN md_customer_sales mcs on mcs.customer_id = soc.customer_id
+                <if test="subFlag ==3" >
+                    inner join sys_user_sub as sus on sus.sub_user_id = mcs.sales_id and sus.type = 7
+                </if>
+            </if>
+        <where>
+            soc.quarter = #{quarter}
+            AND soc.create_date >= #{beginDate}
+            AND <![CDATA[ soc.create_date <= #{endDate} ]]>
+            <if test="customerId!=null and customerId!=0">
+                AND soc.customer_id = #{customerId}
+            </if>
+            <if test="saleId != null and saleId != 0">
+                <choose>
+                    <when test="subFlag == 3">
+                        and sus.user_id= #{saleId}
+                    </when>
+                    <otherwise>
+                        and mcs.sales_id=#{saleId}
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </select>
+
+</mapper>

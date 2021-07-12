@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.ComplainStatisticsDailyMapper">
+    <select id="getDayComplainSumNew" resultType="com.kkl.kklplus.entity.rpt.RPTComplainStatisticsDailyEntity">
+        SELECT  day_index AS 'dayIndex',SUM(complain_flag) AS dayComplainSum , COUNT(0) AS dayTheTotalOrder
+        From rpt_kefu_complete_time rsc
+        <if test="salesId != null and salesId != 0">
+            INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = rsc.customer_id and mcs.system_id = #{systemId}
+        </if>
+        WHERE
+        rsc.system_id = #{systemId}
+        AND rsc.order_create_date >= #{startDate}
+        AND <![CDATA[ rsc.order_create_date <= #{endDate}]]>
+        <if test="keFuId != null and keFuId != 0">
+            and rsc.kefu_id = #{keFuId}
+        </if>
+        <if test="customerId != null">
+            and rsc.customer_id = #{customerId}
+        </if>
+        <if test="areaType == 2">
+            and rsc.province_id=#{areaId}
+        </if>
+        <if test="areaType == 3">
+            and rsc.city_id=#{areaId}
+        </if>
+        <if test="areaType == 4">
+            and rsc.county_id=#{areaId}
+        </if>
+        <if test="servicePointId != null and servicePointId > 0">
+            and rsc.service_point_id = #{servicePointId}
+        </if>
+        <if test="quarter != null">
+            and rsc.quarter = #{quarter}
+        </if>
+        <if test="salesId != null and salesId != 0">
+            AND mcs.sales_id = #{salesId}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and rsc.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and rsc.product_category_id in
+                    <foreach item="item" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{item}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        GROUP BY dayIndex
+        ORDER BY dayIndex
+        LIMIT 10000
+    </select>
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM rpt_kefu_complete_time rop
+        <if test="salesId != null and salesId != 0">
+            INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = rop.customer_id and mcs.system_id = #{systemId}
+        </if>
+        WHERE rop.system_id = #{systemId}
+        AND rop.order_create_date >= #{startDate}
+        AND <![CDATA[ rop.order_create_date <= #{endDate}]]>
+        <if test="keFuId != null and keFuId != 0">
+            and rop.kefu_id = #{keFuId}
+        </if>
+        <if test="customerId != null">
+            and rop.customer_id = #{customerId}
+        </if>
+        <if test="areaType == 2">
+            and rop.province_id=#{areaId}
+        </if>
+        <if test="areaType == 3">
+            and rop.city_id=#{areaId}
+        </if>
+        <if test="areaType == 4">
+            and rop.county_id=#{areaId}
+        </if>
+        <if test="servicePointId != null and servicePointId > 0">
+            and rop.service_point_id = #{servicePointId}
+        </if>
+        <if test="quarter != null">
+            and rop.quarter = #{quarter}
+        </if>
+        <if test="salesId != null and salesId != 0">
+            AND mcs.sales_id = #{salesId}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and rop.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and rop.product_category_id in
+                    <foreach item="item" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{item}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+    </select>
+</mapper>

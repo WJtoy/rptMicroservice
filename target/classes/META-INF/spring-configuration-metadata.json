@@ -1,0 +1,73 @@
+{
+  "hints": [],
+  "groups": [
+    {
+      "sourceType": "com.kkl.kklplus.provider.rpt.config.ProviderRptProperties",
+      "name": "rpt",
+      "type": "com.kkl.kklplus.provider.rpt.config.ProviderRptProperties"
+    },
+    {
+      "sourceType": "com.kkl.kklplus.provider.rpt.config.ProviderRptProperties",
+      "name": "rpt.rpt-excel-file-dir",
+      "type": "com.kkl.kklplus.provider.rpt.config.ProviderRptProperties$RptExcelFileDir"
+    }
+  ],
+  "properties": [
+    {
+      "sourceType": "com.kkl.kklplus.provider.rpt.config.ProviderRptProperties",
+      "defaultValue": "",
+      "name": "rpt.go-live-date",
+      "description": "Web系统的上线时间",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.kkl.kklplus.provider.rpt.config.ProviderRptProperties",
+      "defaultValue": false,
+      "name": "rpt.info-fee-enabled",
+      "description": "是否开启更新平台服务费",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.kkl.kklplus.provider.rpt.config.ProviderRptProperties",
+      "defaultValue": 0,
+      "name": "rpt.platform-fee-rate",
+      "description": "平台服务费",
+      "type": "java.lang.Double"
+    },
+    {
+      "sourceType": "com.kkl.kklplus.provider.rpt.config.ProviderRptProperties",
+      "defaultValue": 0,
+      "name": "rpt.quarter-qty",
+      "description": "Web数据库的分片数量",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.kkl.kklplus.provider.rpt.config.ProviderRptProperties",
+      "defaultValue": "",
+      "name": "rpt.rpt-go-live-date",
+      "description": "报表微服务的上线时间",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.kkl.kklplus.provider.rpt.config.ProviderRptProperties",
+      "defaultValue": 0,
+      "name": "rpt.rpt-quarter-qty",
+      "description": "报表数据库的分片数量",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.kkl.kklplus.provider.rpt.config.ProviderRptProperties",
+      "defaultValue": false,
+      "name": "rpt.schedule-enabled",
+      "description": "是否开启定时任务",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.kkl.kklplus.provider.rpt.config.ProviderRptProperties",
+      "defaultValue": "",
+      "name": "rpt.system-code",
+      "description": "系统标识",
+      "type": "java.lang.String"
+    }
+  ]
+}

@@ -1,0 +1,574 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.GradedOrderRptMapper">
+
+    <!-- 查询系统中的完工单-->
+    <select id="getGradedOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTGradedOrderEntity">
+        select soc.order_id,soc.kefu_id,soc.order_no,soc.user_name, soc.service_address, soc.service_phone,so.description, so.orderitem_json AS 'orderItemPb',
+        soc.create_date AS "createDateD",sos.first_plan_date AS "firstPlanDateD" , sos.plan_date AS "planDateD", soc.close_date AS "closeDateD",
+        soc.area_id AS "countyId",soc.servicepoint_id,soc.customer_id,sosf.service_charge, sosf.material_charge, sosf.travel_charge,
+        sosf.express_charge, sosf.other_charge,sosf.insurance_charge, sosf.time_liness_charge,soc.grade_flag, soc.arrival_date AS "arrivalDate",soc.app_complete_date AS "appCompleteDate",
+         sosf.customer_time_liness_charge, sosf.urgent_charge,soc.product_category_id, sosf.praise_fee, sosf.tax_fee, sosf.info_fee, sosf.deposit AS 'engineerDeposit'
+        from sd_order_condition soc
+        inner join sd_order_head so on so.id = soc.order_id
+        inner join sd_order_status sos on sos.order_id = soc.order_id
+        left join sd_order_servicepoint_fee sosf on sosf.order_id = soc.order_id and sosf.del_flag = 0 and sosf.servicepoint_id = soc.servicepoint_id
+        where <!-- soc.status = 80 --> soc.grade_flag > 0
+        and soc.close_date >= #{beginDate}
+        and <![CDATA[ soc.close_date <= #{endDate}]]>
+        limit 200000;
+    </select>
+
+    <select id="getGradeCreateByList" resultType="com.kkl.kklplus.provider.rpt.entity.LongTwoTuple">
+        select order_id AS "aElement", create_by AS "bElement"
+        from sd_order_grade
+        where create_date >= #{beginDate}
+        and <![CDATA[ create_date <= #{endDate}]]>
+        order by id desc
+        limit 200000;
+    </select>
+
+    <select id="getGradedOrderDataOfMQ" resultType="com.kkl.kklplus.entity.rpt.RPTGradedOrderEntity">
+        select soc.order_id,soc.kefu_id,soc.order_no,soc.user_name, soc.service_address, soc.service_phone,so.description, so.orderitem_json AS 'orderItemPb',
+        soc.create_date AS "createDateD",sos.first_plan_date AS "firstPlanDateD" , sos.plan_date AS "planDateD", soc.close_date AS "closeDateD",soc.arrival_date AS "arrivalDate",
+        soc.area_id AS "countyId",soc.servicepoint_id,soc.customer_id,sosf.service_charge, sosf.material_charge, sosf.travel_charge,soc.grade_flag,soc.app_complete_date AS "appCompleteDate",
+        sosf.express_charge, sosf.other_charge,sosf.insurance_charge, sosf.time_liness_charge, sosf.praise_fee, sosf.tax_fee, sosf.info_fee, sosf.deposit AS 'engineerDeposit',
+         sosf.customer_time_liness_charge, sosf.urgent_charge,soc.product_category_id
+        from sd_order_condition soc
+        inner join sd_order_head so on so.id = soc.order_id
+        inner join sd_order_status sos on sos.order_id = soc.order_id
+        left join sd_order_servicepoint_fee sosf on sosf.order_id = soc.order_id and sosf.del_flag = 0 and sosf.servicepoint_id = soc.servicepoint_id
+        where soc.quarter = #{quarter}
+        and soc.order_id = #{orderId}
+    </select>
+
+    <select id="getCrushOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTGradedOrderEntity">
+        select socs.order_id, socs.last_flag AS "crushFlag",socs.create_date AS "crushCreateDateD",
+        socs.close_by AS "crushCreateBy"
+        from sd_order_crush socs
+        inner join sd_order_condition soc on soc.order_id = socs.order_id
+        where <!-- soc.status = 80 --> soc.grade_flag > 0
+        and socs.last_flag = 1
+        and soc.close_date >= #{beginDate}
+        and <![CDATA[ soc.close_date <= #{endDate}]]>
+        order by socs.create_date
+    </select>
+
+
+    <select id="getCrushOrderDataOfMQ" resultType="com.kkl.kklplus.entity.rpt.RPTGradedOrderEntity">
+        select socs.order_id, socs.last_flag AS "crushFlag",socs.create_date AS "crushCreateDateD",
+        socs.close_by AS "crushCreateBy"
+        from sd_order_crush socs
+        inner join sd_order_condition soc on soc.order_id = socs.order_id
+        where socs.last_flag = 1
+        and soc.quarter = #{quarter}
+        and soc.order_id = #{orderId}
+    </select>
+
+    <select id="getGradeCreateByOfMQ" resultType="com.kkl.kklplus.provider.rpt.entity.LongTwoTuple">
+        select order_id AS "aElement", create_by AS "bElement"
+        from sd_order_grade
+        where quarter = #{quarter}
+        and order_id = #{orderId}
+        order by id desc
+    </select>
+
+
+    <insert id="insertGradedOrder" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO rpt_graded_order
+       (
+        system_id,
+        quarter,
+        order_id,
+        order_no,
+        province_id,
+        city_id,
+        county_id,
+        day_index,
+        kefu_id,
+        customer_id,
+        customer_name,
+        product_category_id,
+        product_category_name,
+        user_name,
+        service_phone,
+        service_address,
+        product_names,
+        service_point_id,
+        service_point_no,
+        service_point_name,
+        description,
+        create_date,
+        first_plan_date,
+        plan_date,
+        close_date,
+        engineer_service_charge,
+        engineer_material_charge,
+        engineer_travel_charge,
+        engineer_express_charge,
+        engineer_other_charge,
+        engineer_insurance_charge,
+        engineer_timeliness_charge,
+        engineer_customer_timeliness_charge,
+        engineer_urgent_charge,
+        engineer_praise_fee,
+        engineer_tax_fee,
+        engineer_info_fee,
+        engineer_deposit,
+        crush_flag,
+        grade_flag,
+        crush_create_by,
+        crush_create_date,
+        arrival_date,
+        app_complete_date,
+        crush_96hour_complete,
+        grade_by,
+        yearmonth
+        )
+   VALUES
+        (
+        #{systemId},
+        #{quarter},
+        #{orderId},
+        #{orderNo},
+        #{provinceId},
+        #{cityId},
+        #{countyId},
+        #{dayIndex},
+        #{kefuId},
+        #{customerId},
+        #{customerName},
+        #{productCategoryId},
+        #{productCategoryName},
+        #{userName},
+        #{servicePhone},
+        #{serviceAddress},
+        #{productNames},
+        #{servicePointId},
+        #{servicePointNo},
+        #{servicePointName},
+        #{description},
+        #{createDate},
+        #{firstPlanDate},
+        #{planDate},
+        #{closeDate},
+        #{serviceCharge},
+        #{materialCharge},
+        #{travelCharge},
+        #{expressCharge},
+        #{otherCharge},
+        #{insuranceCharge},
+        #{timeLinessCharge},
+        #{customerTimeLinessCharge},
+        #{urgentCharge},
+        #{praiseFee},
+        #{taxFee},
+        #{infoFee},
+        #{engineerDeposit},
+        #{crushFlag},
+        #{gradeFlag},
+        #{crushCreateBy},
+        #{crushCreateDate},
+        #{arrivalDt},
+        #{appCompleteDt},
+        #{crush96HourComplete},
+        #{gradeBy},
+        #{yearmonth}
+        )
+    </insert>
+
+    <delete id="deleteGradedOrders">
+        DELETE FROM rpt_graded_order
+        WHERE quarter = #{quarter}
+              AND system_id = #{systemId}
+              AND close_date >= #{beginDate}
+              AND <![CDATA[ close_date <= #{endDate} ]]>
+    </delete>
+
+    <select id="getGradedOrderIds" resultType="com.kkl.kklplus.provider.rpt.entity.LongTwoTuple">
+        SELECT
+              a.id        AS "aElement",
+              a.order_id  AS "bElement"
+        FROM  rpt_graded_order a
+        WHERE a.quarter = #{quarter}
+              AND a.system_id = #{systemId}
+              AND a.close_date >= #{beginDate}
+              AND <![CDATA[ a.close_date <= #{endDate} ]]>
+        LIMIT 200000
+    </select>
+    
+    <select id="getHavingGradedOrder" resultType="com.kkl.kklplus.provider.rpt.entity.LongTwoTuple">
+        SELECT order_id AS "aElement",
+               count(0) AS "bElement"
+        FROM rpt_graded_order
+        WHERE quarter = #{quarter}
+              AND system_id = #{systemId}
+              AND close_date >= #{beginDate}
+              AND <![CDATA[ close_date <= #{endDate} ]]>
+        GROUP BY order_id
+    </select>
+
+    <delete id="deleteHavingGradedOrder">
+        DELETE FROM rpt_graded_order
+        WHERE order_id = #{orderId}
+             LIMIT #{count}
+    </delete>
+
+    <select id="getProvinceGradedOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTAreaCompletedDailyEntity">
+        SELECT
+        province_id AS provinceId,
+        day_index AS dayIndex,
+        count(id) AS countSum
+        FROM
+        rpt_graded_order
+        WHERE
+           quarter = #{quarter}
+        AND system_id = #{systemId}
+        AND close_date >= #{beginDate}
+        AND <![CDATA[ close_date <= #{endDate}]]>
+        <if test="customerId != null">
+            and customer_id = #{customerId}
+        </if>
+        <choose>
+            <when test="areaType == 2">
+                and province_id=#{areaId}
+            </when>
+            <when test="areaType == 3">
+                and city_id=#{areaId}
+            </when>
+            <when test="areaType == 4">
+                and county_id=#{areaId}
+            </when>
+        </choose>
+        <if test="productCategoryIds.size() != 0">
+            and product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        group by provinceId,dayIndex
+        LIMIT 200000
+    </select>
+
+    <select id="getCityGradedOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTAreaCompletedDailyEntity">
+        SELECT
+        province_id AS provinceId,
+        city_id AS cityId,
+        day_index AS dayIndex,
+        count(id) AS countSum
+        FROM
+        rpt_graded_order
+        WHERE
+        quarter = #{quarter}
+        AND system_id = #{systemId}
+        AND close_date >= #{beginDate}
+        AND <![CDATA[ close_date <= #{endDate}]]>
+        <if test="customerId != null">
+            and customer_id = #{customerId}
+        </if>
+        <choose>
+            <when test="areaType == 2">
+                and province_id=#{areaId}
+            </when>
+            <when test="areaType == 3">
+                and city_id=#{areaId}
+            </when>
+            <when test="areaType == 4">
+                and county_id=#{areaId}
+            </when>
+        </choose>
+        <if test="productCategoryIds.size() != 0">
+            and product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        group by provinceId,cityId,dayIndex
+        LIMIT 200000
+    </select>
+
+    <select id="getAreaGradedOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTAreaCompletedDailyEntity">
+        SELECT
+        province_id AS provinceId,
+        city_id AS cityId,
+        county_id AS countyId,
+        day_index AS dayIndex,
+        count(id) AS countSum
+        FROM
+        rpt_graded_order
+        WHERE
+        quarter = #{quarter}
+        AND system_id = #{systemId}
+        AND close_date >= #{beginDate}
+        AND <![CDATA[ close_date <= #{endDate}]]>
+        <if test="customerId != null">
+            and customer_id = #{customerId}
+        </if>
+        <choose>
+            <when test="areaType == 2">
+                and province_id=#{areaId}
+            </when>
+            <when test="areaType == 3">
+                and city_id=#{areaId}
+            </when>
+            <when test="areaType == 4">
+                and county_id=#{areaId}
+            </when>
+        </choose>
+        <if test="productCategoryIds.size() != 0">
+            and product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        group by provinceId,cityId,countyId,dayIndex
+        LIMIT 200000
+    </select>
+
+    <select id="getKefuGradedOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTKefuCompletedDailyEntity">
+        SELECT
+        kefu_id AS kefuId,
+        day_index AS dayIndex,
+        count(id) AS countSum
+        FROM
+        rpt_graded_order
+        WHERE
+        quarter = #{quarter}
+        AND system_id = #{systemId}
+        AND close_date >= #{beginDate}
+        AND <![CDATA[ close_date <= #{endDate}]]>
+        <if test="kefuId != null and kefuId!=0">
+            and kefu_id = #{kefuId}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and product_category_id in
+                    <foreach item="item" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{item}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        group by kefuId,dayIndex
+        LIMIT 200000
+    </select>
+
+    <select id="getOrderServicePointFeeGradedOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTGradedOrderEntity">
+        SELECT order_no,user_name, service_address,service_phone,description, product_names,create_date,first_plan_date,
+        plan_date, close_date,province_id,city_id,county_id,service_point_id,service_point_no,service_point_name,customer_id,
+        customer_name,description,engineer_service_charge AS "serviceCharge",engineer_material_charge AS "materialCharge",engineer_travel_charge AS "travelCharge",
+        engineer_express_charge AS "expressCharge", engineer_other_charge AS "otherCharge",engineer_insurance_charge AS "insuranceCharge",
+        engineer_timeliness_charge AS "timeLinessCharge", engineer_customer_timeliness_charge AS "customerTimeLinessCharge",
+        engineer_urgent_charge AS "urgentCharge",engineer_praise_fee AS "praiseFee", engineer_tax_fee AS "taxFee", engineer_info_fee AS "infoFee", engineer_deposit AS "engineerDeposit",
+        product_category_id,product_category_name,arrival_date AS "arrivalDt",app_complete_date AS "appCompleteDt"
+        FROM
+        rpt_graded_order
+        WHERE
+         system_id = #{systemId}
+        AND close_date >= #{beginDate}
+        AND <![CDATA[ close_date <= #{endDate}]]>
+        <if test="quarter != null">
+            and quarter = #{quarter}
+        </if>
+        <if test="servicePointId != null">
+            and service_point_id = #{servicePointId}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            and product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        order by order_no
+    </select>
+
+    <select id="getDevelopAverageOrderFee" resultType="com.kkl.kklplus.entity.rpt.RPTDevelopAverageOrderFeeEntity">
+        SELECT close_date,product_category_id,product_category_name as "productCategoryNames",crush_create_by,
+        engineer_other_charge,engineer_travel_charge,crush_96hour_complete as "order96HourCompletedFlag"
+        FROM
+        rpt_graded_order
+        WHERE
+        system_id = #{systemId}
+        AND quarter = #{quarter}
+        AND close_date >= #{beginDate}
+        AND <![CDATA[ close_date <= #{endDate}]]>
+        AND crush_flag = 1
+        <if test="productCategoryIds.size() != 0">
+            and product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        limit 200000
+    </select>
+
+
+    <select id="getCompletedOrderSum" resultType="Long">
+        SELECT
+            COUNT(0)
+        FROM  rpt_graded_order
+        <where>
+            system_id = #{systemId}
+            AND close_date > #{beginDate}
+            AND <![CDATA[ close_date <= #{endDate}]]>
+            <if test="quarter != null">
+                AND quarter = #{quarter}
+            </if>
+            <if test="keFuIds.size() != 0">
+                <choose>
+                    <when test="keFuIds.size() == 1">
+                        and kefu_id  = #{keFuIds[0]}
+                    </when>
+                    <otherwise>
+                        and kefu_id  in
+                        <foreach item="keFuIds" index="index" collection="keFuIds" open="("
+                                 separator="," close=")">
+                            #{keFuIds}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and product_category_id in
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </select>
+
+
+    <select id="hasAreaCompletedOrderReportData" resultType="Integer">
+        SELECT
+        COUNT(0)
+        FROM rpt_graded_order
+        <where>
+             system_id = #{systemId}
+             and quarter = #{quarter}
+             and close_date >#{beginDate}
+             and <![CDATA[ close_date <= #{endDate}]]>
+            <if test="customerId != null">
+                and customer_id = #{customerId}
+            </if>
+            <choose>
+                <when test="areaType == 2">
+                    and province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and city_id=#{areaId}
+                </when>
+                <when test="areaType == 4">
+                    and county_id=#{areaId}
+                </when>
+            </choose>
+            <if test="productCategoryIds.size() != 0">
+                and product_category_id in
+                <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                         separator="," close=")">
+                    #{productCategoryIds}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="hasKefuCompletedOrderReportData" resultType="Integer">
+        SELECT
+        COUNT(0)
+        FROM rpt_graded_order
+        <where>
+            system_id = #{systemId}
+            and quarter = #{quarter}
+            and close_date >#{beginDate}
+            and <![CDATA[ close_date <= #{endDate}]]>
+            <if test="kefuIds.size() != 0">
+                <choose>
+                    <when test="kefuIds.size() == 1">
+                        and kefu_id  = #{kefuIds[0]}
+                    </when>
+                    <otherwise>
+                        and kefu_id  in
+                        <foreach item="kefuIds" index="index" collection="kefuIds" open="("
+                                 separator="," close=")">
+                            #{kefuIds}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and product_category_id in
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </select>
+
+    <select id="hasOrderServicePointFeeReportData" resultType="Integer">
+        SELECT
+        COUNT(0)
+        FROM rpt_graded_order
+        <where>
+            system_id = #{systemId}
+            and quarter = #{quarter}
+            and close_date >#{beginDate}
+            and <![CDATA[ close_date <= #{endDate}]]>
+            <if test="servicePointId != null">
+                and service_point_id = #{servicePointId}
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                and product_category_id in
+                <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                         separator="," close=")">
+                    #{productCategoryIds}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="hasDevelopAverageFeeReportData" resultType="Integer">
+        SELECT
+        COUNT(0)
+        FROM rpt_graded_order
+        <where>
+            system_id = #{systemId}
+            and quarter = #{quarter}
+            and close_date >#{beginDate}
+            and <![CDATA[ close_date <= #{endDate}]]>
+            and crush_flag = 1
+            <if test="productCategoryIds.size() != 0">
+                and product_category_id in
+                <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                         separator="," close=")">
+                    #{productCategoryIds}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>

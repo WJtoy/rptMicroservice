@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.GradeQtyDailyRptMapper">
+
+    <select id="getGradeQtyList" resultType="com.kkl.kklplus.provider.rpt.entity.GradeQtyEntity">
+        SELECT o.grade_flag AS gradeFlag, o.product_category_id AS productCategoryId ,COUNT(o.order_id) AS count
+        FROM sd_order_condition o
+        WHERE
+          o.close_date between #{startDate} AND #{endDate}
+          <!-- AND STATUS = 80 -->
+          AND o.grade_flag >0
+        GROUP BY productCategoryId, gradeFlag
+    </select>
+
+
+    <!---写入数据到表中-->
+    <insert id="insertGradeQty">
+        INSERT INTO rpt_grade_qty_daily
+        (
+        grade_create_date,
+        product_category_id,
+        manual_grade_qty,
+        app_grade_qty,
+        sms_grade_qty,
+        voice_grade_qty,
+        total_qty,
+        day_index,
+        system_id
+        )
+        VALUES
+        (
+        #{gradeDate},
+        #{productCategoryId},
+        #{manualGradeQty},
+        #{appGradeQty},
+        #{smsGradeQty},
+        #{voiceGradeQty},
+        #{totalQty},
+        #{dayIndex},
+        #{systemId}
+        )
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM rpt_grade_qty_daily
+        WHERE  grade_create_date >= #{beginDate}
+        AND <![CDATA[  grade_create_date <= #{endDate}]]>
+        AND system_id = #{systemId}
+    </delete>
+
+    <select id="getGradeQtyDailyList" resultType="com.kkl.kklplus.entity.rpt.RPTGradeQtyDailyEntity">
+        SELECT rgq.day_index AS dayIndex ,sum(rgq.manual_grade_qty) AS manualGradeQty,sum(rgq.app_grade_qty) AS appGradeQty,
+        sum(rgq.sms_grade_qty) AS smsGradeQty, sum(rgq.voice_grade_qty) AS voiceGradeQty , sum(rgq.total_qty) AS totalQty
+        FROM rpt_grade_qty_daily rgq
+        <where>
+        rgq.system_id = #{systemId}
+        AND rgq.grade_create_date >= #{startDate}
+        AND <![CDATA[ rgq.grade_create_date <= #{endDate} ]]>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and rgq.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and rgq.product_category_id in
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+        group by dayIndex
+        order by dayIndex
+        LIMIT 1000
+    </select>
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM
+        rpt_grade_qty_daily rgq
+        <where>
+            rgq.system_id = #{systemId}
+            AND rgq.grade_create_date >= #{startDate}
+            AND <![CDATA[ rgq.grade_create_date <= #{endDate} ]]>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and rgq.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and rgq.product_category_id in
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </select>
+
+    <select id="getGradeQtyDailyIds" resultType="com.kkl.kklplus.provider.rpt.entity.LongThreeTuple">
+        SELECT
+              a.id          AS "aElement",
+              a.grade_create_date AS "bElement",
+              a.product_category_id AS "cElement"
+        FROM  rpt_grade_qty_daily a
+        WHERE a.system_id = #{systemId}
+            AND a.grade_create_date >= #{startDate}
+            AND <![CDATA[ a.grade_create_date <= #{endDate} ]]>
+        LIMIT 10000
+    </select>
+
+    <update id="updateGradeQty">
+        UPDATE rpt_grade_qty_daily
+        <set>
+            manual_grade_qty = #{manualGradeQty},
+            app_grade_qty = #{appGradeQty},
+            sms_grade_qty = #{smsGradeQty},
+            voice_grade_qty = #{voiceGradeQty},
+            total_qty = #{totalQty}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+</mapper>

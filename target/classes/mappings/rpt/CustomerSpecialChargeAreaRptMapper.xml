@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CustomerSpecialChargeAreaRptMapper">
+    <sql id="RptSpecialChargeColumns">
+        system_id,
+        customer_id,
+        province_id,
+        city_id,
+        county_id,
+        product_category_id,
+        yearmonth,
+        quarter,
+        o1,
+        o2,
+        o3,
+        o4,
+        o5,
+        o6,
+        o7,
+        o8,
+        o9,
+        o10,
+        o11,
+        o12,
+        o13,
+        o14,
+        o15,
+        o16,
+        o17,
+        o18,
+        o19,
+        o20,
+        o21,
+        o22,
+        o23,
+        o24,
+        o25,
+        o26,
+        o27,
+        o28,
+        o29,
+        o30,
+        o31,
+        t1,
+        t2,
+        t3,
+        t4,
+        t5,
+        t6,
+        t7,
+        t8,
+        t9,
+        t10,
+        t11,
+        t12,
+        t13,
+        t14,
+        t15,
+        t16,
+        t17,
+        t18,
+        t19,
+        t20,
+        t21,
+        t22,
+        t23,
+        t24,
+        t25,
+        t26,
+        t27,
+        t28,
+        t29,
+        t30,
+        t31
+    </sql>
+    <sql id="updateSpecialColumns">
+        <if test="o1 != null">o1 = o1 + #{o1},</if>
+        <if test="o2 != null">o2 = o2 + #{o2},</if>
+        <if test="o3 != null">o3 = o3 + #{o3},</if>
+        <if test="o4 != null">o4 = o4 + #{o4},</if>
+        <if test="o5 != null">o5 = o5 + #{o5},</if>
+        <if test="o6 != null">o6 = o6 + #{o6},</if>
+        <if test="o7 != null">o7 = o7 + #{o7},</if>
+        <if test="o8 != null">o8 = o8 + #{o8},</if>
+        <if test="o9 != null">o9 = o9 + #{o9},</if>
+        <if test="o10 != null">o10 = o10 + #{o10},</if>
+        <if test="o11 != null">o11 = o11 + #{o11},</if>
+        <if test="o12 != null">o12 = o12 + #{o12},</if>
+        <if test="o13 != null">o13 = o13 + #{o13},</if>
+        <if test="o14 != null">o14 = o14 + #{o14},</if>
+        <if test="o15 != null">o15 = o15 + #{o15},</if>
+        <if test="o16 != null">o16 = o16 + #{o16},</if>
+        <if test="o17 != null">o17 = o17 + #{o17},</if>
+        <if test="o18 != null">o18 = o18 + #{o18},</if>
+        <if test="o19 != null">o19 = o19 + #{o19},</if>
+        <if test="o20 != null">o20 = o20 + #{o20},</if>
+        <if test="o21 != null">o21 = o21 + #{o21},</if>
+        <if test="o22 != null">o22 = o22 + #{o22},</if>
+        <if test="o23 != null">o23 = o23 + #{o23},</if>
+        <if test="o24 != null">o24 = o24 + #{o24},</if>
+        <if test="o25 != null">o25 = o25 + #{o25},</if>
+        <if test="o26 != null">o26 = o26 + #{o26},</if>
+        <if test="o27 != null">o27 = o27 + #{o27},</if>
+        <if test="o28 != null">o28 = o28 + #{o28},</if>
+        <if test="o29 != null">o29 = o29 + #{o29},</if>
+        <if test="o30 != null">o30 = o30 + #{o30},</if>
+        <if test="o31 != null">o31 = o31 + #{o31},</if>
+        <if test="t1 != null">t1 = t1 + #{t1},</if>
+        <if test="t2 != null">t2 = t2 + #{t2},</if>
+        <if test="t3 != null">t3 = t3 + #{t3},</if>
+        <if test="t4 != null">t4 = t4 + #{t4},</if>
+        <if test="t5 != null">t5 = t5 + #{t5},</if>
+        <if test="t6 != null">t6 = t6 + #{t6},</if>
+        <if test="t7 != null">t7 = t7 + #{t7},</if>
+        <if test="t8 != null">t8 = t8 + #{t8},</if>
+        <if test="t9 != null">t9 = t9 + #{t9},</if>
+        <if test="t10 != null">t10 = t10 + #{t10},</if>
+        <if test="t11 != null">t11 = t11 + #{t11},</if>
+        <if test="t12 != null">t12 = t12 + #{t12},</if>
+        <if test="t13 != null">t13 = t13 + #{t13},</if>
+        <if test="t14 != null">t14 = t14 + #{t14},</if>
+        <if test="t15 != null">t15 = t15 + #{t15},</if>
+        <if test="t16 != null">t16 = t16 + #{t16},</if>
+        <if test="t17 != null">t17 = t17 + #{t17},</if>
+        <if test="t18 != null">t18 = t18 + #{t18},</if>
+        <if test="t19 != null">t19 = t19 + #{t19},</if>
+        <if test="t20 != null">t20 = t20 + #{t20},</if>
+        <if test="t21 != null">t21 = t21 + #{t21},</if>
+        <if test="t21 != null">t22 = t22 + #{t22},</if>
+        <if test="t23 != null">t23 = t23 + #{t23},</if>
+        <if test="t24 != null">t24 = t24 + #{t24},</if>
+        <if test="t25 != null">t25 = t25 + #{t25},</if>
+        <if test="t26 != null">t26 = t26 + #{t26},</if>
+        <if test="t27 != null">t27 = t27 + #{t27},</if>
+        <if test="t28 != null">t28 = t28 + #{t28},</if>
+        <if test="t29 != null">t29 = t29 + #{t29},</if>
+        <if test="t30 != null">t30 = t30 + #{t30},</if>
+        <if test="t31 != null">t31 = t31 + #{t31}</if>
+    </sql>
+
+
+    <select id="getOldSpecialData" parameterType="Map"
+            resultType="com.kkl.kklplus.entity.rpt.RPTSpecialChargeAreaEntity">
+        select soc.area_id as countyId,
+        soc.product_category_id as productCategoryId,
+        soc.customer_id as customerId,
+        sum(sod.engineer_travel_charge) as travelCharge,
+        sum(sod.engineer_other_charge) as otherCharge
+        from  sd_order_condition soc
+        inner join sd_orderdetail sod on sod.order_id = soc.order_id
+        where  soc.close_date >= #{startDate} and <![CDATA[ soc.close_date < #{endDate} ]]>
+        and sod.del_flag = 0
+        and soc.grade_flag > 0
+        group by countyId,productCategoryId,customerId
+        limit 200000
+    </select>
+
+
+<!--    <select id="getKACustomerIdList" resultType="Long">-->
+<!--        SELECT-->
+<!--        mc.customer_id-->
+<!--        FROM-->
+<!--        md_customer_info mc-->
+<!--        WHERE-->
+<!--            mc.vip_flag = 1-->
+<!--        <if test="customerId != null and customerId > 0">-->
+<!--            AND  mc.customer_id = #{customerId}-->
+<!--        </if>-->
+<!--    </select>-->
+
+    <select id="getSpecialChargeAreaList" resultType="com.kkl.kklplus.entity.rpt.RPTSpecialChargeAreaEntity">
+        SELECT
+        <include refid="RptSpecialChargeColumns"/>
+        FROM rpt_customer_area_special_charge rasc
+        WHERE
+        rasc.yearmonth = #{yearMonth}
+        and rasc.system_id =#{systemId}
+        <if test="productCategoryIds.size() != 0">
+            and rasc.product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        <if test="customerId != null and customerId > 0">
+            AND  rasc.customer_id = #{customerId}
+        </if>
+        <if test="quarter != null and quarter != ''.toString()">
+             AND rasc.quarter = #{quarter}
+        </if>
+    </select>
+
+    <insert id="insertSpecialChargeRpt" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO rpt_customer_area_special_charge
+        (
+        <include refid="RptSpecialChargeColumns"/>
+        )
+        VALUES
+        (
+        #{systemId},
+        #{customerId},
+        #{provinceId},
+        #{cityId},
+        #{countyId},
+        #{productCategoryId},
+        #{yearmonth},
+        #{quarter},
+        #{o1},
+        #{o2},
+        #{o3},
+        #{o4},
+        #{o5},
+        #{o6},
+        #{o7},
+        #{o8},
+        #{o9},
+        #{o10},
+        #{o11},
+        #{o12},
+        #{o13},
+        #{o14},
+        #{o15},
+        #{o16},
+        #{o17},
+        #{o18},
+        #{o19},
+        #{o20},
+        #{o21},
+        #{o22},
+        #{o23},
+        #{o24},
+        #{o25},
+        #{o26},
+        #{o27},
+        #{o28},
+        #{o29},
+        #{o30},
+        #{o31},
+        #{t1},
+        #{t2},
+        #{t3},
+        #{t4},
+        #{t5},
+        #{t6},
+        #{t7},
+        #{t8},
+        #{t9},
+        #{t10},
+        #{t11},
+        #{t12},
+        #{t13},
+        #{t14},
+        #{t15},
+        #{t16},
+        #{t17},
+        #{t18},
+        #{t19},
+        #{t20},
+        #{t21},
+        #{t22},
+        #{t23},
+        #{t24},
+        #{t25},
+        #{t26},
+        #{t27},
+        #{t28},
+        #{t29},
+        #{t30},
+        #{t31}
+        )
+    </insert>
+
+    <update id="updateSpecialChargeRpt" parameterType="com.kkl.kklplus.entity.rpt.RPTSpecialChargeAreaEntity">
+        UPDATE
+        rpt_customer_area_special_charge
+        SET
+        <include refid="updateSpecialColumns"/>
+        WHERE
+        system_id = #{systemId}
+        and id =#{id}
+    </update>
+
+    <delete id="deleteSpecialChargeRpt">
+        DELETE FROM rpt_customer_area_special_charge
+        WHERE system_id = #{systemId}
+        AND yearmonth = #{yearmonth}
+    </delete>
+
+    <select id="getCountyIds" resultType="java.util.Map">
+        SELECT id AS "id",county_id AS "countyId",product_category_id AS "productCategoryId",customer_id AS "customerId"
+        FROM rpt_customer_area_special_charge
+        WHERE yearmonth = #{yearMonth}
+        AND system_id = #{systemId}
+    </select>
+
+    <select id="hasReportData" resultType="Integer">
+        SELECT
+        COUNT(0)
+        FROM rpt_customer_area_special_charge rasc
+        <where>
+            rasc.yearmonth = #{yearMonth}
+            and rasc.system_id = #{systemId}
+            <if test="productCategoryIds.size() != 0">
+                and rasc.product_category_id in
+                <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                         separator="," close=")">
+                    #{productCategoryIds}
+                </foreach>
+            </if>
+            <if test="customerId != null and customerId > 0">
+              AND  rasc.customer_id = #{customerId}
+            </if>
+            <if test="quarter != null and quarter != ''.toString()">
+                AND rasc.quarter = #{quarter}
+            </if>
+        </where>
+    </select>
+
+</mapper>

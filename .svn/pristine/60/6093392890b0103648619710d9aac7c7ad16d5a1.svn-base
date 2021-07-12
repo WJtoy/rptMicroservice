@@ -1,0 +1,544 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.KeFuCompleteTimeRptMapper">
+    <select id="getOrderCreatedData" resultType="com.kkl.kklplus.provider.rpt.entity.KeFuCompleteTimeRptEntity">
+        SELECT
+        order_id,
+        system_id,
+        province_id,
+        city_id,
+        county_id,
+        product_category_id,
+        customer_id,
+        kefu_id,
+        order_service_type,
+        order_create_date,
+        day_index,
+        quarter
+        FROM
+        rpt_created_order
+        WHERE
+        system_id = #{systemId}
+        AND order_create_date >= #{beginDate}
+        AND <![CDATA[ order_create_date <= #{endDate}]]>
+        AND quarter = #{quarter}
+        LIMIT 80000
+    </select>
+
+    <select id="getOrderCloseData" resultType="com.kkl.kklplus.provider.rpt.entity.KeFuCompleteTimeRptEntity">
+        SELECT
+        order_id,
+        kefu_id,
+        province_id,
+        city_id,
+        county_id,
+        service_point_id,
+        system_id,
+        create_date AS "orderCreateDate",
+        close_date AS "orderCloseDate",
+        arrival_date AS "orderArrivalDate"
+        FROM
+        rpt_graded_order
+        WHERE
+        system_id = #{systemId}
+        AND close_date >= #{beginDate}
+        AND <![CDATA[ close_date <= #{endDate}]]>
+        AND quarter = #{quarter}
+        LIMIT 80000
+    </select>
+    <select id="getOrderCancelledData" resultType="com.kkl.kklplus.provider.rpt.entity.KeFuCompleteTimeRptEntity">
+        SELECT
+        order_id,
+        kefu_id,
+        province_id,
+        city_id,
+        county_id,
+        service_point_id,
+        status,
+        system_id,
+        order_create_date,
+        order_close_date
+        FROM
+        rpt_cancelled_order_daily
+        WHERE
+         system_id = #{systemId}
+        AND order_close_date >= #{beginDate}
+        AND <![CDATA[ order_close_date <= #{endDate}]]>
+        AND quarter = #{quarter}
+        LIMIT 80000
+    </select>
+    <select id="getPlanTypeData" resultType="com.kkl.kklplus.provider.rpt.entity.KeFuCompleteTimeRptEntity">
+        SELECT sos.order_id,sos.plan_type,sos.servicepoint_id AS "servicePointId"
+        FROM sd_order_servicepoint sos
+        WHERE sos.create_date >= #{beginDate}
+        AND <![CDATA[ sos.create_date <= #{endDate}]]>
+        AND sos.is_current = 1
+        LIMIT #{beginLimit},#{endLimit}
+    </select>
+
+    <select id="getComplainInformation" resultType="com.kkl.kklplus.provider.rpt.entity.KeFuCompleteTimeRptEntity">
+        SELECT soc.order_id AS 'orderId',COUNT(0) AS complainTime
+        FROM sd_order_complain soc
+        WHERE soc.complain_date >= #{beginDate}
+        AND <![CDATA[ soc.complain_date <= #{endDate}]]>
+        GROUP BY orderId
+        LIMIT 20000
+    </select>
+
+    <insert id="insertOrderCreatedData" parameterType="java.util.List">
+        INSERT INTO rpt_kefu_complete_time(
+        order_id,
+        system_id,
+        province_id,
+        city_id,
+        county_id,
+        product_category_id,
+        customer_id,
+        kefu_id,
+        order_service_type,
+        status,
+        order_create_date,
+        day_index,
+        quarter
+        )VALUES
+        <foreach collection="entityList" item="entity" separator=",">(
+            #{entity.orderId},
+            #{entity.systemId},
+            #{entity.provinceId},
+            #{entity.cityId},
+            #{entity.countyId},
+            #{entity.productCategoryId},
+            #{entity.customerId},
+            #{entity.keFuId},
+            #{entity.orderServiceType},
+            #{entity.status},
+            #{entity.orderCreateDate},
+            #{entity.dayIndex},
+            #{entity.quarter})
+        </foreach>
+    </insert>
+
+    <update id="updateOrderCloseData" parameterType="com.kkl.kklplus.provider.rpt.entity.KeFuCompleteTimeRptEntity">
+        UPDATE rpt_kefu_complete_time
+        SET
+        kefu_id = #{keFuId},
+        province_id = #{provinceId},
+        city_id = #{cityId},
+        county_id = #{countyId},
+        service_point_id = #{servicePointId},
+        order_close_date = #{orderCloseDate},
+        status = #{status},
+        order_process_time = #{orderProcessTime},
+        efficiency_flag = #{efficiencyFlag}
+        WHERE order_id = #{orderId}
+        and system_id = #{systemId}
+    </update>
+
+    <update id="updateOrderCancelledData" parameterType="com.kkl.kklplus.provider.rpt.entity.KeFuCompleteTimeRptEntity">
+        UPDATE rpt_kefu_complete_time
+        SET
+        kefu_id = #{keFuId},
+        province_id = #{provinceId},
+        city_id = #{cityId},
+        county_id = #{countyId},
+        service_point_id = #{servicePointId},
+        order_close_date = #{orderCloseDate},
+        status = #{status},
+        order_process_time = #{orderProcessTime},
+        efficiency_flag = #{efficiencyFlag}
+        WHERE order_id = #{orderId}
+        and  system_id = #{systemId}
+    </update>
+
+
+    <select id="getKeFuCompleteTimeData" resultType="com.kkl.kklplus.entity.rpt.RPTKeFuCompleteTimeEntity">
+        SELECT day_index AS 'dayIndex',efficiency_flag AS 'efficiencyFlag',COUNT(0) AS efficiencyFlagSum
+        From rpt_kefu_complete_time rkc
+        <if test="salesId != null and salesId != 0">
+        INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = rkc.customer_id and mcs.system_id = #{systemId}
+        </if>
+        WHERE rkc.order_create_date >= #{beginDate}
+        AND <![CDATA[ rkc.order_create_date <= #{endDate}]]>
+        and rkc.system_id = #{systemId}
+        <if test="customerId != null">
+            and rkc.customer_id = #{customerId}
+        </if>
+        <if test="keFuIds.size() != 0">
+            <choose>
+                <when test="keFuIds.size() == 1">
+                    and rkc.kefu_id  = #{keFuIds[0]}
+                </when>
+                <otherwise>
+                    and rkc.kefu_id  in
+                    <foreach item="keFuIds" index="index" collection="keFuIds" open="("
+                             separator="," close=")">
+                        #{keFuIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="areaType == 2">
+            and rkc.province_id=#{areaId}
+        </if>
+        <if test="areaType == 3">
+            and rkc.city_id=#{areaId}
+        </if>
+        <if test="areaType == 4">
+            and rkc.area_id=#{areaId}
+        </if>
+        <if test="servicePointId != null and servicePointId > 0">
+            and rkc.service_point_id = #{servicePointId}
+        </if>
+        <if test="orderServiceType != null">
+            and rkc.order_service_type = #{orderServiceType}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and rkc.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and rkc.product_category_id in
+                    <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{productCategoryIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="quarter != null">
+            and rkc.quarter = #{quarter}
+        </if>
+        <if test="salesId != null and salesId != 0">
+            AND mcs.sales_id = #{salesId}
+        </if>
+        GROUP BY dayIndex,efficiencyFlag
+        ORDER BY dayIndex
+        LIMIT 100000
+    </select>
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        From rpt_kefu_complete_time rkc
+        <if test="salesId != null and salesId != 0">
+          INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = rkc.customer_id  and mcs.system_id = #{systemId}
+        </if>
+        WHERE rkc.order_create_date >= #{beginDate}
+        AND <![CDATA[ rkc.order_create_date <= #{endDate}]]>
+        AND rkc.system_id = #{systemId}
+        <if test="customerId != null">
+            and rkc.customer_id = #{customerId}
+        </if>
+        <if test="keFuIds.size() != 0">
+            <choose>
+                <when test="keFuIds.size() == 1">
+                    and rkc.kefu_id  = #{keFuIds[0]}
+                </when>
+                <otherwise>
+                    and rkc.kefu_id  in
+                    <foreach item="keFuIds" index="index" collection="keFuIds" open="("
+                             separator="," close=")">
+                        #{keFuIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="areaType == 2">
+            and rkc.province_id=#{areaId}
+        </if>
+        <if test="areaType == 3">
+            and rkc.city_id=#{areaId}
+        </if>
+        <if test="areaType == 4">
+            and rkc.area_id=#{areaId}
+        </if>
+        <if test="servicePointId != null and servicePointId > 0">
+            and rkc.service_point_id = #{servicePointId}
+        </if>
+        <if test="orderServiceType != null">
+            and rkc.order_service_type = #{orderServiceType}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and rkc.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and rkc.product_category_id in
+                    <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{productCategoryIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+
+        <if test="quarter != null">
+            and rkc.quarter = #{quarter}
+        </if>
+        <if test="salesId != null and salesId != 0">
+            AND mcs.sales_id = #{salesId}
+        </if>
+    </select>
+
+
+    <delete id="deleteOrderCreatedData">
+        DELETE FROM rpt_kefu_complete_time
+        WHERE   system_id = #{systemId}
+        AND order_create_date >= #{beginDate}
+        AND <![CDATA[ order_create_date <= #{endDate}]]>
+        AND quarter = #{quarter}
+    </delete>
+
+    <delete id="deleteComplainData">
+        UPDATE rpt_kefu_complete_time
+        SET
+        complain_flag = 0
+        WHERE  system_id = #{systemId}
+        AND order_create_date >= #{beginDate}
+        AND <![CDATA[ order_create_date <= #{endDate}]]>
+        AND quarter = #{quarter}
+    </delete>
+    <select id="getNeedUpdateRptRecords" resultType="com.kkl.kklplus.provider.rpt.entity.LongTwoTuple">
+        SELECT
+        a.id AS "aElement",
+        a.order_id AS "bElement"
+        FROM rpt_kefu_complete_time a
+        <where>
+            system_id = #{systemId}
+            AND order_create_date >= #{beginDate}
+            AND <![CDATA[ order_create_date <= #{endDate}]]>
+            AND quarter = #{quarter}
+        </where>
+        LIMIT 100000
+    </select>
+
+    <select id="getUpdateForRptServicePointId" resultType="com.kkl.kklplus.provider.rpt.entity.KeFuCompleteTimeRptEntity">
+        SELECT
+        soc.order_id,
+        soc.servicepoint_id AS "servicePointId"
+        FROM sd_order_condition soc
+        <where>
+            <if test="quarter != null and quarter != ''.toString()">
+                soc.quarter = #{quarter}
+            </if>
+            AND soc.create_date >= #{beginDate}
+            <![CDATA[
+            AND soc.create_date < #{endDate}]]>
+        </where>
+        LIMIT 20000
+    </select>
+
+
+
+    <update id="updateRPtPlanType" parameterType="com.kkl.kklplus.provider.rpt.entity.KeFuCompleteTimeRptEntity">
+        UPDATE rpt_kefu_complete_time
+        SET
+        plan_type = #{planType},
+        service_point_id = #{servicePointId}
+        WHERE order_id = #{orderId}
+        and  system_id = #{systemId}
+    </update>
+
+    <update id="updateComplainInformation" parameterType="com.kkl.kklplus.provider.rpt.entity.KeFuCompleteTimeRptEntity">
+        UPDATE rpt_kefu_complete_time
+        SET
+        complain_flag =  complain_flag + #{complainTime}
+        where order_id = #{orderId}
+         and  system_id = #{systemId}
+    </update>
+
+
+
+    <update id="updateOrderInformation" parameterType="com.kkl.kklplus.provider.rpt.entity.KeFuCompleteTimeRptEntity">
+        UPDATE rpt_kefu_complete_time
+        <trim prefix="set" suffixOverrides=",">
+
+        <if test="keFuId != null">
+            kefu_id = #{keFuId},
+        </if>
+
+        <if test="provinceId != null">
+            province_id = #{provinceId},
+        </if>
+
+        <if test="cityId != null">
+            city_id = #{cityId},
+        </if>
+
+        <if test="countyId != null">
+            county_id = #{countyId},
+        </if>
+
+        <if test="servicePointId != null and servicePointId != 0">
+            service_point_id = #{servicePointId},
+        </if>
+
+        <if test="orderCloseDate != null">
+            order_close_date = #{orderCloseDate},
+        </if>
+
+        <if test="status != null">
+            status = #{status},
+        </if>
+
+        <if test="orderProcessTime != null and orderProcessTime != 0">
+            order_process_time = #{orderProcessTime},
+        </if>
+
+        <if test="efficiencyFlag != null and efficiencyFlag != 0">
+            efficiency_flag = #{efficiencyFlag},
+        </if>
+
+        <if test="planType != null and planType != 0">
+            plan_type = #{planType},
+        </if>
+
+        <if test="complainTime != null and complainTime != 0">
+            complain_flag =  complain_flag + #{complainTime},
+        </if>
+
+        </trim>
+        where order_id = #{orderId}
+        and  system_id = #{systemId}
+    </update>
+
+    <select id="getKeFuCompleteTimeDataNew" resultType="com.kkl.kklplus.entity.rpt.RPTKeFuCompleteTimeEntity">
+        SELECT day_index AS 'dayIndex',efficiency_flag AS 'efficiencyFlag',COUNT(0) AS efficiencyFlagSum
+        From rpt_kefu_complete_time rkc
+        <if test="salesId != null and salesId != 0">
+            INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = rkc.customer_id and mcs.system_id = #{systemId}
+        </if>
+        WHERE
+        rkc.efficiency_flag <![CDATA[<]]> 50
+        AND rkc.order_create_date >= #{beginDate}
+        AND <![CDATA[ rkc.order_create_date <= #{endDate}]]>
+        and rkc.system_id = #{systemId}
+        <if test="customerId != null">
+            and rkc.customer_id = #{customerId}
+        </if>
+        <if test="keFuIds.size() != 0">
+            <choose>
+                <when test="keFuIds.size() == 1">
+                    and rkc.kefu_id  = #{keFuIds[0]}
+                </when>
+                <otherwise>
+                    and rkc.kefu_id  in
+                    <foreach item="keFuIds" index="index" collection="keFuIds" open="("
+                             separator="," close=")">
+                        #{keFuIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="areaType == 2">
+            and rkc.province_id=#{areaId}
+        </if>
+        <if test="areaType == 3">
+            and rkc.city_id=#{areaId}
+        </if>
+        <if test="areaType == 4">
+            and rkc.area_id=#{areaId}
+        </if>
+        <if test="servicePointId != null and servicePointId > 0">
+            and rkc.service_point_id = #{servicePointId}
+        </if>
+        <if test="orderServiceType != null">
+            and rkc.order_service_type = #{orderServiceType}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and rkc.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and rkc.product_category_id in
+                    <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{productCategoryIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="quarter != null">
+            and rkc.quarter = #{quarter}
+        </if>
+        <if test="salesId != null and salesId != 0">
+            AND mcs.sales_id = #{salesId}
+        </if>
+        GROUP BY dayIndex,efficiencyFlag
+        ORDER BY dayIndex
+        LIMIT 100000
+    </select>
+
+
+    <select id="hasReportNewData" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        From rpt_kefu_complete_time rkc
+        <if test="salesId != null and salesId != 0">
+            INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = rkc.customer_id  and mcs.system_id = #{systemId}
+        </if>
+        WHERE
+        rkc.efficiency_flag <![CDATA[<]]> 50
+        AND rkc.order_create_date >= #{beginDate}
+        AND <![CDATA[ rkc.order_create_date <= #{endDate}]]>
+        AND rkc.system_id = #{systemId}
+        <if test="customerId != null">
+            and rkc.customer_id = #{customerId}
+        </if>
+        <if test="keFuIds.size() != 0">
+            <choose>
+                <when test="keFuIds.size() == 1">
+                    and rkc.kefu_id  = #{keFuIds[0]}
+                </when>
+                <otherwise>
+                    and rkc.kefu_id  in
+                    <foreach item="keFuIds" index="index" collection="keFuIds" open="("
+                             separator="," close=")">
+                        #{keFuIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="areaType == 2">
+            and rkc.province_id=#{areaId}
+        </if>
+        <if test="areaType == 3">
+            and rkc.city_id=#{areaId}
+        </if>
+        <if test="areaType == 4">
+            and rkc.area_id=#{areaId}
+        </if>
+        <if test="servicePointId != null and servicePointId > 0">
+            and rkc.service_point_id = #{servicePointId}
+        </if>
+        <if test="orderServiceType != null">
+            and rkc.order_service_type = #{orderServiceType}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and rkc.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and rkc.product_category_id in
+                    <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{productCategoryIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+
+        <if test="quarter != null">
+            and rkc.quarter = #{quarter}
+        </if>
+        <if test="salesId != null and salesId != 0">
+            AND mcs.sales_id = #{salesId}
+        </if>
+    </select>
+
+</mapper>

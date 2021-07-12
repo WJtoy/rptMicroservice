@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.DispatchListRptMapper">
+    <select id="getPlanInformationSum" resultType="com.kkl.kklplus.entity.rpt.RPTDispatchOrderEntity">
+        SELECT  day_index AS 'dayIndex',plan_type AS 'planType',COUNT(0) AS planTypeSum
+        From rpt_kefu_complete_time
+        WHERE order_create_date >= #{beginDate}
+        AND <![CDATA[ order_create_date <= #{endDate}]]>
+        AND  efficiency_flag &lt; '50'
+        AND  system_id = #{systemId}
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    AND product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    AND product_category_id IN
+                    <foreach item="item" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{item}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="quarter != null">
+            AND quarter = #{quarter}
+        </if>
+        GROUP BY dayIndex,planType
+        LIMIT 10000
+    </select>
+    <select id="getCancelOrderSum" resultType="com.kkl.kklplus.entity.rpt.RPTDispatchOrderEntity">
+        SELECT  day_index AS 'dayIndex',COUNT(0) AS cancel
+        From rpt_kefu_complete_time
+        WHERE order_create_date >= #{beginDate}
+        AND <![CDATA[ order_create_date <= #{endDate}]]>
+        AND  efficiency_flag > '40'
+        AND  system_id = #{systemId}
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    AND product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    AND product_category_id IN
+                    <foreach item="item" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{item}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="quarter != null">
+            AND quarter = #{quarter}
+        </if>
+        GROUP BY dayIndex
+        LIMIT 10000
+    </select>
+
+    <select id="getTheTotalOrder" resultType="com.kkl.kklplus.entity.rpt.RPTDispatchOrderEntity">
+        SELECT  day_index AS 'dayIndex',COUNT(0) AS theTotalOrder
+        From rpt_kefu_complete_time
+        WHERE order_create_date >= #{beginDate}
+        AND <![CDATA[ order_create_date <= #{endDate}]]>
+        AND  system_id = #{systemId}
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    AND product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    AND product_category_id IN
+                    <foreach item="item" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{item}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="quarter != null">
+            AND quarter = #{quarter}
+        </if>
+        GROUP BY dayIndex
+        LIMIT 10000
+    </select>
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM
+        rpt_kefu_complete_time
+        WHERE order_create_date >= #{beginDate}
+        AND <![CDATA[ order_create_date <= #{endDate}]]>
+        AND  system_id = #{systemId}
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    AND product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    AND product_category_id IN
+                    <foreach item="item" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{item}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        <if test="quarter != null">
+            AND quarter = #{quarter}
+        </if>
+    </select>
+</mapper>

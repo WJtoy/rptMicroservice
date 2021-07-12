@@ -1,0 +1,71 @@
+syntax="proto3";
+
+option java_package = "com.kkl.kklplus.provider.rpt.entity";
+option java_outer_classname = "OrderPbDto";
+
+//订单项目
+message OrderItem{
+    //项目序号
+    int32 itemNo = 1;
+    //产品ID
+    int64 productId = 2;
+    //B2B产品编码
+    string b2bProductCode = 3;
+    //品牌
+    string brand = 4;
+    //型号/规格
+    string productSpec = 5;
+    //数量
+    int32 qty = 6;
+    //服务项目
+    int64 serviceTypeId = 7;
+    //标准价格
+    double standPrice = 8;
+    //优惠价格
+    double discountPrice = 9;
+    //预估服务费用
+    double charge = 10;
+    //产品冻结费用
+    double blockedCharge = 11;
+    //物流公司编码（同快递100）
+    string expressCompany = 12;
+    //物流单号
+    string expressNo = 13;
+    //备注
+    string remarks = 14;
+    //图片
+    repeated string pics = 15;
+    //产品分类
+    NameValue productType = 16;
+    //产品二级分类
+    NameValue productTypeItem = 17;
+}
+
+message NameValue{
+    string name = 1;
+    string value = 2;
+}
+
+//订单项目列表
+message OrderItemList {
+    //订单项目列表
+    repeated OrderItem item = 1;
+}
+
+//订单其他信息
+message OrderInfo {
+    //预计到货时间（字符串）
+    string estimatedReceiveDate = 1;
+    //购买时间 (时间戳)
+    int64 buyDate = 2;
+    //期望上门日期 (字符串)
+    string expectServiceTime = 3;
+    //网点编号
+    string siteCode = 4;
+    //网点名称
+    string siteName = 5;
+    //师傅名称
+    string engineerName = 6;
+    //师傅手机
+    string engineerMobile = 7;
+}

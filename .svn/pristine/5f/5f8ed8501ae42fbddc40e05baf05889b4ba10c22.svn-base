@@ -1,0 +1,631 @@
+server:
+  port: 8982
+spring:
+  profiles: dev
+  application:
+    name: provider-rpt
+  redis:
+    database: 0
+    host: 192.168.1.162
+    port: 6379
+    password: 8677505
+    timeout: 6000
+    pool:
+      max-active: 1000
+      max-wait: -1
+      max-idle: 100
+      min-idle: 0
+  rabbitmq:
+    host: 192.168.1.162
+    port: 5672
+    username: admin
+    password: admin
+    publisher-confirms: true
+    cache:
+      connection:
+        mode: channel
+    listener:
+      simple:
+        auto-startup: true
+        acknowledge-mode: manual
+        concurrency: 10
+        max-concurrency: 15
+        prefetch: 1
+    template:
+      retry:
+        enabled: true
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+    default-property-inclusion: non_null
+sharding:
+  jdbc:
+    datasource:
+      names: wm1,wm2,ws1,ws2,rm1,rm2,rs1,rs2
+      wm1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        jdbcUrl: jdbc:mysql://119.23.43.232:8355/kkl20211?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
+        username: root
+        password: kkl.Test123
+        minimumIdle: 1
+        maximumPoolSize: 5
+      wm2:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        jdbcUrl: jdbc:mysql://119.23.43.232:8355/kkl20212?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
+        username: root
+        password: kkl.Test123
+        minimumIdle: 1
+        maximumPoolSize: 5
+      ws1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        jdbcUrl: jdbc:mysql://119.23.43.232:8355/kkl20211?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
+        username: root
+        password: kkl.Test123
+        minimumIdle: 1
+        maximumPoolSize: 5
+      ws2:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        jdbcUrl: jdbc:mysql://119.23.43.232:8355/kkl20212?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
+        username: root
+        password: kkl.Test123
+        minimumIdle: 1
+        maximumPoolSize: 5
+      rm1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        jdbcUrl: jdbc:mysql://119.23.43.232:8355/kkl_reporting_service_20211?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
+        username: root
+        password: kkl.Test123
+        minimumIdle: 1
+        maximumPoolSize: 5
+      rm2:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        jdbcUrl: jdbc:mysql://119.23.43.232:8355/kkl_reporting_service_20212?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
+        username: root
+        password: kkl.Test123
+        minimumIdle: 1
+        maximumPoolSize: 5
+      rs1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        jdbcUrl: jdbc:mysql://119.23.43.232:8355/kkl_reporting_service_20211?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
+        username: root
+        password: kkl.Test123
+        minimumIdle: 1
+        maximumPoolSize: 5
+      rs2:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        jdbcUrl: jdbc:mysql://119.23.43.232:8355/kkl_reporting_service_20212?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
+        username: root
+        password: kkl.Test123
+        minimumIdle: 1
+        maximumPoolSize: 5
+      rs3:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        jdbcUrl: jdbc:mysql://119.23.43.232:8355/kkl_reporting_service_20193?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
+        username: root
+        password: kkl.Test123
+        minimumIdle: 1
+        maximumPoolSize: 5
+    config:
+      sharding:
+        master-slave-rules:
+          web20211:
+            master-data-source-name: wm1
+            slave-data-source-names: ws1
+          web20212:
+            master-data-source-name: wm2
+            slave-data-source-names: ws2
+          rpt20211:
+            master-data-source-name: rm1
+            slave-data-source-names: rs1
+          rpt20212:
+            master-data-source-name: rm2
+            slave-data-source-names: rs2
+        tables:
+          sd_order:
+            actual-data-nodes: web2021${1..2}.sd_order
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          sd_order_head:
+            actual-data-nodes: web2021${1..2}.sd_order_head
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          sd_order_condition:
+            actual-data-nodes: web2021${1..2}.sd_order_condition
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          sd_order_status:
+            actual-data-nodes: web2021${1..2}.sd_order_status
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+
+          sd_order_fee:
+            actual-data-nodes: web2021${1..2}.sd_order_fee
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          sd_orderdetail:
+            actual-data-nodes: web2021${1..2}.sd_orderdetail
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          sd_order_item_complete:
+            actual-data-nodes: web2021${1..2}.sd_order_item_complete
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          md_customer_sales:
+            actual-data-nodes: web2021${1..2}.md_customer_sales
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          sys_user_sub:
+            actual-data-nodes: web2021${1..2}.sys_user_sub
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          fi_customercharge:
+            actual-data-nodes: web2021${1..2}.fi_customercharge
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          fi_customercharge_condition:
+            actual-data-nodes: web2021${1..2}.fi_customercharge_condition
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          fi_customercurrency:
+            actual-data-nodes: web2021${1..2}.fi_customercurrency
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          fi_engineercharge:
+            actual-data-nodes: web2021${1..2}.fi_engineercharge
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          fi_engineercharge_condition:
+            actual-data-nodes: web2021${1..2}.fi_engineercharge_condition
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          fi_engineercharge_master:
+            actual-data-nodes: web2021${1..2}.fi_engineercharge_master
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          fi_engineercharge_master_condition:
+            actual-data-nodes: web2021${1..2}.fi_engineercharge_master_condition
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          cp_order_praise:
+            actual-data-nodes: web2021${1..2}.cp_order_praise
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          rpt_sys_area:
+            actual-data-nodes: rpt20211.sys_area
+          sys_user:
+            actual-data-nodes: web2021${1..2}.sys_user
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          sys_user_role:
+            actual-data-nodes: web20211.sys_user_role
+          md_servicepoint_area:
+            actual-data-nodes: web2021${1..2}.md_servicepoint_area
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          md_servicepoint_area_1:
+            actual-data-nodes: rpt20211.md_servicepoint_area
+          rpt_export_task:
+            actual-data-nodes: rpt20211.rpt_export_task
+          rpt_area_special_charge:
+            actual-data-nodes: rpt20211.rpt_area_special_charge
+          rpt_travel_charge_rank:
+            actual-data-nodes: rpt20211.rpt_travel_charge_rank
+          rpt_grade_qty_daily:
+            actual-data-nodes: rpt20211.rpt_grade_qty_daily
+          rpt_crush_travel_area:
+            actual-data-nodes: rpt20211.rpt_crush_travel_area
+          rpt_order_audit_abnormal:
+            actual-data-nodes: rpt20211.rpt_order_audit_abnormal
+          rpt_customer_performance_monthly:
+            actual-data-nodes: rpt20211.rpt_customer_performance_monthly
+          rpt_cancelled_order:
+            actual-data-nodes: rpt2021${1..2}.rpt_cancelled_order
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+          rpt_completed_order:
+            actual-data-nodes: rpt2021${1..2}.rpt_completed_order
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+          rpt_customer_revenue:
+            actual-data-nodes: rpt2021${1..2}.rpt_customer_revenue
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+          rpt_order_complain:
+            actual-data-nodes: rpt2021${1..2}.rpt_order_complain
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+          rpt_customer_write_off:
+            actual-data-nodes: rpt2021${1..2}.rpt_customer_write_off
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+          rpt_customer_order_qty_monthly:
+            actual-data-nodes: rpt20211.rpt_customer_order_qty_monthly
+          rpt_customer_finance_monthly:
+            actual-data-nodes: rpt20211.rpt_customer_finance_monthly
+          sd_order_servicepoint_fee:
+            actual-data-nodes: web2021${1..2}.sd_order_servicepoint_fee
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          rpt_graded_order:
+            actual-data-nodes: rpt2021${1..2}.rpt_graded_order
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+          rpt_rebuild_middle_table_task:
+            actual-data-nodes: rpt20211.rpt_rebuild_middle_table_task
+          rpt_servicepoint_completed_order:
+            actual-data-nodes: rpt2021${1..2}.rpt_servicepoint_completed_order
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+
+          rpt_servicepoint_write_off:
+            actual-data-nodes: rpt2021${1..2}.rpt_servicepoint_write_off
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+
+          cc_order_reminder:
+            actual-data-nodes: web2021${1..2}.cc_order_reminder
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          cc_order_reminder_item:
+            actual-data-nodes: web2021${1..2}.cc_order_reminder_item
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          rpt_customer_reminder_daily:
+            actual-data-nodes: rpt2021${1..2}.rpt_customer_reminder_daily
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+
+          rpt_created_order:
+            actual-data-nodes: rpt2021${1..2}.rpt_created_order
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+
+          rpt_md_customer_sales:
+            actual-data-nodes: rpt2021${1..2}.md_customer_sales
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+          rpt_sys_user_sub:
+            actual-data-nodes: rpt2021${1..2}.sys_user_sub
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+          rpt_md_customer_info_1:
+            actual-data-nodes: rpt2021${1..2}.md_customer_info
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+
+          rpt_sys_user_region_1:
+            actual-data-nodes: rpt2021${1..2}.sys_user_region
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+
+          rpt_sys_user_customer:
+            actual-data-nodes: rpt2021${1..2}.sys_user_customer
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+
+          rpt_cancelled_order_daily:
+            actual-data-nodes: rpt2021${1..2}.rpt_cancelled_order_daily
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+
+          fi_servicepoint_payable_monthly_detail:
+            actual-data-nodes: web20211.fi_servicepoint_payable_monthly_detail
+          fi_servicepoint_invoice_monthly_detail:
+            actual-data-nodes: web20211.fi_servicepoint_invoice_monthly_detail
+          rpt_servicepoint_balance_monthly_detail:
+            actual-data-nodes: web20211.rpt_servicepoint_balance_monthly_detail
+
+          sd_order_grade:
+            actual-data-nodes: web2021${1..2}.sd_order_grade
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+
+
+          md_customer_sales_1:
+            actual-data-nodes: web20211.md_customer_sales
+          rpt_md_customer_sales_20211:
+            actual-data-nodes: rpt20211.md_customer_sales
+          rpt_md_customer_sales_20212:
+            actual-data-nodes: rpt20212.md_customer_sales
+
+          md_customer_info_1:
+            actual-data-nodes: web20211.md_customer_info
+          rpt_md_customer_info_20211:
+            actual-data-nodes: rpt20211.md_customer_info
+          rpt_md_customer_info_20212:
+            actual-data-nodes: rpt20212.md_customer_info
+
+          sys_user_region_1:
+            actual-data-nodes: web20211.sys_user_region
+          rpt_sys_user_region_20211:
+            actual-data-nodes: rpt20211.sys_user_region
+          rpt_sys_user_region_20212:
+            actual-data-nodes: rpt20212.sys_user_region
+
+          sys_user_customer_1:
+            actual-data-nodes: web20211.sys_user_customer
+          rpt_sys_user_customer_20211:
+            actual-data-nodes: rpt20211.sys_user_customer
+          rpt_sys_user_customer_20212:
+            actual-data-nodes: rpt20212.sys_user_customer
+
+          sd_order_crush:
+            actual-data-nodes: web2021${1..2}.sd_order_crush
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          sd_order_complain:
+            actual-data-nodes: web2021${1..2}.sd_order_complain
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          rpt_kefu_complete_time:
+            actual-data-nodes: rpt2021${1..2}.rpt_kefu_complete_time
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+          rpt_servicepoint_charge:
+            actual-data-nodes: rpt2021${1..2}.rpt_servicepoint_charge
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+          rpt_order_customer_time:
+            actual-data-nodes: rpt2021${1..2}.rpt_order_customer_time
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+          fi_servicepoint_withdraw:
+            actual-data-nodes: web2021${1..2}.fi_servicepoint_withdraw
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          rpt_kefu_daily:
+            actual-data-nodes: web2021${1..2}.rpt_kefu_daily
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          sd_abnormal_form:
+            actual-data-nodes: web2021${1..2}.sd_abnormal_form
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          sd_materialmaster:
+            actual-data-nodes: web2021${1..2}.sd_materialmaster
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          sd_materialitem:
+            actual-data-nodes: web2021${1..2}.sd_materialitem
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          sd_material_return:
+            actual-data-nodes: web2021${1..2}.sd_material_return
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: web${quarter}
+          rpt_customer_area_special_charge:
+            actual-data-nodes: rpt2021${1..2}.rpt_customer_area_special_charge
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+          rpt_area_crush_qty:
+            actual-data-nodes: rpt2021${1..2}.rpt_area_crush_qty
+            database-strategy:
+              inline:
+                shardingColumn: quarter
+                algorithmExpression: rpt${quarter}
+      props:
+        sql:
+          show: true
+eureka:
+  instance:
+    prefer-ip-address: true
+    metadata-map:
+      zone: dev
+      function: provider-rpt
+  client:
+    serviceUrl:
+      defaultZone: http://dev:dev.123@192.168.1.162:8800/eureka/
+    healthcheck:
+      enabled: true
+feign:
+  hystrix:
+    enabled: true
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 60000
+info:
+  app:
+    name: ${spring.application.name}
+    desc: ProviderRPT服务
+  version: "@project.version@"
+management:
+  security:
+    enabled: false
+    roles: SUPERUSER
+swagger:
+  exclude-path: /actuator/**, /error
+  title: provider-rpt
+  description: 报表服务
+  version: 0.0.1
+  base-package: com.kkl.kklplus.provider.rpt
+mybatis:
+  type-aliases-package: com.kkl.kklplus.entity.rpt
+  mapper-locations: classpath*:/mappings/**/*Mapper.xml
+  configuration:
+    cache-enabled: true
+    map-underscore-to-camel-case: true
+logging:
+  level:
+    org.mybatis: debug
+    com.kkl.kklplus: debug
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+  params: count=countSql
+rpt:
+  systemCode: CW
+  rptQuarterQty: 2
+  rptExcelFileDir:
+    host: http://192.168.1.163:8080/rpt/export
+    uploadDir: /Users/Zhoucy/Workspace
+  goLiveDate: 2021-1-1
+  scheduleEnabled: true
+  jobs:
+    #每月1日3:00:00写rpt_customer_order_qty_monthly、rpt_customer_finance_monthly
+    #writeCustomerChargeSummaryRptJob: "0 0 3 1 * ?"
+    #每月1日3:00:00更新rpt_customer_order_qty_monthly、rpt_customer_finance_monthly
+    #rewriteCustomerChargeSummaryRptJob: "0 0 3 2,3 * ?"
+    rewriteCustomerChargeSummaryRptJob: "0 0 3 1 * ?"
+    #每日3:30:00写rpt_completed_order、rpt_cancelled_order、rpt_customer_write_off
+    writeCustomerChargeRptJob: "0 30 3 * * ?"
+    #每日2:00:00写rpt_graded_order
+    writeGradedOrderRptJob: "0 0 2 * * ?"
+    #每日5:00:00写rpt_customer_reminder_daily
+    writeCustomerReminderRptJob: "0 0 5 * * ?"
+    #每日2:30:00写rpt_created_order
+    writeCreatedOrderRptJob: "0 30 2 * * ?"
+    #每日3:10:00更新rpt_customer_order_qty_monthly、rpt_customer_finance_monthly（更新当月的数据）
+    rewriteCustomerChargeSummaryCurrentMonthRptJob:  "0 10 3 * * ?"
+    #每日4:30:00写rpt_cancelled_order_daily
+    writeCancelledOrderDailyRptJob: "0 30 4 * * ?"
+    #每日4:30:00写rpt_area_special_charge
+    writeSpecialChargeAreaRptJob: "0 45 4 * * ?"
+    #每日4:00:00写rpt_travel_charge_rank
+    writTravelChargeRankRptJob: "0 0 4 * * ?"
+    #每日5:10:00写rpt_kefu_complete_time
+    writeKeFuCompleteTimeRptJob: "0 10 5 * * ?"
+    #每日5:30:00写rpt_order_customer_time
+    writeCustomerOrderTimeRptJob: "0 30 5 * * ?"
+    #每日1:10:00写rpt_sms_qty
+    writeYesterdayMessageRptJob: "0 10 1 * * ?"
+    #每日1:10:00写rpt_customer_revenue
+    writeCustomerRevenueRptJob: "0 30 1 * * ?"
+    #每日0:30:00写rpt_grade_qty_daily
+    gradeQtyDailyRptJob: "0 30 0 * * ?"
+    #每月1日5:20:00写rpt_customer_performance_monthly
+    #writeCustomerPerformanceRptJob: "0 20 5 * * ?"
+    writeCustomerPerformanceRptJob: "0 20 5 1 * ?"
+    #每日2:10:00写rpt_servicepoint_charge
+    WriteServicePointChargeToRptJob: "0 10 2 * * ?"
+    #每日5:25:00更新rpt_customer_performance_monthly（更新当月的数据）
+    writeCustomerPerformanceCurrentMonthRptJob: "0 25 5 * * ?"
+    #每日1:15:00写rpt_order_complain
+    complainRatioDailyRptJob: "0 15 1 * * ?"
+    #每日4:20:00写rpt_order_audit_abnormal
+    writeAbnormalFinancialRptJob: "0 20 4 * * ?"
+    ##每日1:40:00写rpt_servicepoint_qty、rpt_servicepoint_street_qty
+    writeServicePointQtyChartJob: "0 40 1 * * ?"
+    #每日2:40:00写rpt_order_crush_qty
+    writeOrderCrushQtyChartJob: "0 40 2 * * ?"
+    #每日5:40:00写rpt_order_qty_daily
+    writeOrderQtyDailyChartJob: "0 40 5 * * ?"
+    #每日4:50:00写rpt_customer_area_special_charge
+    writeCustomerSpecialChargeAreaRptJob: "0 50 4 * * ?"
+    #每日4:05:00写rpt_area_crush_qty
+    writeCrushAreaRptJob: "0 5 4 * * ?"

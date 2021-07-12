@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CustomerReminderRptMapper">
+    <!-- 查询所有客户的工单数量 -->
+    <select id="getOrderNewQtyList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerReminderEntity">
+        SELECT
+        soc.customer_id     AS "customerId",
+        soc.product_category_id AS "productCategoryId",
+        COUNT(soc.order_id) AS orderNewQty
+        FROM 	sd_order_condition soc
+        WHERE 	soc.quarter = #{quarter}
+        AND soc.create_date >= #{beginDate}
+        AND <![CDATA[ soc.create_date < #{endDate}]]>
+        GROUP BY customerId,productCategoryId
+        LIMIT 20000
+    </select>
+
+    <select id="getReminderQtyList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerReminderEntity">
+        SELECT
+        cor.customer_id     AS "customerId",
+        cor.product_category_id AS "productCategoryId",
+        COUNT(0) AS reminderQty
+        FROM cc_order_reminder_item cori
+        INNER JOIN cc_order_reminder cor ON cor.id = cori.reminder_id
+        WHERE
+        cori.create_at BETWEEN #{beginDate} AND #{endDate}
+        GROUP BY customerId,productCategoryId
+        LIMIT 10000
+    </select>
+
+    <select id="getReminderFirstQtyList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerReminderEntity">
+        SELECT
+        cor.customer_id     AS "customerId",
+        cor.product_category_id AS "productCategoryId",
+        COUNT(0) AS reminderFirstQty
+        FROM cc_order_reminder_item cori
+        INNER JOIN cc_order_reminder cor ON cor.id = cori.reminder_id
+        WHERE cori.item_no = 1
+        AND cori.create_at BETWEEN #{beginDate} AND #{endDate}
+        GROUP BY customerId,productCategoryId
+        LIMIT 10000
+    </select>
+
+
+    <select id="getReminderMultipleQtyList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerReminderEntity">
+        SELECT
+        cor.customer_id     AS "customerId",
+        cor.product_category_id AS "productCategoryId",
+        COUNT(0) AS reminderMultipleQty
+        FROM cc_order_reminder_item cori
+        INNER JOIN cc_order_reminder cor ON cor.id = cori.reminder_id
+        WHERE cori.item_no > 1
+        AND cori.create_at BETWEEN #{beginDate} AND #{endDate}
+        GROUP BY customerId,productCategoryId
+        LIMIT 10000
+    </select>
+
+    <select id="getReminderOrderQtyList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerReminderEntity">
+        SELECT
+        soc.customer_id     AS "customerId",
+        soc.product_category_id AS "productCategoryId",
+        COUNT(0) AS reminderOrderQty
+        FROM sd_order_condition soc
+        INNER JOIN sd_order_status sos ON sos.order_id = soc.order_id
+        WHERE sos.reminder_status > 0
+        <!-- AND soc.status = 80 -->
+        AND soc.grade_flag > 0
+        AND soc.close_date BETWEEN #{beginDate} AND #{endDate}
+        GROUP BY customerId,productCategoryId
+        LIMIT 10000
+    </select>
+
+    <select id="getExceed48hourReminderQtyList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerReminderEntity">
+        SELECT
+        cor.customer_id     AS "customerId",
+        cor.product_category_id AS "productCategoryId",
+        COUNT(0) AS exceed48hourReminderQty
+        FROM cc_order_reminder_item cori
+        INNER JOIN cc_order_reminder cor ON cor.id = cori.reminder_id
+        WHERE cori.order_interval_time > 48
+        AND cori.create_at BETWEEN #{beginDate} AND #{endDate}
+        GROUP BY customerId,productCategoryId
+        LIMIT 10000
+    </select>
+
+    <select id="getComplete24hourQtyList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerReminderEntity">
+        SELECT
+        cor.customer_id     AS "customerId",
+        cor.product_category_id AS "productCategoryId",
+        COUNT(0) AS complete24hourQty
+        FROM cc_order_reminder cor
+        WHERE <![CDATA[ cor.order_time_liness < 24 ]]>
+        AND cor.order_status = 80
+        AND cor.complete_at BETWEEN #{beginDate} AND #{endDate}
+        GROUP BY customerId,productCategoryId
+        LIMIT 10000
+    </select>
+
+    <select id="getOver48ReminderCompletedQtyList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerReminderEntity">
+        SELECT
+        cor.customer_id     AS "customerId",
+        cor.product_category_id AS "productCategoryId",
+        COUNT(0) AS over48ReminderCompletedQty
+        FROM cc_order_reminder cor
+        INNER JOIN cc_order_reminder_item cori ON cori.id = cor.item_id
+        WHERE <![CDATA[ cor.order_time_liness < 24 ]]>
+        AND cori.order_interval_time > 48
+        AND cor.order_status = 80
+        AND cor.complete_at BETWEEN #{beginDate} AND #{endDate}
+        GROUP BY customerId,productCategoryId
+        LIMIT 10000
+    </select>
+
+    <insert id="insertCustomerReminder">
+        INSERT INTO rpt_customer_reminder_daily(
+        customer_id,
+        system_id,
+        statistics_date,
+        product_category_id,
+        order_new_qty,
+        reminder_qty,
+        reminder_first_qty,
+        reminder_multiple_qty,
+        reminder_order_qty,
+        exceed_48hour_reminder_qty,
+        complete_24hour_qty,
+        over48_reminder_completed_qty,
+        quarter
+        )VALUES
+            (
+            #{customerId},
+            #{systemId},
+            #{statisticsDt},
+            #{productCategoryId},
+            #{orderNewQty},
+            #{reminderQty},
+            #{reminderFirstQty},
+            #{reminderMultipleQty},
+            #{reminderOrderQty},
+            #{exceed48hourReminderQty},
+            #{complete24hourQty},
+            #{over48ReminderCompletedQty},
+            #{quarter})
+    </insert>
+
+    <select id="getCustomerReminderIds" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerReminderEntity">
+        SELECT
+        a.id        AS "id",
+        a.customer_id  AS "customerId",
+        a.product_category_id AS "productCategoryId",
+        a.statistics_date AS "statisticsDt"
+        FROM  rpt_customer_reminder_daily a
+        WHERE a.system_id = #{systemId}
+        AND statistics_date BETWEEN #{beginDate} AND #{endDate}
+        <if test="quarter != null and quarter != ''.toString()">
+            and quarter = #{quarter}
+        </if>
+        LIMIT 200000
+    </select>
+
+    <delete id="deleteCustomerReminders">
+        DELETE FROM rpt_customer_reminder_daily
+        WHERE system_id = #{systemId}
+        AND statistics_date BETWEEN #{beginDate} AND #{endDate}
+    </delete>
+
+    <select id="getCustomerReminderList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerReminderEntity">
+        SELECT
+        customer_id,
+        statistics_date AS "statisticsDt",
+        order_new_qty,
+        reminder_qty,
+        reminder_first_qty,
+        reminder_multiple_qty,
+        reminder_order_qty,
+        exceed_48hour_reminder_qty,
+        complete_24hour_qty,
+        over48_reminder_completed_qty
+        FROM rpt_customer_reminder_daily
+        WHERE system_id = #{systemId}
+        AND customer_id = #{customerId}
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                and product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    and product_category_id in
+                    <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{productCategoryIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        AND statistics_date BETWEEN #{beginDate} AND #{endDate}
+        <if test="quarter != null and quarter != ''.toString()">
+            and quarter = #{quarter}
+        </if>
+        LIMIT 1000
+    </select>
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM rpt_customer_reminder_daily
+        WHERE system_id = #{systemId}
+        AND customer_id = #{customerId}
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    and product_category_id = #{productCategoryIds[1]}
+                </when>
+                <otherwise>
+                    and product_category_id in
+                    <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{productCategoryIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        AND statistics_date BETWEEN #{beginDate} AND #{endDate}
+        <if test="quarter != null and quarter != ''.toString()">
+            and quarter = #{quarter}
+        </if>
+    </select>
+</mapper>

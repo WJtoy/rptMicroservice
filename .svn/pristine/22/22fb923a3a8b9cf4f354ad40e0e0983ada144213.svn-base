@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.ServicePointCompletedOrderRptMapper">
+
+    <!--<select id="getServicePointCompletedOrderListFromWebDB" resultType="com.kkl.kklplus.entity.rpt.RPTServicePointCompletedOrderEntity">-->
+        <!--SELECT-->
+              <!--soc.order_id, soc.order_no, so.workcard_id AS 'workCardId', so.parent_biz_order_id,-->
+              <!--so.data_source AS 'dataSource.value', soc.product_category_id AS 'productCategory.id',-->
+
+              <!--soc.user_name, soc.phone1 AS 'userPhone', CONCAT(soc.area_name,' ', soc.address) AS 'userAddress',-->
+              <!--soc.status AS 'status.value', sos.charge_date, soc.close_date, soc.appointment_date,-->
+
+              <!--sof.insurance_charge AS 'engineerInsuranceCharge', sof.time_liness_charge AS 'engineerTimelinessCharge',-->
+              <!--sof.subsidy_time_liness_charge AS 'engineerCustomerTimelinessCharge', sof.engineer_urgent_charge-->
+        <!--FROM sd_order_condition soc-->
+             <!--INNER JOIN sd_order so ON so.id = soc.order_id-->
+             <!--INNER JOIN sd_order_status sos ON sos.order_id = soc.order_id-->
+             <!--INNER JOIN sd_order_fee sof ON sof.order_id = soc.order_id-->
+        <!--WHERE sos.charge_date >= #{beginDate} and <![CDATA[ sos.charge_date < #{endDate} ]]>-->
+        <!--LIMIT 200000-->
+    <!--</select>-->
+
+    <select id="getServicePointCompletedOrderListFromWebDB" resultType="com.kkl.kklplus.entity.rpt.RPTServicePointCompletedOrderEntity">
+        SELECT
+              soc.order_id, soc.order_no, so.workcard_id AS 'workCardId', so.parent_biz_order_id,
+              so.data_source AS 'dataSource.value', soc.product_category_id AS 'productCategory.id',
+
+              soc.user_name, soc.phone1 AS 'userPhone', CONCAT(soc.area_name,' ', soc.address) AS 'userAddress',
+              soc.status AS 'status.value', sos.charge_date, soc.close_date, soc.appointment_date
+        FROM sd_order_condition soc
+             INNER JOIN sd_order_head so ON so.id = soc.order_id
+             INNER JOIN sd_order_status sos ON sos.order_id = soc.order_id
+        WHERE sos.charge_date >= #{beginDate} and <![CDATA[ sos.charge_date < #{endDate} ]]>
+        LIMIT 200000
+    </select>
+
+    <select id="getOrderServicePointFeeListFromWebDB" resultType="com.kkl.kklplus.entity.rpt.web.RPTOrderServicePointFee">
+        SELECT
+              sosf.order_id, sosf.servicepoint_id AS 'servicePoint.id',
+              sosf.insurance_charge AS 'engineerInsuranceCharge', sosf.time_liness_charge AS 'engineerTimelinessCharge',
+              sosf.customer_time_liness_charge AS 'engineerCustomerTimelinessCharge', sosf.urgent_charge AS 'engineerUrgentCharge',
+              sosf.praise_fee AS 'engineerPraiseFee', sosf.tax_fee AS 'engineerTaxFee' , sosf.info_fee AS 'engineerInfoFee', sosf.deposit AS 'engineerDeposit'
+        FROM sd_order_servicepoint_fee sosf
+             INNER JOIN sd_order_status sos ON sos.order_id = sosf.order_id
+        WHERE sos.charge_date >= #{beginDate} and <![CDATA[ sos.charge_date < #{endDate} ]]> and sosf.del_flag = 0
+        LIMIT 200000
+    </select>
+
+    <select id="getServicePointCompletedOrderDetailListFromWebDB" resultType="com.kkl.kklplus.entity.rpt.web.RPTOrderDetail">
+        SELECT
+              sod.id, sod.order_id, sod.servicepoint_id AS 'servicePoint.id', sod.engineer_id AS 'engineer.id',
+
+              sod.service_times, sod.service_type_id AS 'serviceType.id',
+              sod.product_id AS 'product.id', sod.product_spec, sod.brand, sod.qty, sod.remarks,
+              sod.engineer_service_charge, sod.engineer_material_charge, sod.engineer_travel_charge, sod.engineer_express_charge, sod.engineer_other_charge
+        FROM  sd_orderdetail sod
+              INNER JOIN sd_order_status sos ON sos.order_id = sod.order_id
+        WHERE sos.charge_date >= #{beginDate} AND <![CDATA[ sos.charge_date < #{endDate} ]]>
+              AND sod.del_flag = 0
+        LIMIT 200000
+    </select>
+
+    <insert id="insert" parameterType="com.kkl.kklplus.entity.rpt.RPTServicePointCompletedOrderEntity">
+        INSERT INTO rpt_servicepoint_completed_order
+        (
+            system_id,
+            order_id,
+            order_no,
+            data_source,
+            workcard_id,
+            parent_biz_order_id,
+            product_category_id,
+            service_point_id,
+            user_name,
+            user_phone,
+            user_address,
+            appointment_date,
+            close_date,
+            charge_date,
+            engineer_insurance_charge,
+            engineer_timeLiness_charge,
+            engineer_customer_timeliness_charge,
+            engineer_urgent_charge,
+            engineer_praise_fee,
+            engineer_tax_fee,
+            engineer_info_fee,
+            engineer_deposit,
+            engineer_subtotal_charge,
+            status,
+            status_label,
+            order_detail_pb,
+            service_point_pb,
+            engineer_pb,
+            quarter
+        )
+        VALUES
+        (
+            #{systemId},
+            #{orderId},
+            #{orderNo},
+            #{dataSource.value},
+            #{workCardId},
+            #{parentBizOrderId},
+            #{productCategory.id},
+            #{servicePoint.id},
+            #{userName},
+            #{userPhone},
+            #{userAddress},
+            #{appointmentDt},
+            #{closeDt},
+            #{chargeDt},
+            #{engineerInsuranceCharge},
+            #{engineerTimelinessCharge},
+            #{engineerCustomerTimelinessCharge},
+            #{engineerUrgentCharge},
+            #{engineerPraiseFee},
+            #{engineerTaxFee},
+            #{engineerInfoFee},
+            #{engineerDeposit},
+            #{engineerSubtotalCharge},
+            #{status.value},
+            #{status.label},
+            #{orderDetailPb},
+            #{servicePointPb},
+            #{engineerPb},
+            #{quarter}
+        )
+    </insert>
+
+    <sql id="servicePointCompletedOrderColumns">
+        a.id,
+        a.system_id,
+        a.order_id,
+        a.order_no,
+        a.data_source                             AS "dataSource.value",
+        a.workcard_id                             AS "workCardId",
+        a.parent_biz_order_id,
+        a.product_category_id                     AS "productCategory.id",
+        a.service_point_id                        AS "servicePoint.id",
+        a.user_name,
+        a.user_phone,
+        a.user_address,
+        a.appointment_date                        AS "appointmentDt",
+        a.close_date                              AS "closeDt",
+        a.charge_date                             AS "chargeDt",
+        a.engineer_insurance_charge,
+        a.engineer_timeLiness_charge,
+        a.engineer_customer_timeliness_charge,
+        a.engineer_urgent_charge,
+        a.engineer_praise_fee,
+        a.engineer_tax_fee,
+        a.engineer_info_fee,
+        a.engineer_deposit,
+        a.engineer_subtotal_charge,
+        a.status                                  AS "status.value",
+        a.status_label                            AS "status.label",
+        a.order_detail_pb,
+        a.service_point_pb,
+        a.engineer_pb,
+        a.quarter
+    </sql>
+
+    <select id="getServicePointCompletedOrderIds" resultType="com.kkl.kklplus.provider.rpt.entity.LongTwoTuple">
+        SELECT
+              a.id                AS "aElement",
+              a.order_id          AS "bElement"
+        FROM  rpt_servicepoint_completed_order a
+        WHERE a.quarter = #{quarter}
+              AND a.system_id = #{systemId}
+              AND a.charge_date >= #{beginChargeDate}
+              AND <![CDATA[ a.charge_date <= #{endChargeDate} ]]>
+        LIMIT 200000
+    </select>
+
+    <delete id="deleteServicePointCompletedOrders">
+        DELETE FROM rpt_servicepoint_completed_order
+        WHERE quarter = #{quarter}
+              AND system_id = #{systemId}
+              AND charge_date >= #{beginChargeDate}
+              AND <![CDATA[ charge_date <= #{endChargeDate} ]]>
+    </delete>
+
+    <select id="getServicePointCompletedOrderListByPaging" resultType="com.kkl.kklplus.entity.rpt.RPTServicePointCompletedOrderEntity">
+        SELECT
+              <include refid="servicePointCompletedOrderColumns"/>
+        FROM  rpt_servicepoint_completed_order a
+        <where>
+            <if test="quarter != null and quarter != ''.toString()">
+                a.quarter = #{quarter}
+            </if>
+            AND a.system_id = #{systemId}
+            <if test="servicePointId != null and servicePointId > 0">
+                AND a.service_point_id = #{servicePointId}
+            </if>
+            <if test="productCategoryId != null and productCategoryId > 0">
+                AND a.product_category_id = #{productCategoryId}
+            </if>
+            <if test="beginChargeDate != null and beginChargeDate > 0">
+                AND a.charge_date >= #{beginChargeDate}
+            </if>
+            <if test="endChargeDate != null and endChargeDate > 0">
+                AND <![CDATA[ a.charge_date <= #{endChargeDate} ]]>
+            </if>
+        </where>
+    </select>
+
+    <select id="getCompletedOrderByPaging" resultType="com.kkl.kklplus.entity.rpt.RPTServicePointOderEntity">
+        SELECT
+               <include refid="servicePointCompletedOrderColumns"/>
+        FROM  rpt_servicepoint_completed_order a
+        <where>
+            <if test="quarter != null and quarter != ''.toString()">
+                a.quarter = #{quarter}
+            </if>
+            AND a.system_id = #{systemId}
+            <if test="servicePointId != null and servicePointId > 0">
+            AND a.service_point_id = #{servicePointId}
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and a.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and a.product_category_id in
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="beginWriteOffCreateDate != null and beginWriteOffCreateDate > 0">
+            AND a.charge_date >= #{beginWriteOffCreateDate}
+            </if>
+            <if test="endWriteOffCreateDate != null and endWriteOffCreateDate > 0">
+            AND <![CDATA[a.charge_date <= #{endWriteOffCreateDate} ]]>
+            </if>
+        </where>
+        LIMIT #{limitOffset},#{limitRowCount}
+    </select>
+
+    <select id="getPointCompletedOrderSum" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        FROM rpt_servicepoint_completed_order a
+        <where>
+            <if test="quarter != null and quarter != ''.toString()">
+                a.quarter = #{quarter}
+            </if>
+            AND a.system_id = #{systemId}
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and a.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and a.product_category_id in
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="servicePointId != null and servicePointId > 0">
+                AND a.service_point_id = #{servicePointId}
+            </if>
+            <if test="beginWriteOffCreateDate != null and beginWriteOffCreateDate > 0">
+                AND a.charge_date >= #{beginWriteOffCreateDate}
+            </if>
+            <if test="endWriteOffCreateDate != null and endWriteOffCreateDate > 0">
+                AND <![CDATA[ a.charge_date <= #{endWriteOffCreateDate} ]]>
+            </if>
+        </where>
+    </select>
+
+</mapper>

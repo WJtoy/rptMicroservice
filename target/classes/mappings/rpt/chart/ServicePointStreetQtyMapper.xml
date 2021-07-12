@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.chart.mapper.ServicePointStreetQtyMapper">
+    <select id="getServicePointStreetQty"
+            resultType="com.kkl.kklplus.provider.rpt.chart.entity.RPTServicePointStreetQtyEntity">
+        SELECT
+        servicepoint_street AS "servicePointStreet",
+        frequent_servicepoint AS "frequentServicePoint",
+        trial_servicepoint AS "trialServicePoint",
+        without_servicepoint AS "withoutServicePoint"
+        FROM rpt_servicepoint_street_qty
+        WHERE
+        system_id = #{systemId}
+        and create_date >= #{beginDate}
+        AND <![CDATA[ create_date <= #{endDate}]]>
+        and product_category_id = #{productCategoryId}
+    </select>
+
+    <select id="getServicePointProductCategoryQty"
+            resultType="com.kkl.kklplus.provider.rpt.chart.entity.RPTServicePointStreetQtyEntity">
+        SELECT
+        product_category_id,
+        sum(frequent_servicepoint) AS "frequentServicePoint",
+        sum(trial_servicepoint) AS "trialServicePoint",
+        sum(without_servicepoint) AS "withoutServicePoint"
+        FROM rpt_servicepoint_street_qty
+        WHERE
+        system_id = #{systemId}
+        AND create_date >= #{beginDate}
+        AND <![CDATA[ create_date <= #{endDate}]]>
+        <if test="productCategoryIds.size() != 0">
+            AND product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        GROUP BY product_category_id
+    </select>
+
+
+    <select id="getServicePointStreetAutoPlanQty"
+            resultType="com.kkl.kklplus.provider.rpt.chart.entity.RPTServicePointStreetQtyEntity">
+        SELECT
+        auto_plan_street AS "autoPlanStreet",
+        auto_plan_without_frequent AS "autoPlanWithoutFrequent",
+        frequent_without_auto_plan AS "frequentWithoutAutoPlan"
+        FROM rpt_servicepoint_street_qty
+        WHERE
+        system_id = #{systemId}
+        and create_date >= #{beginDate}
+        AND <![CDATA[ create_date <= #{endDate}]]>
+        and product_category_id = #{productCategoryId}
+    </select>
+    <insert id="insertServicePointStreetQtyData">
+        INSERT INTO rpt_servicepoint_street_qty(
+        system_id,
+        create_date,
+        product_category_id,
+        servicepoint_street,
+        frequent_servicepoint,
+        trial_servicepoint,
+        without_servicepoint,
+        auto_plan_street,
+        auto_plan_without_frequent,
+        frequent_without_auto_plan
+        )VALUES(
+        #{systemId},
+        #{createDate},
+        #{productCategoryId},
+        #{servicePointStreet},
+        #{frequentServicePoint},
+        #{trialServicePoint},
+        #{withoutServicePoint},
+        #{autoPlanStreet},
+        #{autoPlanWithoutFrequent},
+        #{frequentWithoutAutoPlan}
+        )
+    </insert>
+
+    <delete id="deleteServicePointStreetQtyFromRptDB">
+        DELETE FROM rpt_servicepoint_street_qty
+        WHERE   system_id = #{systemId}
+        AND create_date >= #{startDate}
+        AND <![CDATA[ create_date <= #{endDate}
+        ]]>
+    </delete>
+</mapper>

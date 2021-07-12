@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.ServicePointBaseInfoRptMapper">
+    <select id="findProvinceCityCountyList" resultType="com.kkl.kklplus.entity.rpt.web.RPTArea">
+        SELECT
+        sa1.id AS "id",
+        sa1.code  AS "code",
+        sa1.name  AS "name",
+        sa2.id AS "parent.id",
+        sa2.name AS "parent.name",
+        sa3.id AS "parent.parent.id",
+        sa3.name AS "parent.parent.name"
+        FROM  rpt_sys_area sa1
+        INNER JOIN rpt_sys_area sa2 on sa2.id = sa1.parent_id
+        INNER JOIN rpt_sys_area sa3 on sa3.id = sa2.parent_id
+        <where>
+            sa1.type = 4 and sa2.type = 3 and sa3.type = 2
+            <if test="provinceId != null">
+                and sa3.id = #{provinceId}
+            </if>
+            <if test="cityId != null">
+                and sa2.id = #{cityId}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="hasReportData"  resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM  rpt_sys_area sa1
+        INNER JOIN rpt_sys_area sa2 on sa2.id = sa1.parent_id
+        INNER JOIN rpt_sys_area sa3 on sa3.id = sa2.parent_id
+        <where>
+            sa1.type = 4 and sa2.type = 3 and sa3.type = 2
+            <if test="provinceId != null">
+                and sa3.id = #{provinceId}
+            </if>
+            <if test="cityId != null">
+                and sa2.id = #{cityId}
+            </if>
+        </where>
+    </select>
+
+</mapper>

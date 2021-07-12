@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CrushAreaRptMapper">
+    <sql id="RptSpecialChargeColumns">
+        system_id,
+        province_id,
+        city_id,
+        county_id,
+        sub_area_id,
+        product_category_id,
+        yearmonth,
+        t1,
+        t2,
+        t3,
+        t4,
+        t5,
+        t6,
+        t7,
+        t8,
+        t9,
+        t10,
+        t11,
+        t12,
+        t13,
+        t14,
+        t15,
+        t16,
+        t17,
+        t18,
+        t19,
+        t20,
+        t21,
+        t22,
+        t23,
+        t24,
+        t25,
+        t26,
+        t27,
+        t28,
+        t29,
+        t30,
+        t31,
+        quarter
+    </sql>
+    <sql id="updateSpecialColumns">
+        <if test="t1 != null">t1 = t1 + #{t1},</if>
+        <if test="t2 != null">t2 = t2 + #{t2},</if>
+        <if test="t3 != null">t3 = t3 + #{t3},</if>
+        <if test="t4 != null">t4 = t4 + #{t4},</if>
+        <if test="t5 != null">t5 = t5 + #{t5},</if>
+        <if test="t6 != null">t6 = t6 + #{t6},</if>
+        <if test="t7 != null">t7 = t7 + #{t7},</if>
+        <if test="t8 != null">t8 = t8 + #{t8},</if>
+        <if test="t9 != null">t9 = t9 + #{t9},</if>
+        <if test="t10 != null">t10 = t10 + #{t10},</if>
+        <if test="t11 != null">t11 = t11 + #{t11},</if>
+        <if test="t12 != null">t12 = t12 + #{t12},</if>
+        <if test="t13 != null">t13 = t13 + #{t13},</if>
+        <if test="t14 != null">t14 = t14 + #{t14},</if>
+        <if test="t15 != null">t15 = t15 + #{t15},</if>
+        <if test="t16 != null">t16 = t16 + #{t16},</if>
+        <if test="t17 != null">t17 = t17 + #{t17},</if>
+        <if test="t18 != null">t18 = t18 + #{t18},</if>
+        <if test="t19 != null">t19 = t19 + #{t19},</if>
+        <if test="t20 != null">t20 = t20 + #{t20},</if>
+        <if test="t21 != null">t21 = t21 + #{t21},</if>
+        <if test="t21 != null">t22 = t22 + #{t22},</if>
+        <if test="t23 != null">t23 = t23 + #{t23},</if>
+        <if test="t24 != null">t24 = t24 + #{t24},</if>
+        <if test="t25 != null">t25 = t25 + #{t25},</if>
+        <if test="t26 != null">t26 = t26 + #{t26},</if>
+        <if test="t27 != null">t27 = t27 + #{t27},</if>
+        <if test="t28 != null">t28 = t28 + #{t28},</if>
+        <if test="t29 != null">t29 = t29 + #{t29},</if>
+        <if test="t30 != null">t30 = t30 + #{t30},</if>
+        <if test="t31 != null">t31 = t31 + #{t31}</if>
+    </sql>
+
+
+    <select id="getOldCrushData" parameterType="Map"
+            resultType="com.kkl.kklplus.entity.rpt.RPTCrushAreaEntity">
+        select count(0) AS crushSum,
+        soc.product_category_id as productCategoryId,
+        a.sub_area_id as subAreaId,
+        soc.province_id,
+        soc.city_id,
+        soc.area_id as countyId
+        from sd_order_condition a
+        inner join sd_order_crush soc on a.order_id= soc.order_id
+        where  soc.create_date >= #{startDate}
+        and <![CDATA[ soc.create_date < #{endDate} ]]>
+        group by subAreaId,soc.province_id,soc.city_id,countyId,productCategoryId
+        limit 200000
+    </select>
+
+    <select id="getCrushAreaList" resultType="com.kkl.kklplus.entity.rpt.RPTCrushAreaEntity">
+        SELECT
+        <include refid="RptSpecialChargeColumns"/>
+        FROM rpt_area_crush_qty rasc
+        WHERE
+        rasc.yearmonth = #{yearMonth}
+        and rasc.system_id =#{systemId}
+        <if test="productCategoryIds.size() != 0">
+            and rasc.product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        <if test="quarter != null and quarter != ''.toString()">
+            and rasc.quarter = #{quarter}
+        </if>
+    </select>
+
+    <insert id="insertCrushRpt" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO rpt_area_crush_qty
+        (
+        <include refid="RptSpecialChargeColumns"/>
+        )
+        VALUES
+        (
+        #{systemId},
+        #{provinceId},
+        #{cityId},
+        #{countyId},
+        #{subAreaId},
+        #{productCategoryId},
+        #{yearmonth},
+        #{t1},
+        #{t2},
+        #{t3},
+        #{t4},
+        #{t5},
+        #{t6},
+        #{t7},
+        #{t8},
+        #{t9},
+        #{t10},
+        #{t11},
+        #{t12},
+        #{t13},
+        #{t14},
+        #{t15},
+        #{t16},
+        #{t17},
+        #{t18},
+        #{t19},
+        #{t20},
+        #{t21},
+        #{t22},
+        #{t23},
+        #{t24},
+        #{t25},
+        #{t26},
+        #{t27},
+        #{t28},
+        #{t29},
+        #{t30},
+        #{t31},
+        #{quarter}
+        )
+    </insert>
+
+    <update id="updateCrushRpt" parameterType="com.kkl.kklplus.entity.rpt.RPTCrushAreaEntity">
+        UPDATE
+        rpt_area_crush_qty
+        SET
+        <include refid="updateSpecialColumns"/>
+        WHERE
+        id =#{id}
+    </update>
+
+    <delete id="deleteCrushRpt">
+        DELETE FROM rpt_area_crush_qty
+        WHERE system_id = #{systemId}
+        AND yearmonth = #{yearmonth}
+    </delete>
+
+    <select id="getCountyIds" resultType="java.util.Map">
+        SELECT id AS "id",sub_area_id AS "subAreaId",product_category_id AS "productCategoryId"
+        FROM rpt_area_crush_qty
+        WHERE yearmonth = #{yearMonth}
+        AND system_id = #{systemId}
+    </select>
+
+    <select id="hasReportData" resultType="Integer">
+        SELECT
+        COUNT(0)
+        FROM rpt_area_crush_qty rasc
+        <where>
+            rasc.yearmonth = #{yearMonth}
+            and rasc.system_id = #{systemId}
+            <if test="productCategoryIds.size() != 0">
+                and rasc.product_category_id in
+                <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                         separator="," close=")">
+                    #{productCategoryIds}
+                </foreach>
+            </if>
+            <if test="quarter != null and quarter != ''.toString()">
+                and rasc.quarter = #{quarter}
+            </if>
+        </where>
+    </select>
+</mapper>

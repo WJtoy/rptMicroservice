@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.RptExportTaskMapper">
+
+    <sql id="RptExportTaskColumns">
+        id,
+        system_id,
+        report_id,
+        report_type,
+        status,
+        task_create_by,
+        task_create_by_name,
+        task_create_date,
+        task_complete_date,
+        report_title,
+        report_file_path,
+        search_condition_json,
+        search_condition_hashcode,
+        download_qty,
+        last_download_by,
+        last_download_by_name,
+        last_download_date,
+        quarter
+    </sql>
+
+    <select id="get" resultType="com.kkl.kklplus.entity.rpt.RPTExportTaskEntity">
+        SELECT
+              <include refid="RptExportTaskColumns"/>
+        FROM rpt_export_task a
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="getTaskListByHashCode" resultType="com.kkl.kklplus.entity.rpt.RPTExportTaskEntity">
+        SELECT
+              <include refid="RptExportTaskColumns"/>
+        FROM  rpt_export_task a
+        WHERE a.system_id = #{systemId}
+              AND a.report_id = #{reportId}
+              AND a.task_create_date > #{taskCreateDate}
+              AND a.task_create_by = #{taskCreateBy}
+              AND a.search_condition_hashcode = #{searchConditionHashcode}
+              AND a.status >= 30
+        LIMIT 1000
+    </select>
+
+    <select id="getTaskList" resultType="com.kkl.kklplus.entity.rpt.RPTExportTaskEntity">
+        SELECT
+              <include refid="RptExportTaskColumns"/>
+        FROM  rpt_export_task a
+        <where>
+              a.system_id = #{systemId}
+            <if test="taskCreateBy != null and taskCreateBy != 0">
+                AND a.task_create_by = #{taskCreateBy}
+            </if>
+            <if test="reportId != null and reportId != 0">
+                AND a.report_id = #{reportId}
+            </if>
+            <if test="reportType != null and reportType != 0">
+                AND a.report_type = #{reportType}
+            </if>
+            <if test="beginTaskCreateDate != null and beginTaskCreateDate != 0">
+                AND a.task_create_date >= #{beginTaskCreateDate}
+            </if>
+            <if test="endTaskCreateDate != null and endTaskCreateDate != 0">
+                <![CDATA[ AND a.task_create_date <= #{endTaskCreateDate} ]]>
+            </if>
+        </where>
+        ORDER BY a.id DESC
+    </select>
+
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO rpt_export_task
+        (
+            system_id,
+            report_id,
+            report_type,
+            status,
+            task_create_by,
+            task_create_by_name,
+            task_create_date,
+            report_title,
+        <if test="searchConditionJson != null and searchConditionJson != ''.toString()">
+            search_condition_json,
+        </if>
+            search_condition_hashcode,
+            quarter
+        )
+        VALUES
+        (
+            #{systemId},
+            #{reportId},
+            #{reportType},
+            #{status},
+            #{taskCreateBy},
+            #{taskCreateByName},
+            #{taskCreateDate},
+            #{reportTitle},
+        <if test="searchConditionJson != null and searchConditionJson != ''.toString()">
+            #{searchConditionJson},
+        </if>
+            #{searchConditionHashcode},
+            #{quarter}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.kkl.kklplus.entity.rpt.RPTExportTaskEntity">
+        UPDATE rpt_export_task
+        <set>
+            status = #{status},
+            task_complete_date = #{taskCompleteDate},
+            report_file_path = #{reportFilePath}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateDownloadInfo" parameterType="com.kkl.kklplus.entity.rpt.RPTExportTaskEntity">
+        UPDATE rpt_export_task
+        <set>
+            status = #{status},
+            download_qty = download_qty + 1,
+            last_download_by = #{lastDownloadBy},
+            last_download_by_name = #{lastDownloadByName},
+            last_download_date = #{lastDownloadDate}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+</mapper>

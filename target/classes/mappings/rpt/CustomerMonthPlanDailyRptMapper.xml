@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CustomerMonthPlanDailyRptMapper">
+    <select id="getCustomerMonthPlanDailyList" resultType="com.kkl.kklplus.entity.rpt.RptCustomerMonthOrderEntity">
+        SELECT
+        a.customer_id AS "customerId",
+        a.yearmonth AS "yearMonth",
+        count(id) AS orderSum
+        FROM
+        rpt_created_order a
+        <if test="salesId != null and salesId != 0">
+            INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = a.customer_id and mcs.system_id = #{systemId}
+            <if test="subFlag ==3" >
+                inner join rpt_sys_user_sub as sus on sus.sub_user_id = mcs.sales_id and sus.type = 7
+
+            </if>
+        </if>
+        <where>
+            a.system_id = #{systemId}
+            AND a.yearmonth >= #{startYearMonth}
+            AND <![CDATA[ a.yearmonth <= #{endYearMonth}]]>
+            <if test="customerId != null">
+                and a.customer_id = #{customerId}
+            </if>
+            <if test="salesId != null and salesId != 0">
+                <choose>
+                    <when test="subFlag == 3">
+                        and sus.user_id= #{salesId}
+                    </when>
+                    <otherwise>
+                        and mcs.sales_id=#{salesId}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and a.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and a.product_category_id in
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+        group by customerId,yearMonth
+        LIMIT 120000
+    </select>
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM
+        rpt_created_order a
+        <if test="salesId != null and salesId != 0">
+            INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = a.customer_id and mcs.system_id = #{systemId}
+            <if test="subFlag ==3" >
+                inner join rpt_sys_user_sub as sus on sus.sub_user_id = mcs.sales_id and sus.type = 7
+            </if>
+        </if>
+        <where>
+            a.system_id = #{systemId}
+            AND a.yearmonth >= #{startYearMonth}
+            AND <![CDATA[ a.yearmonth <= #{endYearMonth}]]>
+            <if test="customerId != null">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="salesId != null and salesId != 0">
+                <choose>
+                    <when test="subFlag == 3">
+                        and sus.user_id= #{salesId}
+                    </when>
+                    <otherwise>
+                        and mcs.sales_id=#{salesId}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and a.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and a.product_category_id in
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </select>
+</mapper>

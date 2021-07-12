@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.SysUserRegionMappingMapper">
+
+    <select id="getSysUserRegionMappingFromWebDB" resultType="com.kkl.kklplus.provider.rpt.entity.SysUserRegionEntity">
+        SELECT
+              user_id,
+              area_type,
+              province_id,
+              city_id,
+              area_id
+        FROM sys_user_region_1
+        LIMIT 200000
+    </select>
+
+    <insert id="insert" parameterType="com.kkl.kklplus.provider.rpt.entity.SysUserRegionEntity">
+        INSERT INTO rpt_sys_user_region_${quarter}
+        (
+              user_id,
+              area_type,
+              province_id,
+              city_id,
+              area_id,
+              system_id
+        )
+        VALUES
+        (
+            #{userId},
+            #{areaType},
+            #{provinceId},
+            #{cityId},
+            #{areaId},
+            #{systemId}
+        )
+    </insert>
+
+    <delete id="deleteSysUserRegionMappings">
+        DELETE FROM rpt_sys_user_region_${quarter}
+        WHERE system_id = #{systemId}
+    </delete>
+
+</mapper>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.ChargeDailyRptMapper">
+
+    <sql id="columns">
+        sum(d1) as d1,
+        sum(d2) as d2,
+        sum(d3) as d3,
+        sum(d4) as d4,
+        sum(d5) as d5,
+        sum(d6) as d6,
+        sum(d7) as d7,
+        sum(d8) as d8,
+        sum(d9) as d9,
+        sum(d10) as d10,
+        sum(d11) as d11,
+        sum(d12) as d12,
+        sum(d13) as d13,
+        sum(d14) as d14,
+        sum(d15) as d15,
+        sum(d16) as d16,
+        sum(d17) as d17,
+        sum(d18) as d18,
+        sum(d19) as d19,
+        sum(d20) as d20,
+        sum(d21) as d21,
+        sum(d22) as d22,
+        sum(d23) as d23,
+        sum(d24) as d24,
+        sum(d25) as d25,
+        sum(d26) as d26,
+        sum(d27) as d27,
+        sum(d28) as d28,
+        sum(d29) as d29,
+        sum(d30) as d30,
+        sum(d31) as d31,
+        sum(total) as rowSum
+    </sql>
+    <!--获取手动对账的数量-->
+    <select id="getManualChargeDaily"  resultType="com.kkl.kklplus.provider.rpt.entity.ChargeDailyEntity">
+        SELECT day(sos.charge_date) as dayIndex, count(*) as countNum
+        FROM sd_order_condition soc
+              inner join sd_order_status sos ON soc.order_id = sos.order_id
+        WHERE soc.charge_flag=1 and soc.auto_charge_flag=0
+            and sos.charge_date >= #{startDate}
+            and <![CDATA[ sos.charge_date <= #{lastDate} ]]>
+        GROUP BY day(sos.charge_date)
+        Limit 200000
+    </select>
+
+    <!--获取自动对账的数量-->
+    <select id="getAutoChargeDaily"  resultType="com.kkl.kklplus.provider.rpt.entity.ChargeDailyEntity">
+        SELECT DAYOFMONTH(sos.charge_date) as dayIndex,count(*) as countNum
+        FROM sd_order_condition soc inner join sd_order_status sos
+        ON soc.order_id = sos.order_id
+        WHERE soc.charge_flag=1
+        and soc.auto_charge_flag!=0
+        and sos.charge_date >= #{startDate}
+        and <![CDATA[ sos.charge_date <= #{lastDate} ]]>
+        GROUP BY DAYOFMONTH(sos.charge_date)
+        Limit 200000
+    </select>
+
+    <select id="getCompletedDaily" resultType="com.kkl.kklplus.entity.rpt.RPTAreaCompletedDailyEntity">
+        SELECT
+        day_index AS dayIndex,
+        count(id) AS countSum
+        FROM
+        rpt_graded_order
+        WHERE
+        system_id = #{systemId}
+        AND yearmonth = #{startYearMonth}
+        group by day_index
+        LIMIT 200000
+    </select>
+
+    <select id="getManualChargeSum"  resultType="java.lang.Integer">
+        SELECT count(0)
+        FROM sd_order_condition soc
+              inner join sd_order_status sos ON soc.order_id = sos.order_id
+        WHERE soc.charge_flag=1 and soc.auto_charge_flag=0
+            and sos.charge_date >= #{startDate}
+            and <![CDATA[ sos.charge_date <= #{lastDate} ]]>
+    </select>
+
+    <select id="getAutoChargeSum"  resultType="java.lang.Integer">
+        SELECT count(0)
+        FROM sd_order_condition soc inner join sd_order_status sos
+        ON soc.order_id = sos.order_id
+        WHERE soc.charge_flag=1
+        and soc.auto_charge_flag!=0
+        and sos.charge_date >= #{startDate}
+        and <![CDATA[ sos.charge_date <= #{lastDate} ]]>
+    </select>
+
+    <select id="getCompletedSum" resultType="java.lang.Integer">
+        select count(0)
+        FROM rpt_graded_order
+        WHERE
+        system_id = #{systemId}
+        AND yearmonth = #{startYearMonth}
+    </select>
+
+</mapper>

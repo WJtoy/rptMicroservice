@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CustomerPerformanceRptMapper">
+
+    <select id="getFinishQtyList" resultType="com.kkl.kklplus.provider.rpt.entity.CustomerPerformanceRptEntity">
+        SELECT
+        a.customer_id AS "customerId", a.product_category_id AS productCategoryId,count(id) AS finishQty
+        FROM
+        rpt_graded_order a
+        <where>
+            a.system_id = #{systemId}
+            <if test="quarter != null and quarter != ''.toString()">
+                AND a.quarter = #{quarter}
+            </if>
+            AND a.close_date >= #{beginCreatDate}
+            AND <![CDATA[ a.close_date <= #{endCreatDate} ]]>
+        </where>
+        group by productCategoryId, customerId
+    </select>
+
+    <select id="getReturnQtyList" resultType="com.kkl.kklplus.provider.rpt.entity.CustomerPerformanceRptEntity">
+        SELECT
+        a.customer_id AS "customerId", a.product_category_id AS productCategoryId,count(id) AS returnQty
+        FROM
+        rpt_cancelled_order_daily a
+        <where>
+            a.status = 90
+            <if test="quarter != null and quarter != ''.toString()">
+                AND a.quarter = #{quarter}
+            </if>
+            AND a.system_id = #{systemId}
+            AND a.order_close_date >= #{beginCreatDate}
+            AND <![CDATA[ a.order_close_date <= #{endCreatDate} ]]>
+        </where>
+        group by productCategoryId, customerId
+        LIMIT 120000
+    </select>
+
+
+    <select id="getCancelQtyList" resultType="com.kkl.kklplus.provider.rpt.entity.CustomerPerformanceRptEntity">
+        SELECT
+        a.customer_id AS "customerId", a.product_category_id AS productCategoryId,count(id) AS cancelQty
+        FROM
+        rpt_cancelled_order_daily a
+        <where>
+            a.status = 100
+            <if test="quarter != null and quarter != ''.toString()">
+                AND a.quarter = #{quarter}
+            </if>
+            AND a.system_id = #{systemId}
+            AND a.order_close_date >= #{beginCreatDate}
+            AND <![CDATA[ a.order_close_date <= #{endCreatDate} ]]>
+        </where>
+        group by productCategoryId, customerId
+        LIMIT 120000
+    </select>
+
+    <select id="getCreateQtyList" resultType="com.kkl.kklplus.provider.rpt.entity.CustomerPerformanceRptEntity">
+        SELECT
+        a.customer_id AS "customerId", a.product_category_id AS productCategoryId,count(id) AS createQty
+        FROM
+        rpt_created_order a
+        <where>
+             a.system_id = #{systemId}
+            <if test="quarter != null and quarter != ''.toString()">
+                AND a.quarter = #{quarter}
+            </if>
+            AND a.order_create_date >= #{beginCreatDate}
+            AND <![CDATA[ a.order_create_date <= #{endCreatDate} ]]>
+        </where>
+        group by  productCategoryId, customerId
+        LIMIT 120000
+    </select>
+
+    <select id="getCustomerOrderQtyMonthlyIds" resultType="com.kkl.kklplus.provider.rpt.entity.LongThreeTuple">
+        SELECT
+              a.id          AS "aElement",
+              a.customer_id AS "bElement",
+              a.product_category_id AS "cElement"
+        FROM  rpt_customer_performance_monthly a
+        WHERE a.system_id = #{systemId} AND a.yearmonth = #{yearmonth}
+        LIMIT 10000
+    </select>
+
+    <insert id="insertCustomerPerformance">
+        INSERT INTO rpt_customer_performance_monthly
+        (
+        yearMonth,
+        customer_id,
+        product_category_id,
+        create_qty,
+        finish_qty,
+        return_qty,
+        cancel_qty,
+        system_id
+        )
+        VALUES
+        (
+        #{yearMonth},
+        #{customerId},
+        #{productCategoryId},
+        #{createQty},
+        #{finishQty},
+        #{returnQty},
+        #{cancelQty},
+        #{systemId}
+        )
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM rpt_customer_performance_monthly
+        WHERE
+        yearMonth = #{yearMonth}
+        AND system_id = #{systemId}
+    </delete>
+
+
+    <select id="getCustomerSalesList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerSalesMappingEntity">
+        SELECT customer_id,sales_id
+        FROM rpt_md_customer_sales mcs
+        WHERE
+        mcs.system_id = #{systemId}
+        AND mcs.sub_flag = 1
+        LIMIT 200000
+    </select>
+
+    <select id="getCustomerSalesChargeList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerSalesMappingEntity">
+        SELECT customer_id,sales_id
+        FROM rpt_md_customer_sales mcs
+        inner join rpt_sys_user_sub as sus on sus.sub_user_id = mcs.sales_id and sus.type = 7
+        WHERE
+        mcs.system_id = #{systemId}
+        AND mcs.sub_flag = 1
+        <if test="salesId != null and salesId != 0">
+            and sus.user_id= #{salesId}
+        </if>
+        LIMIT 200000
+    </select>
+
+    <select id="getCustomerPerformanceByList"  resultType="com.kkl.kklplus.entity.rpt.RPTSalesPerfomanceEntity">
+        SELECT
+            mcs.sales_id AS "salesId",sum(rcp.create_qty) as "createQty" ,sum(rcp.finish_qty) AS "finishQty",
+            sum(rcp.return_qty) AS "returnQty",sum(rcp.cancel_qty) AS "cancelQty"
+        from
+            rpt_customer_performance_monthly rcp
+            INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = rcp.customer_id  and mcs.sub_flag = 1 and mcs.system_id = #{systemId}
+            <if test="salesId != null and salesId != 0">
+            <if test="subFlag ==3" >
+                inner join rpt_sys_user_sub as sus on sus.sub_user_id = mcs.sales_id and sus.type = 7
+            </if>
+            </if>
+        WHERE
+            rcp.system_id = #{systemId}
+            AND  rcp.yearmonth = #{yearMonth}
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and rcp.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and rcp.product_category_id in
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="salesId != null and salesId != 0">
+                <choose>
+                    <when test="subFlag == 3">
+                        and sus.user_id= #{salesId}
+                    </when>
+                    <otherwise>
+                        and mcs.sales_id=#{salesId}
+                    </otherwise>
+                </choose>
+            </if>
+        GROUP BY salesId
+        LIMIT 200000;
+    </select>
+
+    <select id="getSalesManAchievementDataNew"  resultType="com.kkl.kklplus.entity.rpt.RPTSalesPerfomanceEntity">
+        SELECT
+            rcp.customer_id AS "customerId",sum(rcp.create_qty) as "createQty" ,sum(rcp.finish_qty) AS "finishQty",
+            sum(rcp.return_qty) AS "returnQty",sum(rcp.cancel_qty) AS "cancelQty"
+        from
+            rpt_customer_performance_monthly rcp
+            <if test="salesId != null and salesId != 0">
+            INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = rcp.customer_id  and mcs.sub_flag = 1 and mcs.system_id = #{systemId}
+            <if test="subFlag ==3" >
+                inner join rpt_sys_user_sub as sus on sus.sub_user_id = mcs.sales_id and sus.type = 7
+            </if>
+            </if>
+        WHERE
+            rcp.system_id = #{systemId}
+            AND  rcp.yearmonth = #{yearMonth}
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and rcp.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and rcp.product_category_id in
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="salesId != null and salesId != 0">
+                <choose>
+                    <when test="subFlag == 3">
+                        and sus.user_id= #{salesId}
+                    </when>
+                    <otherwise>
+                        and mcs.sales_id=#{salesId}
+                    </otherwise>
+                </choose>
+            </if>
+        GROUP BY customerId
+        LIMIT 200000;
+    </select>
+
+    <select id="getSalesNoFinishOrderQty" resultType="com.kkl.kklplus.entity.rpt.RPTSalesPerfomanceEntity">
+        SELECT
+            mcs.sales_id AS "salesId", sum(rcp.create_qty - rcp.finish_qty - rcp.return_qty - rcp.cancel_qty) AS 'noFinishQty'
+        FROM
+            rpt_customer_performance_monthly rcp
+            INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = rcp.customer_id and mcs.sub_flag = 1 and mcs.system_id = #{systemId}
+            <if test="salesId != null and salesId != 0">
+            <if test="subFlag ==3" >
+                inner join rpt_sys_user_sub as sus on sus.sub_user_id = mcs.sales_id and sus.type = 7
+            </if>
+            </if>
+        WHERE
+            rcp.system_id = #{systemId}
+            AND <![CDATA[ rcp.yearmonth <= #{yearMonth} ]]>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and rcp.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and rcp.product_category_id in
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="salesId != null and salesId != 0">
+                <choose>
+                    <when test="subFlag == 3">
+                        and sus.user_id= #{salesId}
+                    </when>
+                    <otherwise>
+                        and mcs.sales_id=#{salesId}
+                    </otherwise>
+                </choose>
+            </if>
+        GROUP BY salesId
+        LIMIT 200000;
+    </select>
+
+    <select id="getCustomerNoFinishOrderQtyNew"  resultType="com.kkl.kklplus.entity.rpt.RPTSalesPerfomanceEntity">
+        SELECT  rcp.customer_id AS "customerId" ,
+            sum(rcp.create_qty - rcp.finish_qty - rcp.return_qty - rcp.cancel_qty) AS 'noFinishQty'
+        FROM
+            rpt_customer_performance_monthly rcp
+            <if test="salesId != null and salesId != 0">
+            INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = rcp.customer_id and mcs.sub_flag = 1 and mcs.system_id = #{systemId}
+            <if test="subFlag ==3" >
+                inner join rpt_sys_user_sub as sus on sus.sub_user_id = mcs.sales_id and sus.type = 7
+            </if>
+            </if>
+        WHERE
+            rcp.system_id = #{systemId}
+            AND <![CDATA[ rcp.yearmonth <= #{yearmonth} ]]>
+            <if test="salesId != null and salesId != 0">
+                <choose>
+                    <when test="subFlag == 3">
+                        and sus.user_id= #{salesId}
+                    </when>
+                    <otherwise>
+                        and mcs.sales_id=#{salesId}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and rcp.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and rcp.product_category_id in
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        GROUP BY customerId
+        LIMIT 200000
+    </select>
+
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+            count(0)
+        FROM
+            rpt_customer_performance_monthly a
+            <if test="salesId != null and salesId != 0">
+            INNER JOIN rpt_md_customer_sales mcs ON mcs.customer_id = a.customer_id  and mcs.sub_flag = 1 and mcs.system_id = #{systemId}
+            <if test="subFlag == 3" >
+                inner join rpt_sys_user_sub as sus on sus.sub_user_id = mcs.sales_id and sus.type = 7
+            </if>
+            </if>
+        <where>
+            a.system_id = #{systemId}
+            AND  a.yearmonth = #{yearMonth}
+            <if test="salesId != null and salesId != 0">
+                <choose>
+                    <when test="subFlag == 3">
+                        and sus.user_id= #{salesId}
+                    </when>
+                    <otherwise>
+                        and mcs.sales_id=#{salesId}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        and a.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        and a.product_category_id in
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="salesId != null and salesId != 0">
+                AND mcs.sales_id = #{salesId}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateCustomerOrderQtyMonthly">
+        UPDATE rpt_customer_performance_monthly
+        <set>
+            create_qty = #{createQty},
+            finish_qty = #{finishQty},
+            return_qty = #{returnQty},
+            cancel_qty = #{cancelQty}
+        </set>
+        WHERE id = #{id}
+    </update>
+</mapper>

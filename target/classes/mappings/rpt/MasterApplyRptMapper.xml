@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.MasterApplyRptMapper">
+
+    <select id="getMasterApplyPage" resultType="com.kkl.kklplus.entity.rpt.RPTMasterApplyEntity">
+           select sm.order_id,si.material_id,sm.order_no,sm.user_name,sm.user_phone AS servicePhone,sm.area_id,sm.user_address,sm.description,
+            si.qty,sm.status,sm.return_flag AS return_flag,
+            sm.close_date,sm.create_date, sr.express_no
+            from sd_materialmaster sm
+            left join sd_materialitem si on sm.id = si.materialmaster_id
+            inner join sd_material_return sr on sm.order_id = sr.order_id
+            where
+            sm.apply_id = 0
+            <if test="quarter != null and quarter != ''.toString()">
+             and  sm.quarter = #{quarter}
+            </if>
+            <if test="customerId != null and customerId > 0">
+            and sm.customer_id = #{customerId}
+            </if>
+            and sm.create_date between #{beginDate} and #{endDate}
+            order by sm.order_no
+    </select>
+
+
+
+    <select id="getMasterApplyList" resultType="com.kkl.kklplus.entity.rpt.RPTMasterApplyEntity">
+        select sm.order_id,si.material_id,sm.order_no,sm.user_name,sm.user_phone AS servicePhone,sm.area_id,sm.user_address,sm.description,
+        si.qty,sm.status,sm.return_flag AS return_flag,
+        sm.close_date,sm.create_date, sr.express_no
+        from sd_materialmaster sm
+        left join sd_materialitem si on sm.id = si.materialmaster_id
+        inner join sd_material_return sr on sm.order_id = sr.order_id
+        where
+        sm.apply_id = 0
+        <if test="quarter != null and quarter != ''.toString()">
+            and  sm.quarter = #{quarter}
+        </if>
+        <if test="customerId != null and customerId > 0">
+            and sm.customer_id = #{customerId}
+        </if>
+        and sm.create_date between #{beginDate} and #{endDate}
+        order by sm.order_no
+        limit 100000
+    </select>
+
+
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT COUNT(0)
+        from sd_materialmaster sm
+        left join sd_materialitem si on sm.id = si.materialmaster_id
+        inner join sd_material_return sr on sm.order_id = sr.order_id
+        where
+        sm.apply_id = 0
+        <if test="quarter != null and quarter != ''.toString()">
+            and  sm.quarter = #{quarter}
+        </if>
+        <if test="customerId != null and customerId > 0">
+            and sm.customer_id = #{customerId}
+        </if>
+        and sm.create_date between #{beginDate} and #{endDate}
+        limit 100000
+    </select>
+</mapper>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.chart.mapper.CustomerReminderChartMapper">
+
+
+    <select id="getCustomerReminderList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerReminderEntity">
+        SELECT
+        sum(order_new_qty) AS "orderNewQty",
+        sum(reminder_qty) AS "reminderQty",
+        sum(reminder_first_qty) AS "reminderFirstQty",
+        sum(reminder_multiple_qty) AS "reminderMultipleQty",
+        sum(reminder_order_qty) AS "reminderOrderQty",
+        sum(exceed_48hour_reminder_qty) AS "exceed48hourReminderQty",
+        sum(complete_24hour_qty) AS "complete24hourQty",
+        sum(over48_reminder_completed_qty) AS "over48ReminderCompletedQty"
+        FROM rpt_customer_reminder_daily
+        WHERE system_id = #{systemId}
+        AND statistics_date BETWEEN #{beginDate} AND #{endDate}
+        <if test="quarter != null and quarter != ''.toString()">
+            and quarter = #{quarter}
+        </if>
+    </select>
+</mapper>

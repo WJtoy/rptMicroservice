@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CustomerComplainRptMapper">
+
+    <select id="getCustomerComplainData" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerComplainEntity">
+        SELECT
+        socp.order_id,
+        socp.order_no,
+        socp.complain_no,
+        socp.customer_id,
+--         sof.name AS "department",
+        socp.kefu_name AS "keFuName",
+        socp.user_address,
+        socp.area_id,
+        socp.servicepoint_id AS "servicePointId",
+        socp.complain_type AS "complainType.value",
+        socp.complain_object,
+        socp.complain_item ,
+        socp.complain_remark,
+        socp.complain_date,
+        socp.judge_item,
+        socp.judge_object,
+        socp.judge_remark,
+        socp.complete_result,
+        socp.complete_remark,
+        socp.status AS "status.value",
+        socp.complete_date,
+        socp.complete_by,
+        socp.complete_by_name,
+        socp.customer_amount,
+        socp.user_amount,
+        socp.servicepoint_amount,
+        socp.kefu_amount AS "keFuAmount",
+        soc.engineer_id
+        FROM sd_order_complain socp
+        INNER JOIN sd_order_condition soc ON soc.order_id = socp.order_id
+--         LEFT JOIN sys_user su ON socp.kefu_id = su.id
+--         LEFT JOIN sys_office sof ON sof.id = su.office_id   2020/8/24 隐藏部门栏位
+        WHERE
+        <if test="customerId!=null">
+            socp.customer_id = #{customerId} and
+        </if>
+        <if test="keFuId!=null">
+            socp.kefu_id = #{keFuId} and
+        </if>
+        <if test="areaId!=null">
+            socp.area_id = #{areaId} and
+        </if>
+        <if test="servicePointId!=null">
+            socp.servicePoint_id = #{servicePointId} and
+        </if>
+        <if test="complainStatus!=null">
+            socp.status = #{complainStatus} and
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    socp.product_category_id = #{productCategoryIds[0]} and
+                </when>
+                <otherwise>
+                    socp.product_category_id in
+                    <foreach item="item" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{item}
+                    </foreach>
+                    and
+                </otherwise>
+            </choose>
+        </if>
+        socp.complain_date >= #{startDate}
+        and <![CDATA[ socp.complain_date <= #{endDate} ]]>
+        ORDER BY socp.order_id
+    </select>
+
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM sd_order_complain socp
+        INNER JOIN sd_order_condition soc ON soc.order_id = socp.order_id
+        LEFT JOIN sys_user su ON socp.kefu_id = su.id
+        LEFT JOIN sys_office sof ON sof.id = su.office_id
+        WHERE
+        <if test="customerId!=null">
+            socp.customer_id = #{customerId} and
+        </if>
+        <if test="keFuId!=null">
+            socp.kefu_id = #{keFuId} and
+        </if>
+        <if test="areaId!=null">
+            socp.area_id = #{areaId} and
+        </if>
+        <if test="servicePointId!=null">
+            socp.servicePoint_id = #{servicePointId} and
+        </if>
+        <if test="complainStatus!=null">
+            socp.status = #{complainStatus} and
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    socp.product_category_id = #{productCategoryIds[0]} and
+                </when>
+                <otherwise>
+                    socp.product_category_id in
+                    <foreach item="item" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{item}
+                    </foreach>
+                    and
+                </otherwise>
+            </choose>
+        </if>
+        socp.complain_date >= #{startDate}
+        and <![CDATA[ socp.complain_date <= #{endDate} ]]>
+    </select>
+</mapper>

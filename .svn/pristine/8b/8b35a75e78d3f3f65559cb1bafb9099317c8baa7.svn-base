@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.chart.mapper.ServicePointQtyStatisticsMapper">
+    <select id="getServicePointQty" resultType="com.kkl.kklplus.provider.rpt.chart.entity.RPTServicePointQtyEntity">
+        SELECT
+        sum(frequent_qty) AS "frequentQty",
+        sum(trial_qty) AS "trialQty"
+        FROM rpt_servicepoint_qty
+        WHERE
+        system_id = #{systemId}
+        and create_date >= #{beginDate}
+        AND <![CDATA[ create_date <= #{endDate}]]>
+        and product_category_id = #{productCategoryId}
+    </select>
+
+    <select id="getServicePointProductCategoryQty"
+            resultType="com.kkl.kklplus.provider.rpt.chart.entity.RPTServicePointQtyEntity">
+        SELECT
+        product_category_id,
+        sum(frequent_qty) AS "frequentQty",
+        sum(trial_qty) AS "trialQty"
+        FROM rpt_servicepoint_qty
+        WHERE
+        system_id = #{systemId}
+        and create_date >= #{beginDate}
+        AND <![CDATA[ create_date <= #{endDate}]]>
+        <if test="productCategoryIds.size() != 0">
+            and product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        GROUP BY product_category_id
+    </select>
+
+    <select id="getServicePointAutoPlanQty"
+            resultType="com.kkl.kklplus.provider.rpt.chart.entity.RPTServicePointQtyEntity">
+        SELECT
+        product_category_id,
+        sum(auto_plan_qty) AS "autoPlanQty"
+        FROM rpt_servicepoint_qty
+        WHERE
+        system_id = #{systemId}
+        and create_date >= #{beginDate}
+        AND <![CDATA[ create_date <= #{endDate}]]>
+        <if test="productCategoryIds.size() != 0">
+            and product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        GROUP BY product_category_id
+    </select>
+
+    <insert id="insertServicePointQtyData">
+        INSERT INTO rpt_servicepoint_qty(
+        system_id,
+        create_date,
+        product_category_id,
+        frequent_qty,
+        trial_qty,
+        auto_plan_qty
+        )VALUES(
+        #{systemId},
+        #{createDate},
+        #{productCategoryId},
+        #{frequentQty},
+        #{trialQty},
+        #{autoPlanQty}
+        )
+    </insert>
+
+    <delete id="deleteServicePointQtyFromRptDB">
+        DELETE FROM rpt_servicepoint_qty
+        WHERE   system_id = #{systemId}
+        AND create_date >= #{startDate}
+        AND <![CDATA[ create_date <= #{endDate}]]>
+    </delete>
+</mapper>

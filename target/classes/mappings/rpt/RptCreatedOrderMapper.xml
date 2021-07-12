@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.RptCreatedOrderMapper">
+    <select id="getOrderDailyWorkList" resultType="com.kkl.kklplus.entity.rpt.RPTOrderDailyWorkEntity">
+        SELECT day_index AS 'dayIndex',data_source AS 'dataSource',count(0) AS dataSourceSum
+        FROM  rpt_created_order
+        <where>
+            <if test="beginDate != null and beginDate > 0">
+                      order_create_date >= #{beginDate}
+            </if>
+            <if test="endDate != null and endDate > 0">
+                AND <![CDATA[ order_create_date <= #{endDate}]]>
+            </if>
+             AND system_id = #{systemId}
+            <if test="customerId != null">
+            AND customer_id = #{customerId}
+            </if>
+            <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    AND  product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    AND  product_category_id IN
+                    <foreach item="item" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{item}
+                    </foreach>
+                </otherwise>
+            </choose>
+            </if>
+        </where>
+        GROUP BY dayIndex,dataSource
+        LIMIT 20000
+    </select>
+
+    <select id="getOrderDailyWorkSum" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        FROM rpt_created_order
+        <where>
+            <if test="beginDate != null and beginDate > 0">
+                order_create_date >= #{beginDate}
+            </if>
+            <if test="endDate != null and endDate > 0">
+                AND <![CDATA[ order_create_date <= #{endDate}]]>
+            </if>
+            AND system_id = #{systemId}
+            <if test="customerId != null">
+                AND customer_id = #{customerId}
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        AND product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        AND product_category_id IN
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </select>
+</mapper>

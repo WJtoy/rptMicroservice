@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.KeFuAreaRptMapper">
+
+    <select id="getKeFuAreaList" resultType="com.kkl.kklplus.entity.rpt.RPTKeFuAreaEntity">
+        select r.user_id AS "id" ,group_concat(a.full_name) AS "areaName"
+            from rpt_sys_user_region r
+            inner join rpt_sys_area a on a.id =r.area_id and r.area_type = 4
+            or (a.id = r.province_id and r.area_type = 2)
+            or (a.id = r.city_id and r.area_type = 3 )
+            or (a.type= r.area_type and r.area_type=1)
+            where
+              r.system_id = #{systemId}
+            group by r.user_id
+            limit 10000;
+    </select>
+
+
+    <select id="getKeFuProvinceList" resultType="com.kkl.kklplus.provider.rpt.entity.KeFuAreaEntity">
+        select user_id, province_id,area_type
+            from rpt_sys_user_region_1
+            where
+            system_id = #{systemId}
+            and area_type = 2
+            limit 10000;
+    </select>
+
+    <select id="getKeFuCityList" resultType="com.kkl.kklplus.provider.rpt.entity.KeFuAreaEntity">
+        select user_id,city_id,area_type
+            from rpt_sys_user_region_1
+            where
+            system_id = #{systemId}
+            and area_type = 3
+            limit 10000;
+    </select>
+
+
+    <select id="getKeFuAreasList" resultType="com.kkl.kklplus.provider.rpt.entity.KeFuAreaEntity">
+        select user_id,area_id,area_type
+            from rpt_sys_user_region_1
+            where
+            system_id = #{systemId}
+            and area_type = 4
+            limit 10000;
+    </select>
+
+    <select id="getKeFuCountryList" resultType="com.kkl.kklplus.provider.rpt.entity.KeFuAreaEntity">
+        select user_id,area_type
+            from rpt_sys_user_region_1
+            where
+            system_id = #{systemId}
+            and area_type = 1
+            limit 10000;
+    </select>
+</mapper>

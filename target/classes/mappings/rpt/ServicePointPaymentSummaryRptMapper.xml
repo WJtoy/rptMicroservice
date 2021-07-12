@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.ServicePointPaymentSummaryRptMapper">
+
+    <select id="getServicePointPaymentList"  resultType="com.kkl.kklplus.entity.rpt.RPTServicePointInvoiceEntity">
+        select
+        date_format(fsw.pay_date, '%Y-%m-%d') AS payDate,
+        fsw.bank as bankOwner, fsw.payment_type as bankNo,
+        sum(fsw.pay_amount) as payAmount,
+        sum(fsw.platform_fee) as platformFee
+        from fi_servicepoint_withdraw  fsw
+        <where>
+            fsw.del_flag = 0
+            and fsw.status = 40
+            and  fsw.pay_date >= #{beginDate}
+            and <![CDATA[  fsw.pay_date <= #{endDate} ]]>
+            <if test="paymentType != null">
+                and fsw.payment_type = #{paymentType}
+            </if>
+            <if test="bank != null">
+                and fsw.bank = #{bank}
+            </if>
+            <if test="quarter != null ">
+            AND fsw.quarter = #{quarter}
+            </if>
+        </where>
+        group by fsw.bank, fsw.payment_type, payDate;
+    </select>
+
+
+
+    <select id="hasReportData"  resultType="java.lang.Integer">
+        select
+        count(0)
+        from fi_servicepoint_withdraw  fsw
+        <where>
+            fsw.del_flag = 0
+            and fsw.status = 40
+            and  fsw.pay_date >= #{beginDate}
+            and <![CDATA[  fsw.pay_date <= #{endDate} ]]>
+            <if test="paymentType != null">
+                and fsw.payment_type = #{paymentType}
+            </if>
+            <if test="bank != null">
+                and fsw.bank = #{bank}
+            </if>
+            <if test="quarter != null ">
+                AND fsw.quarter = #{quarter}
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.chart.mapper.OrderQtyDailyChartMapper">
+    <select id="getOrderQtyDailyChartData"
+            resultType="com.kkl.kklplus.provider.rpt.chart.entity.RPTOrderQtyDailyChartEntity">
+        SELECT
+        completed_order,
+        auto_completed_order,
+        financial_audit,
+        auto_financial_audit,
+        abnormal_audit,
+        cancelled_order,
+        uncompleted_order
+        FROM rpt_order_qty_daily
+        WHERE
+        system_id = #{systemId}
+        AND create_date >= #{startDate}
+        AND <![CDATA[ create_date <= #{endDate}]]>
+    </select>
+
+    <select id="getPlanOrderData" resultType="java.lang.Integer">
+        SELECT count(0)
+        FROM rpt_created_order
+        WHERE
+        system_id = #{systemId}
+        AND order_create_date >= #{startDate}
+        AND <![CDATA[ order_create_date <= #{endDate}]]>
+
+        <if test="quarter != null and quarter != ''.toString()">
+            and quarter = #{quarter}
+        </if>
+    </select>
+
+    <select id="getCancelledOrderData" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM
+        rpt_cancelled_order_daily
+        WHERE
+            system_id = #{systemId}
+            AND order_close_date >= #{startDate}
+            AND <![CDATA[ order_close_date <= #{endDate}]]>
+            <if test="quarter != null and quarter != ''.toString()">
+                and quarter = #{quarter}
+            </if>
+    </select>
+
+    <select id="getCompletedOrderData" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM
+        rpt_graded_order
+        WHERE
+        system_id = #{systemId}
+        AND close_date >= #{startDate}
+        AND <![CDATA[ close_date <= #{endDate}]]>
+        and  quarter = #{quarter}
+    </select>
+
+    <select id="getFinancialAuditData" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM rpt_order_customer_time
+        WHERE
+        system_id = #{systemId}
+        AND order_close_date >= #{startDate}
+        AND <![CDATA[ order_close_date <= #{endDate} ]]>
+        and quarter = #{quarter}
+    </select>
+
+    <select id="getAutoFinancialAuditData" resultType="java.lang.Integer">
+        SELECT
+        sum(qty)
+        FROM rpt_order_audit_abnormal
+        WHERE
+        system_id = #{systemId}
+        AND audit_date >= #{startDate}
+        AND <![CDATA[ audit_date <= #{endDate} ]]>
+        and type = 10
+
+    </select>
+
+    <select id="getAbnormalOrderData" resultType="java.lang.Integer">
+        SELECT
+        sum(qty)
+        FROM rpt_order_audit_abnormal
+        WHERE
+        system_id = #{systemId}
+        AND audit_date >= #{startDate}
+        AND <![CDATA[ audit_date <= #{endDate} ]]>
+        and type = 30
+    </select>
+
+    <select id="getAutoCompletedData" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM rpt_graded_order
+        WHERE
+        system_id = #{systemId}
+        AND close_date >= #{startDate}
+        AND <![CDATA[ close_date <= #{endDate}]]>
+        and grade_flag > 1
+        and  quarter = #{quarter}
+    </select>
+
+    <select id="getUnCompletedOrderData" resultType="java.lang.Integer">
+        SELECT uncompleted_order
+        FROM rpt_order_qty_daily
+        WHERE
+        system_id = #{systemId}
+        and create_date >= #{startDate}
+        AND <![CDATA[ create_date <= #{endDate}]]>
+    </select>
+
+    <insert id="insertOrderQtyDailyData">
+        INSERT INTO rpt_order_qty_daily(
+        system_id,
+        create_date,
+        customer_plan,
+        completed_order,
+        auto_completed_order,
+        financial_audit,
+        auto_financial_audit,
+        abnormal_audit,
+        cancelled_order,
+        uncompleted_order
+        )VALUES (
+        #{systemId},
+        #{createDate},
+        #{customerPlan},
+        #{completedOrder},
+        #{autoCompletedOrder},
+        #{financialAudit},
+        #{autoFinancialAudit},
+        #{abnormalAudit},
+        #{cancelledOrder},
+        #{uncompletedOrder}
+        )
+    </insert>
+
+    <delete id="deleteOrderQtyDailyFromRptDB">
+        DELETE FROM rpt_order_qty_daily
+        WHERE   system_id = #{systemId}
+        AND create_date >= #{startDate}
+        AND <![CDATA[ create_date <= #{endDate}]]>
+    </delete>
+</mapper>

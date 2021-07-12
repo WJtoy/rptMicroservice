@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.chart.mapper.IncurExpenseChartMapper">
+
+    <select id="getSpecialExpenses" resultType="com.kkl.kklplus.entity.common.NameValuePair">
+      SELECT
+      sum(t${day}) as 'name',
+      sum(o${day}) as 'value'
+      from rpt_area_special_charge
+      where
+      system_id = #{systemId}
+      and yearmonth = #{yearmonth}
+    </select>
+</mapper>

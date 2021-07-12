@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.ServicePointBalanceRptMapper">
+
+
+    <select id="getServicePointPayableData"  resultType="com.kkl.kklplus.entity.rpt.RPTServicePointBalanceEntity">
+        select
+        payable.servicepoint_id as servicePointId,sum(payable.m${selectedMonth}) as payableAmount,
+        sum(paid.m${selectedMonth}) as paidAmount,sum(balance.m${selectedMonth}) as theBalance
+        from
+        fi_servicepoint_payable_monthly_detail payable
+        left join fi_servicepoint_invoice_monthly_detail paid on paid.id = payable.id and paid.year = #{selectedYear}
+        left join rpt_servicepoint_balance_monthly_detail balance on balance.id = payable.id and balance.year = #{selectedYear}
+        <where>
+        payable.year = #{selectedYear}
+        <if test="servicePointId != null and servicePointId > 0 ">
+            and payable.servicepoint_id = #{servicePointId}
+        </if>
+        <if test="paymentType != null">
+            and payable.payment_type = #{paymentType}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    AND payable.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    AND payable.product_category_id IN
+                    <foreach item="item" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{item}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        </where>
+        group by servicePointId
+        order by servicePointId
+    </select>
+
+
+    <select id="getServicePointPayableReport"  resultType="com.kkl.kklplus.entity.rpt.RPTServicePointBalanceEntity">
+        select
+        payable.servicepoint_id as servicePointId,sum(payable.m${selectedMonth}) as payableAmount,
+        sum(paid.m${selectedMonth}) as paidAmount,sum(balance.m${selectedMonth}) as theBalance
+        from
+        fi_servicepoint_payable_monthly_detail payable
+        left join fi_servicepoint_invoice_monthly_detail paid on paid.id = payable.id and paid.year = #{selectedYear}
+        left join rpt_servicepoint_balance_monthly_detail balance on balance.id = payable.id and balance.year = #{selectedYear}
+        <where>
+            payable.year = #{selectedYear}
+            <if test="servicePointId != null and servicePointId > 0 ">
+                and payable.servicepoint_id = #{servicePointId}
+            </if>
+            <if test="paymentType != null">
+                and payable.payment_type = #{paymentType}
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                <choose>
+                    <when test="productCategoryIds.size() == 1">
+                        AND payable.product_category_id = #{productCategoryIds[0]}
+                    </when>
+                    <otherwise>
+                        AND payable.product_category_id IN
+                        <foreach item="item" index="index" collection="productCategoryIds" open="("
+                                 separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+        group by servicePointId
+        order by servicePointId
+    </select>
+
+    <select id="getServicePointBalanceData" resultType="com.kkl.kklplus.entity.rpt.RPTServicePointBalanceEntity">
+        select
+        balance.servicepoint_id as servicePointId,sum(balance.m${selectedMonth}) as preBalance
+        from rpt_servicepoint_balance_monthly_detail balance
+        <where>
+        balance.year = #{selectedYear}
+        <if test="servicePointIds != null and servicePointIds.size > 0">
+            and balance.servicepoint_id in
+            <foreach collection="servicePointIds" item="servicePointId" open="(" separator="," close=")">
+                #{servicePointId}
+            </foreach>
+        </if>
+        <if test="paymentType != null">
+            and balance.payment_type = #{paymentType}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    AND balance.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    AND balance.product_category_id IN
+                    <foreach item="item" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{item}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+        </where>
+        group by servicePointId
+        limit 200000
+    </select>
+
+    <select id="getServicePointPayableDataSum"  resultType="java.lang.Integer">
+        select
+        count(0)
+        from
+        fi_servicepoint_payable_monthly_detail payable
+        left join fi_servicepoint_invoice_monthly_detail paid on paid.id = payable.id and paid.year = #{selectedYear}
+        left join rpt_servicepoint_balance_monthly_detail balance on balance.id = payable.id and balance.year = #{selectedYear}
+
+        where 	payable.year = #{selectedYear}
+        <if test="servicePointId != null and servicePointId > 0 ">
+            and payable.servicepoint_id = #{servicePointId}
+        </if>
+        <if test="paymentType != null">
+            and payable.payment_type = #{paymentType}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    AND payable.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    AND payable.product_category_id IN
+                    <foreach item="item" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{item}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+    </select>
+
+    <select id="getServicePointBalanceDataSum"  resultType="java.lang.Integer">
+        select
+        count(0)
+        from 	rpt_servicepoint_balance_monthly_detail balance
+        where 	balance.year = #{selectedYear}
+        <if test="servicePointIds != null and servicePointIds.size > 0">
+            and balance.servicepoint_id in
+            <foreach collection="servicePointIds" item="servicePointId" open="(" separator="," close=")">
+                #{servicePointId}
+            </foreach>
+        </if>
+        <if test="paymentType != null">
+            and balance.payment_type = #{paymentType}
+        </if>
+        <if test="productCategoryIds.size() != 0">
+            <choose>
+                <when test="productCategoryIds.size() == 1">
+                    AND balance.product_category_id = #{productCategoryIds[0]}
+                </when>
+                <otherwise>
+                    AND balance.product_category_id IN
+                    <foreach item="item" index="index" collection="productCategoryIds" open="("
+                             separator="," close=")">
+                        #{item}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+    </select>
+</mapper>

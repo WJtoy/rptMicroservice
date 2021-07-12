@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.chart.mapper.CustomerComplainChartMapper">
+
+    <select id="getCustomerComplainQty" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM rpt_order_complain
+        WHERE system_id = #{systemId}
+        AND complain_date BETWEEN #{beginDate} AND #{endDate}
+        <if test="quarter != null and quarter != ''.toString()">
+            and quarter = #{quarter}
+        </if>
+    </select>
+
+    <select id="getCustomerValidComplain" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM rpt_order_complain
+        WHERE system_id = #{systemId}
+        AND complain_date BETWEEN #{beginDate} AND #{endDate}
+        AND complain_status = 0
+        <if test="quarter != null and quarter != ''.toString()">
+            and quarter = #{quarter}
+        </if>
+    </select>
+
+    <select id="getCustomerMediumPoorEvaluate" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM rpt_order_complain
+        WHERE system_id = #{systemId}
+        AND complain_date BETWEEN #{beginDate} AND #{endDate}
+        AND evaluate_status = 1
+        <if test="quarter != null and quarter != ''.toString()">
+            and quarter = #{quarter}
+        </if>
+    </select>
+</mapper>

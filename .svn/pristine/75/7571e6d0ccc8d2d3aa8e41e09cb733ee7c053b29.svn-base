@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CustomerFinanceRptMapper">
+    <select id="getCustomerFinance" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerFinanceEntity">
+        select
+        a.id AS "customer.id",
+        a.balance,
+        a.block_amount,
+        a.credit,
+        a.remarks
+        from md_customer_finance a
+        where
+        <if test="customerIds != null and customerIds.size > 0">
+            <choose>
+                <when test="customerIds.size == 1">
+                    a.id = #{customerIds[0]}
+                </when>
+                <otherwise>
+                    a.id IN
+                    <foreach collection="customerIds" item="customerIds" index="index" open="(" close=")" separator=",">
+                        #{customerIds}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+    </select>
+
+
+    <select id="getAllCustomerFinance" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerFinanceEntity">
+        select
+        a.id AS "customer.id",
+        a.balance,
+        a.block_amount,
+        a.credit,
+        a.remarks
+        from md_customer_finance a
+    </select>
+</mapper>

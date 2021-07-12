@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CompletedOrderRptMapper">
+
+    <select id="getCompletedOrderListFromWebDB" resultType="com.kkl.kklplus.entity.rpt.RPTCompletedOrderEntity">
+        SELECT
+              soc.order_id, soc.order_no, so.workcard_id AS 'workCardId', so.parent_biz_order_id,
+              so.data_source AS 'dataSource.value', sof.order_payment_type AS 'paymentType.value', sof.expect_charge, sof.blocked_charge,
+              soc.product_category_id AS 'productCategory.id',
+
+              soc.customer_id AS 'customer.id', so.shop_id AS 'shop.value',
+
+              soc.user_name, soc.phone1 AS 'userPhone', CONCAT(soc.area_name,' ', soc.address) AS 'userAddress', soc.kefu_id AS 'keFu.id',
+              soc.status AS 'status.value', so.description AS 'description', soc.create_by AS 'createBy.id',
+              soc.create_date, sos.charge_date, soc.arrival_date, soc.app_complete_date, soc.close_date,
+              sos.plan_date, soc.appointment_date, soc.app_complete_type AS 'appCompleteType.value',
+
+              sof.insurance_charge AS 'engineerInsuranceCharge', sof.time_liness_charge AS 'engineerTimelinessCharge',
+              sof.subsidy_time_liness_charge AS 'engineerCustomerTimelinessCharge', sof.praise_fee AS 'customerPraiseFee',
+              sof.engineer_praise_fee AS 'engineerPraiseFee', sof.engineer_tax_fee AS 'engineerTaxFee', sof.engineer_info_fee AS 'engineerInfoFee',
+              sof.engineer_deposit AS 'engineerDeposit',
+              sof.engineer_urgent_charge,
+
+              sof.customer_time_liness_charge, sof.customer_urgent_charge, sof.customer_time_liness,
+
+              soc.time_liness AS 'timeliness', sos.customer_approve_date,
+
+              so.orderitem_json AS 'orderItemPb'
+        FROM sd_order_condition soc
+             INNER JOIN sd_order_head so ON so.id = soc.order_id
+             INNER JOIN sd_order_status sos ON sos.order_id = soc.order_id
+             INNER JOIN sd_order_fee sof ON sof.order_id = soc.order_id
+        WHERE sos.charge_date >= #{beginDate} and <![CDATA[ sos.charge_date < #{endDate} ]]>
+        LIMIT 200000
+    </select>
+
+    <select id="getCompletedOrderDetailListFromWebDB" resultType="com.kkl.kklplus.entity.rpt.web.RPTOrderDetail">
+        SELECT
+              sod.id, sod.order_id, sod.servicepoint_id AS 'servicePoint.id', sod.engineer_id AS 'engineer.id',
+              sod.engineer_payment_type AS 'engineerPaymentType.value',
+              sod.service_times, sod.service_type_id AS 'serviceType.id',
+              sod.product_id AS 'product.id', sod.product_spec, sod.brand, sod.qty,
+              sod.charge AS 'serviceCharge', sod.material_charge, sod.travel_charge, sod.express_charge, sod.other_charge,
+              sod.remarks,sod.error_type_id AS 'errorType.value',sod.error_code_id AS 'errorCode.value',sod.action_code_id AS 'actionCode.value',sod.action_name,
+              sod.engineer_service_charge, sod.engineer_material_charge, sod.engineer_travel_charge, sod.engineer_express_charge, sod.engineer_other_charge
+        FROM  sd_orderdetail sod
+              INNER JOIN sd_order_status sos ON sos.order_id = sod.order_id
+        WHERE sos.charge_date >= #{beginDate} AND <![CDATA[ sos.charge_date < #{endDate} ]]>
+              AND sod.del_flag = 0
+        LIMIT 200000
+    </select>
+
+    <select id="getCompletedOrderUnitBarcodeListFromWebDB" resultType="com.kkl.kklplus.entity.rpt.web.RPTOrderItem">
+        SELECT
+              soic.order_id,
+              soic.product_id AS 'product.id',
+              soic.unit_barcode
+        FROM  sd_order_item_complete soic
+              INNER JOIN sd_order_status sos ON soic.order_id = sos.order_id
+        WHERE sos.charge_date >= #{beginDate} and <![CDATA[ sos.charge_date < #{endDate} ]]>
+        LIMIT 200000
+    </select>
+
+    <select id="getCompletedOrderDetailFeeListWebDB" resultType="com.kkl.kklplus.entity.rpt.web.RPTOrderDetail">
+        SELECT
+              sosf.order_id AS "orderId",
+              sosf.servicepoint_id AS "servicePoint.id",
+              sosf.insurance_charge AS "engineerInsuranceCharge",
+              sosf.time_liness_charge AS "engineerTimelinessCharge",
+              sosf.customer_time_liness_charge AS "engineerCustomerTimelinessCharge",
+              sosf.praise_fee AS "engineerPraiseFee",
+              sosf.tax_fee AS "engineerTaxFee",
+              sosf.info_fee AS "engineerInfoFee",
+              sosf.deposit AS "engineerDeposit",
+              sosf.urgent_charge AS "engineerUrgentCharge"
+        FROM  sd_order_servicepoint_fee sosf
+              INNER JOIN sd_order_status sos ON sos.order_id = sosf.order_id
+        WHERE sos.charge_date >= #{beginDate} AND <![CDATA[ sos.charge_date < #{endDate} ]]>
+              and sosf.del_flag = 0
+        LIMIT 200000
+    </select>
+
+
+    <insert id="insert" parameterType="com.kkl.kklplus.entity.rpt.RPTCompletedOrderEntity">
+        INSERT INTO rpt_completed_order
+        (
+            system_id,
+            order_id,
+            order_no,
+            workcard_id,
+            parent_biz_order_id,
+            product_category_id,
+            customer_id,
+            customer_code,
+            customer_name,
+            customer_payment_type_name,
+            contract_date,
+            sales_name,
+            payment_type,
+            data_source,
+            shop_name,
+            expect_charge,
+            blocked_charge,
+            description,
+            user_name,
+            user_phone,
+            user_address,
+            kefu_name,
+            create_by_name,
+            create_date,
+            customer_approve_date,
+            plan_date,
+            appointment_date,
+            arrival_date,
+            app_complete_date,
+            close_date,
+            charge_date,
+            engineer_insurance_charge,
+            engineer_timeLiness_charge,
+            engineer_customer_timeliness_charge,
+            engineer_urgent_charge,
+            engineer_praise_fee,
+            engineer_tax_fee,
+            engineer_info_fee,
+            engineer_deposit,
+            customer_timeliness_charge,
+            customer_urgent_charge,
+            customer_praise_fee,
+            customer_timeliness,
+            timeliness,
+            engineer_subtotal_charge,
+            customer_subtotal_charge,
+            status,
+            status_label,
+            warranty_status,
+            app_complete_type,
+            order_item_pb,
+            order_detail_pb,
+            service_point_pb,
+            engineer_pb,
+            quarter
+        )
+        VALUES
+        (
+            #{systemId},
+            #{orderId},
+            #{orderNo},
+            #{workCardId},
+            #{parentBizOrderId},
+            #{productCategory.id},
+            #{customer.id},
+            #{customer.code},
+            #{customer.name},
+            #{customer.paymentType.label},
+            #{customer.contractDt},
+            #{customer.sales.name},
+            #{paymentType.value},
+            #{dataSource.value},
+            #{shop.label},
+            #{expectCharge},
+            #{blockedCharge},
+            #{description},
+            #{userName},
+            #{userPhone},
+            #{userAddress},
+            #{keFu.name},
+            #{createBy.name},
+            #{createDt},
+            #{customerApproveDt},
+            #{planDt},
+            #{appointmentDt},
+            #{arrivalDt},
+            #{appCompleteDt},
+            #{closeDt},
+            #{chargeDt},
+            #{engineerInsuranceCharge},
+            #{engineerTimelinessCharge},
+            #{engineerCustomerTimelinessCharge},
+            #{engineerUrgentCharge},
+            #{engineerPraiseFee},
+            #{engineerTaxFee},
+            #{engineerInfoFee},
+            #{engineerDeposit},
+            #{customerTimelinessCharge},
+            #{customerUrgentCharge},
+            #{customerPraiseFee},
+            #{customerTimeliness},
+            #{timeliness},
+            #{engineerSubtotalCharge},
+            #{customerSubtotalCharge},
+            #{status.value},
+            #{status.label},
+            #{warrantyStatus},
+            #{appCompleteType.label},
+            #{orderItemPb},
+            #{orderDetailPb},
+            #{servicePointPb},
+            #{engineerPb},
+            #{quarter}
+        )
+    </insert>
+
+    <sql id="completedOrderColumns">
+        a.id,
+        a.system_id,
+        a.order_id,
+        a.order_no,
+        a.workcard_id                           AS "workCardId",
+        a.parent_biz_order_id,
+        a.product_category_id                   AS "productCategory.id",
+        a.customer_id                           AS "customer.id",
+        a.customer_code                         AS "customer.code",
+        a.customer_name                         AS "customer.name",
+        a.customer_payment_type_name            AS "customer.paymentType.label",
+        a.contract_date                         AS "customer.contractDt",
+        a.sales_name                            AS "customer.sales.name",
+        a.payment_type                          AS "paymentType.value",
+        a.data_source                           AS "dataSource.value",
+        a.shop_name                             AS "shop.label",
+        a.expect_charge,
+        a.blocked_charge,
+        a.description,
+        a.user_name,
+        a.user_phone,
+        a.user_address,
+        a.kefu_name                             AS "keFu.name",
+        a.create_by_name                        AS "createBy.name",
+        a.create_date                           AS "createDt",
+        a.plan_date                             AS "planDt",
+        a.appointment_date                      AS "appointmentDt",
+        a.arrival_date                          AS "arrivalDt",
+        a.app_complete_date                     AS "appCompleteDt",
+        a.close_date                            AS "closeDt",
+        a.charge_date                           AS "chargeDt",
+        a.engineer_insurance_charge,
+        a.engineer_timeLiness_charge,
+        a.engineer_customer_timeliness_charge,
+        a.engineer_urgent_charge,
+        a.customer_timeliness_charge,
+        a.customer_urgent_charge,
+        a.customer_praise_fee,
+        a.customer_timeliness,
+        a.engineer_subtotal_charge,
+        a.customer_subtotal_charge,
+        a.status                                AS "status.value",
+        a.status_label                          AS "status.label",
+        a.app_complete_type                     AS "appCompleteType.label",
+        a.order_item_pb,
+        a.order_detail_pb,
+        a.service_point_pb,
+        a.engineer_pb,
+        a.quarter
+    </sql>
+
+    <select id="getCompletedOrderListByPaging" resultType="com.kkl.kklplus.entity.rpt.RPTCompletedOrderEntity">
+        SELECT
+          <include refid="completedOrderColumns"/>
+        FROM rpt_completed_order a
+        <where>
+            <if test="quarter != null and quarter != ''.toString()">
+                a.quarter = #{quarter}
+            </if>
+            AND a.system_id = #{systemId}
+            <if test="customerId != null and customerId > 0">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="productCategoryId != null and productCategoryId > 0">
+                AND a.product_category_id = #{productCategoryId}
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                and a.product_category_id in
+                <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                         separator="," close=")">
+                    #{productCategoryIds}
+                </foreach>
+            </if>
+            <if test="paymentType != null and paymentType > 0">
+                AND a.payment_type = #{paymentType}
+            </if>
+            <if test="beginChargeDate != null and beginChargeDate > 0">
+                AND a.charge_date >= #{beginChargeDate}
+            </if>
+            <if test="endChargeDate != null and endChargeDate > 0">
+                AND <![CDATA[ a.charge_date <= #{endChargeDate} ]]>
+            </if>
+        </where>
+        ORDER BY a.order_id
+    </select>
+
+    <select id="getCompletedOrderList" resultType="com.kkl.kklplus.entity.rpt.RPTCompletedOrderEntity">
+        SELECT
+        <include refid="completedOrderColumns"/>
+        FROM rpt_completed_order a
+        <where>
+             system_id = #{systemId}
+            AND a.charge_date >= #{beginDate}
+            AND <![CDATA[ a.charge_date <= #{endDate} ]]>
+            AND a.customer_id = #{customerId}
+            <if test="quarter != null and quarter != ''.toString()">
+               And a.quarter = #{quarter}
+            </if>
+        </where>
+        ORDER BY a.order_id
+        LIMIT 100000
+    </select>
+
+    <select id="getCompletedOrderIds" resultType="com.kkl.kklplus.provider.rpt.entity.LongTwoTuple">
+        SELECT
+              a.id        AS "aElement",
+              a.order_id  AS "bElement"
+        FROM  rpt_completed_order a
+        WHERE a.quarter = #{quarter}
+              AND a.system_id = #{systemId}
+              AND a.charge_date >= #{beginChargeDate}
+              AND <![CDATA[ a.charge_date <= #{endChargeDate} ]]>
+        LIMIT 200000
+    </select>
+
+    <delete id="deleteCompletedOrders">
+        DELETE FROM rpt_completed_order
+        WHERE quarter = #{quarter}
+              AND system_id = #{systemId}
+              AND charge_date >= #{beginChargeDate}
+              AND <![CDATA[ charge_date <= #{endChargeDate} ]]>
+    </delete>
+
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        FROM rpt_completed_order a
+        <where>
+            <if test="quarter != null and quarter != ''.toString()">
+                a.quarter = #{quarter}
+            </if>
+            AND a.system_id = #{systemId}
+            <if test="customerId != null and customerId > 0">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="productCategoryId != null and productCategoryId > 0">
+                AND a.product_category_id = #{productCategoryId}
+            </if>
+            <if test="productCategoryIds.size() != 0">
+                and a.product_category_id in
+                <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                         separator="," close=")">
+                    #{productCategoryIds}
+                </foreach>
+            </if>
+            <if test="paymentType != null and paymentType > 0">
+                AND a.payment_type = #{paymentType}
+            </if>
+            <if test="beginChargeDate != null and beginChargeDate > 0">
+                AND a.charge_date >= #{beginChargeDate}
+            </if>
+            <if test="endChargeDate != null and endChargeDate > 0">
+                AND <![CDATA[ a.charge_date <= #{endChargeDate} ]]>
+            </if>
+        </where>
+    </select>
+
+</mapper>

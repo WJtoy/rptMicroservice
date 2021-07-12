@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.RechargeRecordRptMapper">
+
+    <select id="rechargeRecordPage" resultType="com.kkl.kklplus.entity.rpt.RPTRechargeRecordEntity">
+        SELECT fc.customer_id ,fc.currency_no ,fc.amount,
+        fc.action_type as 'actionType.value', fc.create_date,
+        fc.update_date,fc.remarks
+
+        FROM fi_customercurrency fc
+        WHERE
+        <if test="customerId!= null">
+            fc.customer_id = #{customerId} And
+        </if>
+        fc.update_date >= #{beginDate}
+        AND <![CDATA[ fc.update_date <= #{endDate} ]]>
+        <choose>
+            <when test="actionType != null">
+                And fc.action_type = #{actionType}
+            </when>
+            <otherwise>
+                And fc.action_type IN (10,20,90)
+            </otherwise>
+        </choose>
+        <if test="quarters != null and quarters.size > 0">
+            <choose>
+                <when test="quarters.size == 1">
+                    AND fc.quarter = #{quarters[0]}
+                </when>
+                <otherwise>
+                    AND fc.quarter IN <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">#{quarter}</foreach>
+                </otherwise>
+            </choose>
+        </if>
+    </select>
+
+    <select id="rechargeRecordList" resultType="com.kkl.kklplus.entity.rpt.RPTRechargeRecordEntity">
+        SELECT fc.customer_id ,fc.currency_no ,fc.amount,
+        fc.action_type as 'actionType.value', fc.create_date,
+        fc.update_date,fc.remarks
+
+        FROM fi_customercurrency fc
+        WHERE
+        <if test="customerId!= null">
+            fc.customer_id = #{customerId} And
+        </if>
+        fc.update_date >= #{beginDate}
+        AND <![CDATA[ fc.update_date <= #{endDate} ]]>
+        <choose>
+            <when test="actionType != null">
+                And fc.action_type = #{actionType}
+            </when>
+            <otherwise>
+                And (fc.action_type = 10 or fc.action_type = 20 or fc.action_type = 90)
+            </otherwise>
+        </choose>
+        <if test="quarters != null and quarters.size > 0">
+            <choose>
+                <when test="quarters.size == 1">
+                    AND fc.quarter = #{quarters[0]}
+                </when>
+                <otherwise>
+                    AND fc.quarter IN <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">${quarter}</foreach>
+                </otherwise>
+            </choose>
+        </if>
+        limit 200000
+    </select>
+
+    <select id="hasReportData" resultType="java.lang.Long">
+        select
+        fc.id
+        FROM fi_customercurrency fc
+        WHERE
+        <if test="customerId!= null">
+            fc.customer_id = #{customerId} And
+        </if>
+        fc.update_date >= #{beginDate}
+        AND <![CDATA[ fc.update_date <= #{endDate} ]]>
+        <choose>
+            <when test="actionType != null">
+                And fc.action_type = #{actionType}
+            </when>
+            <otherwise>
+                And (fc.action_type = 10 or fc.action_type = 20 or fc.action_type = 90)
+            </otherwise>
+        </choose>
+        <if test="quarters != null and quarters.size > 0">
+            <choose>
+                <when test="quarters.size == 1">
+                    AND fc.quarter = #{quarters[0]}
+                </when>
+                <otherwise>
+                    AND fc.quarter IN <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">${quarter}</foreach>
+                </otherwise>
+            </choose>
+        </if>
+        limit 1
+    </select>
+</mapper>

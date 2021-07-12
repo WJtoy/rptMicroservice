@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.AbnormalFinancialReviewRptMapper">
+
+    <select id="getManualChargeList"  resultType="com.kkl.kklplus.provider.rpt.entity.AbnormalFinancialReviewEntity">
+        SELECT sos.charge_by as createId ,
+               soc.product_category_id as productCategoryId,
+               count(*) as qty
+        FROM sd_order_condition soc
+              inner join sd_order_status sos ON soc.order_id = sos.order_id
+        WHERE soc.charge_flag=1
+            and soc.auto_charge_flag=0
+            and sos.charge_date >= #{startDate}
+            and <![CDATA[ sos.charge_date <= #{endDate} ]]>
+        GROUP BY createId,productCategoryId
+        Limit 200000
+    </select>
+
+
+    <!--获取自动对账的数量-->
+    <select id="getAutoChargeList"  resultType="com.kkl.kklplus.provider.rpt.entity.AbnormalFinancialReviewEntity">
+        SELECT sos.charge_by as createId ,
+               soc.product_category_id as productCategoryId,
+               count(*) as qty
+        FROM sd_order_condition soc inner join sd_order_status sos ON soc.order_id = sos.order_id
+        WHERE soc.charge_flag=1
+        and soc.auto_charge_flag!=0
+        and sos.charge_date >= #{startDate}
+        and <![CDATA[ sos.charge_date <= #{endDate} ]]>
+        GROUP BY createId,productCategoryId
+        Limit 200000
+    </select>
+
+
+    <select id="financialAuditStat"
+            resultType="com.kkl.kklplus.entity.abnormal.AbnormalFinancialAuditStatistics">
+    SELECT
+        create_by AS  "createId",
+        sub_type,
+        product_category_id,
+        count(0) AS qty
+    FROM
+        sd_abnormal_form
+    WHERE
+        form_type = 5
+        AND create_at BETWEEN #{createBeginDt} AND #{createEndDt}
+    GROUP BY createId,sub_type,product_category_id
+</select>
+
+    <insert id="insertAbnormalFinancialDaily">
+    INSERT INTO rpt_order_audit_abnormal
+       (
+        audit_date,
+        audit_by,
+        product_category_id,
+        type,
+        sub_type,
+        qty,
+        day_index,
+        system_id
+        )
+   VALUES
+        (
+        #{auditTime},
+        #{createId},
+        #{productCategoryId},
+        #{type},
+        #{subType},
+        #{qty},
+        #{dayIndex},
+        #{systemId}
+        )
+    </insert>
+
+
+    <delete id="deleteAbnormalFinancialData">
+        DELETE FROM rpt_order_audit_abnormal
+        WHERE  audit_date >= #{startDate}
+        AND <![CDATA[ audit_date <= #{endDate}]]>
+        AND system_id = #{systemId}
+    </delete>
+
+
+    <select id="getCheckerManualList" resultType="com.kkl.kklplus.entity.rpt.RPTAbnormalFinancialAuditEntity">
+        SELECT
+        a.day_index AS dayIndex,
+        a.audit_by AS createId,
+        sum(a.qty) AS countSum
+        FROM
+        rpt_order_audit_abnormal a
+        <where>
+            a.type = 20
+            AND a.system_id = #{systemId}
+            AND a.audit_date >= #{startDate}
+            AND <![CDATA[ a.audit_date <= #{endDate}]]>
+            <if test="abnormalIds != null and abnormalIds.size > 0">
+                <choose>
+                    <when test="abnormalIds.size == 1">
+                        AND  a.audit_by = #{abnormalIds[0]}
+                    </when>
+                    <otherwise>
+                        AND  a.audit_by IN
+                        <foreach collection="abnormalIds" item="abnormalId" index="index" open="(" close=")" separator=",">
+                            #{abnormalId}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+        group by dayIndex,createId
+        LIMIT 20000
+    </select>
+
+
+    <select id="getManualMonthList" resultType="com.kkl.kklplus.entity.rpt.RPTAbnormalFinancialAuditEntity">
+        SELECT
+        a.day_index AS dayIndex,
+        sum(a.qty) AS countSum
+        FROM
+        rpt_order_audit_abnormal a
+        <where>
+            a.type = 20
+            AND a.system_id = #{systemId}
+            AND a.audit_date >= #{startDate}
+            AND <![CDATA[ a.audit_date <= #{endDate}]]>
+            <if test="id != null and id != 0">
+                AND a.audit_by = #{id}
+            </if>
+        </where>
+        group by dayIndex
+        LIMIT 20000
+    </select>
+
+
+    <select id="getAutoMonthList" resultType="com.kkl.kklplus.entity.rpt.RPTAbnormalFinancialAuditEntity">
+        SELECT
+        a.day_index AS dayIndex,
+        sum(a.qty) AS countSum
+        FROM
+        rpt_order_audit_abnormal a
+        <where>
+            a.type = 10
+            AND a.system_id = #{systemId}
+            AND a.audit_date >= #{startDate}
+            AND <![CDATA[ a.audit_date <= #{endDate}]]>
+            <if test="id != null and id != 0">
+                AND a.audit_by = #{id}
+            </if>
+        </where>
+        group by dayIndex
+        LIMIT 20000
+    </select>
+
+
+    <select id="getCheckerAbnormalList" resultType="com.kkl.kklplus.entity.rpt.RPTAbnormalFinancialAuditEntity">
+        SELECT
+        a.sub_type AS subType,
+        a.day_index AS dayIndex,
+        a.audit_by AS createId,
+        sum(a.qty) AS countSum
+        FROM
+        rpt_order_audit_abnormal a
+        <where>
+            a.type = 30
+            AND a.system_id = #{systemId}
+            AND a.audit_date >= #{startDate}
+            AND <![CDATA[ a.audit_date <= #{endDate}]]>
+            <if test="id != null and id != 0">
+                AND a.audit_by = #{id}
+            </if>
+        </where>
+        group by dayIndex,subType,createId
+        LIMIT 20000
+    </select>
+
+    <select id="getAbnormalList" resultType="com.kkl.kklplus.entity.rpt.RPTAbnormalFinancialAuditEntity">
+        SELECT
+        a.sub_type AS subType,
+        a.day_index AS dayIndex,
+        sum(a.qty) AS countSum
+        FROM
+        rpt_order_audit_abnormal a
+        <where>
+            a.type = 30
+            AND a.system_id = #{systemId}
+            AND a.audit_date >= #{startDate}
+            AND <![CDATA[ a.audit_date <= #{endDate}]]>
+            <if test="id != null and id != 0">
+                AND a.audit_by = #{id}
+            </if>
+        </where>
+        group by dayIndex,subType
+        LIMIT 20000
+    </select>
+
+
+    <select id="getCompletedDaily" resultType="com.kkl.kklplus.entity.rpt.RPTAbnormalFinancialAuditEntity">
+        SELECT
+        day_index AS dayIndex,
+        count(id) AS countSum
+        FROM
+        rpt_graded_order
+        WHERE
+        system_id = #{systemId}
+        AND yearmonth = #{startYearMonth}
+        group by day_index
+        LIMIT 200000
+    </select>
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM
+        rpt_graded_order
+        WHERE
+        system_id = #{systemId}
+        AND yearmonth = #{startYearMonth}
+    </select>
+
+    <select id="hasManualReportData" resultType="java.lang.Integer">
+        SELECT
+        count(0)
+        FROM
+        rpt_order_audit_abnormal
+        WHERE
+        type = 20
+        AND system_id = #{systemId}
+        AND <![CDATA[ audit_date <= #{endDate}]]>
+        <if test="id != null and id != 0">
+            AND audit_by = #{id}
+        </if>
+    </select>
+
+
+
+</mapper>

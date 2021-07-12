@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CustomerChargeSummaryRptMapper">
+
+    <!-- 查询所有客户的工单数量 -->
+    <select id="getNewOrderQtyList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerChargeSummaryMonthlyEntity">
+        SELECT
+                soc.customer_id     AS customerId,
+                COUNT(soc.order_id) AS newQty
+        FROM 	sd_order_condition soc
+        WHERE 	soc.quarter = #{quarter}
+                AND soc.create_date >= #{beginDate}
+                AND <![CDATA[ soc.create_date < #{endDate}]]>
+        GROUP BY customerId
+        LIMIT 10000
+    </select>
+
+    <select id="getCompletedOrderQtyList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerChargeSummaryMonthlyEntity">
+        SELECT
+              fcc.customer_id               AS customerId,
+              COUNT(DISTINCT fcc.order_id)  AS completedQty
+        FROM  fi_customercharge  fcc
+        WHERE fcc.quarter = #{quarter}
+              AND fcc.create_date >= #{beginDate} AND <![CDATA[ fcc.create_date < #{endDate}]]>
+              AND fcc.charge_order_type = 0 AND fcc.del_flag = 0
+        GROUP BY customerId
+        LIMIT 10000
+    </select>
+
+    <select id="getReturnedOrderQtyList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerChargeSummaryMonthlyEntity">
+        SELECT
+              soc.customer_id     AS customerId,
+              COUNT(soc.order_id) AS returnedQty
+        FROM  sd_order_condition soc
+        WHERE soc.status = 90
+              AND soc.close_date >= #{beginDate} AND <![CDATA[ soc.close_date < #{endDate}]]>
+        GROUP BY customerId
+        LIMIT 10000
+    </select>
+
+    <select id="getCancelledOrderQtyList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerChargeSummaryMonthlyEntity">
+        SELECT
+              soc.customer_id     AS customerId,
+              COUNT(soc.order_id) AS cancelledQty
+        FROM  sd_order_condition soc
+        WHERE soc.status = 100
+              AND soc.close_date >= #{beginDate} AND <![CDATA[ soc.close_date < #{endDate}]]>
+        GROUP BY customerId
+        LIMIT 10000
+    </select>
+
+    <select id="getUnCompletedOrderQtyList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerChargeSummaryMonthlyEntity">
+        SELECT
+                soc.customer_id     AS customerId,
+                COUNT(soc.order_id) AS uncompletedQty
+        FROM 	sd_order_condition soc
+                INNER JOIN sd_order_status sos ON sos.order_id = soc.order_id
+        WHERE   <![CDATA[ soc.create_date < #{endDate} ]]>
+                AND (sos.cancel_approve_date IS NULL OR sos.cancel_approve_date > #{endDate})
+                AND (sos.charge_date IS NULL OR sos.charge_date > #{endDate})
+        GROUP BY customerId
+        LIMIT 10000
+    </select>
+    <!-- 查询所有客户的工单数量 -->
+
+
+    <!-- 查询单个客户的工单数量 -->
+    <select id="getNewOrderQty" resultType="Integer">
+        SELECT
+                COUNT(soc.order_id) AS newQty
+        FROM 	sd_order_condition soc
+        WHERE 	soc.quarter = #{quarter}
+                AND soc.customer_id = #{customerId}
+                AND soc.create_date >= #{beginDate}
+                AND <![CDATA[ soc.create_date < #{endDate}]]>
+    </select>
+
+    <select id="getCompletedOrderQty" resultType="Integer">
+        SELECT
+              COUNT(DISTINCT fcc.order_id)  AS completedQty
+        FROM  fi_customercharge  fcc
+        WHERE fcc.quarter = #{quarter}
+              AND fcc.customer_id = #{customerId}
+              AND fcc.create_date >= #{beginDate} AND <![CDATA[ fcc.create_date < #{endDate}]]>
+              AND fcc.charge_order_type = 0 AND fcc.del_flag = 0
+    </select>
+
+    <select id="getReturnedOrderQty" resultType="Integer">
+        SELECT
+              COUNT(soc.order_id) AS returnedQty
+        FROM  sd_order_condition soc
+        WHERE soc.status = 90
+              AND soc.customer_id = #{customerId}
+              AND soc.close_date >= #{beginDate} AND <![CDATA[ soc.close_date < #{endDate}]]>
+    </select>
+
+    <select id="getCancelledOrderQty" resultType="Integer">
+        SELECT
+              COUNT(soc.order_id) AS returnedQty
+        FROM  sd_order_condition soc
+        WHERE soc.status = 100
+              AND soc.customer_id = #{customerId}
+              AND soc.close_date >= #{beginDate} AND <![CDATA[ soc.close_date < #{endDate}]]>
+    </select>
+
+    <select id="getUnCompletedOrderQty" resultType="Integer">
+        SELECT
+                COUNT(soc.order_id) AS uncompletedQty
+        FROM 	sd_order_condition soc
+                INNER JOIN sd_order_status sos ON sos.order_id = soc.order_id
+        WHERE   soc.customer_id = #{customerId}
+                AND <![CDATA[ soc.create_date < #{endDate} ]]>
+                AND (sos.cancel_approve_date IS NULL OR sos.cancel_approve_date > #{endDate})
+                AND (sos.charge_date IS NULL OR sos.charge_date > #{endDate})
+    </select>
+    <!--  查询单个客户的工单数量 -->
+
+
+    <!-- 查询所有客户的消费金额 -->
+    <select id="getRechargeAmountList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerChargeSummaryMonthlyEntity">
+        SELECT
+                fcc.customer_id   AS customerId,
+                SUM(fcc.amount)   AS rechargeAmount
+        FROM 	fi_customercurrency fcc
+        WHERE 	fcc.quarter = #{quarter}
+                AND fcc.create_date >= #{beginDate} AND <![CDATA[ fcc.create_date < #{endDate} ]]>
+                AND <![CDATA[ fcc.action_type <= 20 ]]>
+        GROUP BY customerId
+        LIMIT 10000
+    </select>
+
+    <select id="getCompletedOrderAndTimelinessAndUrgentChargeList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerChargeSummaryMonthlyEntity">
+        SELECT
+                fcc.customer_id             AS customerId,
+                SUM(fcc.service_charge+fcc.express_charge+fcc.travel_charge+fcc.material_charge+fcc.other_charge) AS completedOrderCharge,
+                SUM(fcc.time_liness_charge) AS timelinessCharge,
+                SUM(fcc.urgent_charge)      AS urgentCharge
+        FROM    fi_customercharge fcc
+        WHERE 	fcc.quarter = #{quarter}
+                AND fcc.create_date >= #{beginDate} AND <![CDATA[ fcc.create_date < #{endDate} ]]>
+                AND fcc.charge_order_type = 0
+                AND fcc.del_flag = 0
+        GROUP BY customerId
+        LIMIT 10000
+    </select>
+
+    <select id="getWriteOffChargeList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerChargeSummaryMonthlyEntity">
+        SELECT
+                fcc.customer_id             AS customerId,
+                SUM(fcc.service_charge+fcc.express_charge+fcc.travel_charge+fcc.material_charge+fcc.other_charge) AS writeOffCharge
+        FROM    fi_customercharge fcc
+        WHERE 	fcc.quarter = #{quarter}
+                AND fcc.create_date >= #{beginDate} AND <![CDATA[ fcc.create_date < #{endDate} ]]>
+                AND fcc.charge_order_type = 1
+                AND fcc.del_flag = 0
+        GROUP BY customerId
+        LIMIT 10000
+    </select>
+
+    <select id="getBalanceList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerChargeSummaryMonthlyEntity">
+        SELECT
+                fcc.customer_id     AS customerId,
+                SUM(fcc.amount)     AS balance
+        FROM 	fi_customercurrency fcc
+        WHERE 	fcc.action_type >= 10  AND <![CDATA[ fcc.action_type <= 50 ]]>
+                AND <![CDATA[ fcc.create_date < #{endDate} ]]>
+        GROUP BY customerId
+        LIMIT 10000
+    </select>
+
+<!--    <select id="getBlockAmountList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerChargeSummaryMonthlyEntity">-->
+<!--        SELECT-->
+<!--              fcc.customer_id     AS customerId,-->
+<!--              SUM(fcc.amount)     AS blockAmount-->
+<!--        FROM  fi_customercurrency fcc-->
+<!--        WHERE fcc.action_type = 70-->
+<!--              AND <![CDATA[ fcc.create_date < #{endDate} ]]>-->
+<!--        GROUP BY customerId-->
+<!--        LIMIT 10000-->
+<!--    </select>-->
+    <!-- 查询所有客户的消费金额 -->
+
+
+    <!-- 查询单个客户的消费金额 -->
+    <select id="getRechargeAmount" resultType="Double">
+        SELECT
+                SUM(fcc.amount)   AS rechargeAmount
+        FROM 	fi_customercurrency fcc
+        WHERE 	fcc.quarter = #{quarter}
+                AND fcc.customer_id = #{customerId}
+                AND fcc.create_date >= #{beginDate} AND <![CDATA[ fcc.create_date < #{endDate} ]]>
+                AND <![CDATA[ fcc.action_type <= 20 ]]>
+    </select>
+
+    <select id="getCompletedOrderAndTimelinessAndUrgentCharge" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerChargeSummaryMonthlyEntity">
+        SELECT
+                SUM(fcc.service_charge+fcc.express_charge+fcc.travel_charge+fcc.material_charge+fcc.other_charge) AS completedOrderCharge,
+                SUM(fcc.time_liness_charge) AS timelinessCharge,
+                SUM(fcc.urgent_charge)      AS urgentCharge
+        FROM    fi_customercharge fcc
+        WHERE 	fcc.quarter = #{quarter}
+                AND fcc.customer_id = #{customerId}
+                AND fcc.create_date >= #{beginDate} AND <![CDATA[ fcc.create_date < #{endDate} ]]>
+                AND fcc.charge_order_type = 0
+                AND fcc.del_flag = 0
+    </select>
+
+    <select id="getWriteOffCharge" resultType="Double">
+        SELECT
+                SUM(fcc.service_charge+fcc.express_charge+fcc.travel_charge+fcc.material_charge+fcc.other_charge) AS writeOffCharge
+        FROM    fi_customercharge fcc
+        WHERE 	fcc.quarter = #{quarter}
+                AND fcc.customer_id = #{customerId}
+                AND fcc.create_date >= #{beginDate} AND <![CDATA[ fcc.create_date < #{endDate} ]]>
+                AND fcc.charge_order_type = 1
+                AND fcc.del_flag = 0
+    </select>
+
+    <select id="getBalance" resultType="Double">
+        SELECT
+                SUM(fcc.amount)     AS balance
+        FROM 	fi_customercurrency fcc
+        WHERE 	fcc.customer_id = #{customerId}
+                AND fcc.action_type >= 10  AND <![CDATA[ fcc.action_type <= 50 ]]>
+                AND <![CDATA[ fcc.create_date < #{endDate} ]]>
+    </select>
+
+<!--    <select id="getBlockAmount" resultType="Double">-->
+<!--        SELECT-->
+<!--              SUM(fcc.amount)     AS blockAmount-->
+<!--        FROM  fi_customercurrency fcc-->
+<!--        WHERE fcc.customer_id = #{customerId}-->
+<!--              AND fcc.action_type = 70-->
+<!--              AND <![CDATA[ fcc.create_date < #{endDate} ]]>-->
+<!--    </select>-->
+
+<!--    <select id="getCurrentMonthBlockAmount" resultType="Double">-->
+<!--        SELECT-->
+<!--              SUM(fcc.amount)     AS blockAmount-->
+<!--        FROM  fi_customercurrency fcc-->
+<!--        WHERE fcc.quarter = #{quarter}-->
+<!--              AND fcc.customer_id = #{customerId}-->
+<!--              AND fcc.action_type = 70-->
+<!--              AND fcc.create_date >= #{beginDate}-->
+<!--              AND <![CDATA[ fcc.create_date < #{endDate} ]]>-->
+<!--    </select>-->
+
+
+    <!-- 查询单个客户的消费金额 -->
+
+    <sql id="customerFinanceMonthlyColumns">
+        a.id,
+        a.system_id,
+        a.customer_id,
+        a.yearmonth,
+        a.last_month_balance,
+        a.recharge_amount,
+        a.completed_order_charge,
+        a.write_off_charge,
+        a.timeliness_charge,
+        a.urgent_charge,
+        a.balance,
+        a.block_amount,
+        a.create_date,
+        a.update_date
+    </sql>
+
+    <select id="getCustomerFinanceMonthly" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerChargeSummaryMonthlyEntity">
+        SELECT
+              <include refid="customerFinanceMonthlyColumns"/>
+        FROM  rpt_customer_finance_monthly a
+        WHERE a.system_id = #{systemId} AND a.customer_id = #{customerId} AND a.yearmonth = #{yearmonth}
+        LIMIT 1
+    </select>
+
+    <select id="getCustomerFinanceMonthlyIds" resultType="com.kkl.kklplus.provider.rpt.entity.LongTwoTuple">
+        SELECT
+              a.id          AS "aElement",
+              a.customer_id AS "bElement"
+        FROM  rpt_customer_finance_monthly a
+        WHERE a.system_id = #{systemId} AND a.yearmonth = #{yearmonth}
+        LIMIT 10000
+    </select>
+
+    <delete id="deleteCustomerFinanceMonthly">
+        DELETE FROM rpt_customer_finance_monthly
+        WHERE system_id = #{systemId}
+              AND yearmonth = #{yearmonth}
+    </delete>
+
+    <insert id="insertCustomerFinanceMonthly">
+        INSERT INTO rpt_customer_finance_monthly
+        (
+            system_id,
+            customer_id,
+            yearmonth,
+            last_month_balance,
+            recharge_amount,
+            completed_order_charge,
+            write_off_charge,
+            timeliness_charge,
+            urgent_charge,
+            balance,
+            block_amount,
+            create_date,
+            update_date
+        )
+        VALUES
+        (
+            #{systemId},
+            #{customerId},
+            #{yearmonth},
+            #{lastMonthBalance},
+            #{rechargeAmount},
+            #{completedOrderCharge},
+            #{writeOffCharge},
+            #{timelinessCharge},
+            #{urgentCharge},
+            #{balance},
+            #{blockAmount},
+            #{createDt},
+            #{updateDt}
+        )
+    </insert>
+
+    <update id="updateCustomerFinanceMonthly">
+        UPDATE rpt_customer_finance_monthly
+        <set>
+            last_month_balance      = #{lastMonthBalance},
+            recharge_amount         = #{rechargeAmount},
+            completed_order_charge  = #{completedOrderCharge},
+            write_off_charge        = #{writeOffCharge},
+            timeliness_charge       = #{timelinessCharge},
+            urgent_charge           = #{urgentCharge},
+            balance                 =#{balance},
+            block_amount            = #{blockAmount},
+            update_date             = #{updateDt}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <sql id="customerOrderQtyMonthlyColumns">
+        a.id,
+        a.system_id,
+        a.customer_id,
+        a.yearmonth,
+        a.last_month_uncompleted_qty,
+        a.new_qty,
+        a.completed_qty,
+        a.returned_qty,
+        a.cancelled_qty,
+        a.uncompleted_qty,
+        a.create_date,
+        a.update_date
+    </sql>
+
+    <select id="getCustomerOrderQtyMonthly" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerChargeSummaryMonthlyEntity">
+        SELECT
+              <include refid="customerOrderQtyMonthlyColumns"/>
+        FROM  rpt_customer_order_qty_monthly a
+        WHERE a.system_id = #{systemId} AND a.customer_id = #{customerId} AND a.yearmonth = #{yearmonth}
+        LIMIT 1
+    </select>
+
+    <select id="getCustomerOrderQtyMonthlyIds" resultType="com.kkl.kklplus.provider.rpt.entity.LongTwoTuple">
+        SELECT
+              a.id          AS "aElement",
+              a.customer_id AS "bElement"
+        FROM  rpt_customer_order_qty_monthly a
+        WHERE a.system_id = #{systemId} AND a.yearmonth = #{yearmonth}
+        LIMIT 10000
+    </select>
+
+    <delete id="deleteCustomerOrderQtyMonthly">
+        DELETE FROM rpt_customer_order_qty_monthly
+        WHERE system_id = #{systemId}
+              AND yearmonth = #{yearmonth}
+    </delete>
+
+    <insert id="insertCustomerOrderQtyMonthly">
+        INSERT INTO rpt_customer_order_qty_monthly
+        (
+            system_id,
+            customer_id,
+            yearmonth,
+            last_month_uncompleted_qty,
+            new_qty,
+            completed_qty,
+            returned_qty,
+            cancelled_qty,
+            uncompleted_qty,
+            create_date,
+            update_date
+        )
+        VALUES
+        (
+            #{systemId},
+            #{customerId},
+            #{yearmonth},
+            #{lastMonthUncompletedQty},
+            #{newQty},
+            #{completedQty},
+            #{returnedQty},
+            #{cancelledQty},
+            #{uncompletedQty},
+            #{createDt},
+            #{updateDt}
+        )
+    </insert>
+
+    <update id="updateCustomerOrderQtyMonthly">
+        UPDATE rpt_customer_order_qty_monthly
+        <set>
+            last_month_uncompleted_qty = #{lastMonthUncompletedQty},
+            new_qty = #{newQty},
+            completed_qty = #{completedQty},
+            returned_qty = #{returnedQty},
+            cancelled_qty = #{cancelledQty},
+            uncompleted_qty = #{uncompletedQty},
+            update_date = #{updateDt}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+</mapper>

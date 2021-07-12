@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CreatedOrderMapper">
+
+    <select id="findOrderIdList" resultType="java.lang.Long">
+       SELECT order_id
+       FROM   rpt_created_order
+       WHERE  order_create_date >= #{startDt} and <![CDATA[ order_create_date <= #{endDt} ]]>
+              and system_id = #{systemId}
+        <if test="quarter != null and quarter != ''.toString()">
+            AND quarter = #{quarter}
+        </if>
+       LIMIT #{page},#{size}
+    </select>
+
+    <select id="findOrderIdListFromWebDB" resultType="java.lang.Long">
+        SELECT order_id
+        FROM   sd_order_condition
+        WHERE  create_date >= #{startDate} and <![CDATA[ create_date <= #{endDate} ]]>
+        <if test="quarter != null and quarter != ''.toString()">
+            AND quarter = #{quarter}
+        </if>
+        LIMIT #{page},#{size}
+    </select>
+
+    <select id="getIdByOrderId" resultType="com.kkl.kklplus.provider.rpt.entity.TwoTuple">
+        SELECT id as 'aElement',quarter as 'bElement'
+        FROM   rpt_created_order
+        WHERE  order_id = #{orderId} and system_id = #{systemId}
+        LIMIT  1
+    </select>
+
+    <select id="getByOrderId" resultType="com.kkl.kklplus.entity.rpt.RPTCreatedOrderEntity">
+        SELECT  soc.order_id,
+                soc.province_id,
+                soc.city_id,
+                soc.area_id as 'countyId',
+                soc.customer_id,
+                soc.product_category_id,
+                soc.kefu_id as 'keFuId',
+                soc.create_date as 'orderCreateDate',
+                soc.order_service_type,
+                so.data_source
+        FROM    sd_order_condition soc
+        INNER JOIN sd_order_head so on so.id = soc.order_id
+        WHERE  order_id = #{orderId}
+        <if test="quarter != null and quarter != ''.toString()">
+            AND soc.quarter = #{quarter}
+        </if>
+    </select>
+
+    <select id="findOrderListByDate" resultType="com.kkl.kklplus.entity.rpt.RPTCreatedOrderEntity">
+        SELECT  soc.order_id,
+        soc.province_id,
+        soc.city_id,
+        soc.area_id as 'countyId',
+        soc.customer_id,
+        soc.product_category_id,
+        soc.kefu_id as 'keFuId',
+        soc.create_date as 'orderCreateDate',
+        soc.order_service_type,
+        so.data_source
+        FROM    sd_order_condition soc
+        INNER JOIN sd_order_head so on so.id = soc.order_id
+        WHERE  soc.create_date >= #{startDate} and <![CDATA[ soc.create_date <= #{endDate} ]]>
+        <if test="quarter != null and quarter != ''.toString()">
+            AND soc.quarter = #{quarter}
+        </if>
+        LIMIT #{page},#{size}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO rpt_created_order
+        (
+
+            order_id,
+            system_id,
+            province_id,
+            city_id,
+            county_id,
+            product_category_id,
+            customer_id,
+            kefu_id,
+            data_source,
+            order_service_type,
+            order_create_date,
+            yearmonth,
+            day_index,
+            quarter
+        )
+        VALUES
+        (
+            #{orderId},
+            #{systemId},
+            #{provinceId},
+            #{cityId},
+            #{countyId},
+            #{productCategoryId},
+            #{customerId},
+            #{keFuId},
+            #{dataSource},
+            #{orderServiceType},
+            #{orderCreateDt},
+            #{yearmonth},
+            #{dayIndex},
+            #{quarter}
+        )
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM rpt_created_order where id = #{id} and quarter = #{quarter}
+    </delete>
+
+    <delete id="deleteByDate">
+        DELETE FROM rpt_created_order
+               where order_create_date >= #{startDt}
+               and <![CDATA[ order_create_date <= #{endDt} ]]>
+               and quarter = #{quarter}
+               and system_id = #{systemId}
+    </delete>
+
+</mapper>

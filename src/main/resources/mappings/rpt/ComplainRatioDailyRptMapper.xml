@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.ComplainRatioDailyRptMapper">
+
+    <select id="getComplainDailyList" resultType="com.kkl.kklplus.provider.rpt.entity.ComplainDailyEntity">
+        SELECT id AS complainId, o.product_category_id AS productCategoryId, o.area_id AS countyId,
+        o.customer_id AS customerId, o.complain_date AS complainDate, o.judge_object AS judgeObject,
+        o.judge_item AS judgeItem, o.status AS status
+        FROM sd_order_complain o
+        WHERE
+        o.complain_date >= #{startDate}
+        AND <![CDATA[ o.complain_date <= #{endDate}]]>
+    </select>
+
+
+    <select id="getComplainOrderIds" resultType="com.kkl.kklplus.provider.rpt.entity.LongTwoTuple">
+        SELECT
+              a.id          AS "aElement",
+              a.complain_id AS "bElement"
+        FROM  rpt_order_complain a
+        WHERE a.system_id = #{systemId}
+        AND a.complain_date >= #{startDate}
+        AND <![CDATA[ a.complain_date <= #{endDate}]]>
+        AND quarter = #{quarter}
+    </select>
+
+    <insert id="insertComplainDaily">
+    INSERT INTO rpt_order_complain
+       (
+        customer_id,
+        complain_id,
+        system_id,
+        quarter,
+        province_id,
+        city_id,
+        county_id,
+        product_category_id,
+        complain_date,
+        complain_status,
+        evaluate_status,
+        day_index
+        )
+   VALUES
+        (
+        #{customerId},
+        #{complainId},
+        #{systemId},
+        #{quarter},
+        #{provinceId},
+        #{cityId},
+        #{countyId},
+        #{productCategoryId},
+        #{complainDt},
+        #{complainStatus},
+        #{evaluateStatus},
+        #{dayIndex}
+        )
+    </insert>
+
+    <update id="updateComplainDaily" parameterType="com.kkl.kklplus.provider.rpt.entity.ComplainDailyEntity">
+        UPDATE rpt_order_complain
+        SET
+        complain_status = #{complainStatus},
+        evaluate_status = #{evaluateStatus}
+        WHERE complain_id = #{complainId}
+        and system_id = #{systemId}
+        <if test="quarter != null and quarter != ''.toString()">
+            and quarter = #{quarter}
+        </if>
+    </update>
+
+
+    <delete id="deleteComplainData">
+        DELETE FROM rpt_order_complain
+        WHERE  complain_date >= #{startDate}
+        AND <![CDATA[ complain_date <= #{endDate}]]>
+        AND system_id = #{systemId}
+        AND quarter = #{quarter}
+    </delete>
+
+    <select id="getProvinceComplainOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTAreaCompletedDailyEntity">
+        SELECT
+        province_id AS provinceId,
+        day_index AS dayIndex,
+        count(id) AS countSum
+        FROM
+        rpt_order_complain
+        WHERE
+        quarter = #{quarter}
+        AND complain_status = 0
+        AND system_id = #{systemId}
+        AND complain_date >= #{beginDate}
+        AND <![CDATA[ complain_date <= #{endDate}]]>
+        <if test="customerId != null">
+            and customer_id = #{customerId}
+        </if>
+        <choose>
+            <when test="areaType == 2">
+                and province_id=#{areaId}
+            </when>
+            <when test="areaType == 3">
+                and city_id=#{areaId}
+            </when>
+            <when test="areaType == 4">
+                and county_id=#{areaId}
+            </when>
+        </choose>
+        <if test="productCategoryIds.size() != 0">
+            and product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        group by provinceId,dayIndex
+        LIMIT 200000
+    </select>
+
+
+    <select id="getProvinceServicePointBadOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTAreaCompletedDailyEntity">
+        SELECT
+        province_id AS provinceId,
+        day_index AS dayIndex,
+        count(id) AS countSum
+        FROM
+        rpt_order_complain
+        WHERE
+        quarter = #{quarter}
+        AND evaluate_status = 1
+        AND system_id = #{systemId}
+        AND complain_date >= #{beginDate}
+        AND <![CDATA[ complain_date <= #{endDate}]]>
+        <if test="customerId != null">
+            and customer_id = #{customerId}
+        </if>
+        <choose>
+            <when test="areaType == 2">
+                and province_id=#{areaId}
+            </when>
+            <when test="areaType == 3">
+                and city_id=#{areaId}
+            </when>
+            <when test="areaType == 4">
+                and county_id=#{areaId}
+            </when>
+        </choose>
+        <if test="productCategoryIds.size() != 0">
+            and product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        group by provinceId,dayIndex
+        LIMIT 200000
+    </select>
+
+
+    <select id="getCityComplainOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTAreaCompletedDailyEntity">
+        SELECT
+        province_id AS provinceId,
+        city_id AS cityId,
+        day_index AS dayIndex,
+        count(id) AS countSum
+        FROM
+        rpt_order_complain
+        WHERE
+        quarter = #{quarter}
+        AND complain_status = 0
+        AND system_id = #{systemId}
+        AND complain_date >= #{beginDate}
+        AND <![CDATA[ complain_date <= #{endDate}]]>
+        <if test="customerId != null">
+            and customer_id = #{customerId}
+        </if>
+        <choose>
+            <when test="areaType == 2">
+                and province_id=#{areaId}
+            </when>
+            <when test="areaType == 3">
+                and city_id=#{areaId}
+            </when>
+            <when test="areaType == 4">
+                and county_id=#{areaId}
+            </when>
+        </choose>
+        <if test="productCategoryIds.size() != 0">
+            and product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        group by provinceId,cityId,dayIndex
+        LIMIT 200000
+    </select>
+
+    <select id="getCityServicePointBadOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTAreaCompletedDailyEntity">
+        SELECT
+        province_id AS provinceId,
+        city_id AS cityId,
+        day_index AS dayIndex,
+        count(id) AS countSum
+        FROM
+        rpt_order_complain
+        WHERE
+        quarter = #{quarter}
+        AND evaluate_status = 1
+        AND system_id = #{systemId}
+        AND complain_date >= #{beginDate}
+        AND <![CDATA[ complain_date <= #{endDate}]]>
+        <if test="customerId != null">
+            and customer_id = #{customerId}
+        </if>
+        <choose>
+            <when test="areaType == 2">
+                and province_id=#{areaId}
+            </when>
+            <when test="areaType == 3">
+                and city_id=#{areaId}
+            </when>
+            <when test="areaType == 4">
+                and county_id=#{areaId}
+            </when>
+        </choose>
+        <if test="productCategoryIds.size() != 0">
+            and product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        group by provinceId,cityId,dayIndex
+        LIMIT 200000
+    </select>
+
+
+    <select id="getAreaComplainOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTAreaCompletedDailyEntity">
+        SELECT
+        province_id AS provinceId,
+        city_id AS cityId,
+        county_id AS countyId,
+        day_index AS dayIndex,
+        count(id) AS countSum
+        FROM
+        rpt_order_complain
+        WHERE
+        quarter = #{quarter}
+        AND complain_status = 0
+        AND system_id = #{systemId}
+        AND complain_date >= #{beginDate}
+        AND <![CDATA[ complain_date <= #{endDate}]]>
+        <if test="customerId != null">
+            and customer_id = #{customerId}
+        </if>
+        <choose>
+            <when test="areaType == 2">
+                and province_id=#{areaId}
+            </when>
+            <when test="areaType == 3">
+                and city_id=#{areaId}
+            </when>
+            <when test="areaType == 4">
+                and county_id=#{areaId}
+            </when>
+        </choose>
+        <if test="productCategoryIds.size() != 0">
+            and product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        group by provinceId,cityId,countyId,dayIndex
+        LIMIT 200000
+    </select>
+
+    <select id="getAreaServicePointBadOrderData" resultType="com.kkl.kklplus.entity.rpt.RPTAreaCompletedDailyEntity">
+        SELECT
+        province_id AS provinceId,
+        city_id AS cityId,
+        county_id AS countyId,
+        day_index AS dayIndex,
+        count(id) AS countSum
+        FROM
+        rpt_order_complain
+        WHERE
+        quarter = #{quarter}
+        AND evaluate_status = 1
+        AND system_id = #{systemId}
+        AND complain_date >= #{beginDate}
+        AND <![CDATA[ complain_date <= #{endDate}]]>
+        <if test="customerId != null">
+            and customer_id = #{customerId}
+        </if>
+        <choose>
+            <when test="areaType == 2">
+                and province_id=#{areaId}
+            </when>
+            <when test="areaType == 3">
+                and city_id=#{areaId}
+            </when>
+            <when test="areaType == 4">
+                and county_id=#{areaId}
+            </when>
+        </choose>
+        <if test="productCategoryIds.size() != 0">
+            and product_category_id in
+            <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                     separator="," close=")">
+                #{productCategoryIds}
+            </foreach>
+        </if>
+        group by provinceId,cityId,countyId,dayIndex
+        LIMIT 200000
+    </select>
+
+    <select id="hasAreaComplainCompletedReportData" resultType="Integer">
+        SELECT
+        COUNT(0)
+        FROM rpt_order_complain
+        <where>
+            system_id = #{systemId}
+            and quarter = #{quarter}
+            and complain_date >#{beginDate}
+            and <![CDATA[ complain_date <= #{endDate}]]>
+            <if test="customerId != null">
+                and customer_id = #{customerId}
+            </if>
+            <choose>
+                <when test="areaType == 2">
+                    and province_id=#{areaId}
+                </when>
+                <when test="areaType == 3">
+                    and city_id=#{areaId}
+                </when>
+                <when test="areaType == 4">
+                    and county_id=#{areaId}
+                </when>
+            </choose>
+            <if test="productCategoryIds.size() != 0">
+                and product_category_id in
+                <foreach item="productCategoryIds" index="index" collection="productCategoryIds" open="("
+                         separator="," close=")">
+                    #{productCategoryIds}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+</mapper>

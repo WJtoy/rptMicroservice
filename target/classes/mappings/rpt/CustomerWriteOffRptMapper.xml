@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CustomerWriteOffRptMapper">
+
+    <select id="getCustomerWriteOffListFromWebDB" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerWriteOffEntity">
+        SELECT
+              fcc.id  AS 'customerWriteOffId',
+
+              fcc.order_id, soc.order_no, so.workcard_id AS 'workCardId', so.parent_biz_order_id,
+              so.data_source AS 'dataSource.value', sof.order_payment_type AS 'paymentType.value', sof.expect_charge, sof.blocked_charge,
+              soc.product_category_id AS 'productCategory.id',
+
+              fcc.customer_id AS 'customer.id', so.shop_id AS 'shop.value',
+
+              soc.user_name, soc.phone1 AS 'userPhone', CONCAT(soc.area_name,' ', soc.address) AS 'userAddress',
+              soc.status AS 'status.value', so.description, soc.create_by AS 'createBy.id',soc.create_date,
+              soc.kefu_id AS 'keFu.id', soc.close_date, sos.charge_date, sos.plan_date, soc.appointment_date,
+              so.orderitem_json AS 'orderItemPb',
+
+              fcc.create_date AS 'writeOffCreateDate', fcc.remarks AS 'writeOffRemarks',
+              fcc.service_charge, fcc.material_charge, fcc.travel_charge, fcc.express_charge, fcc.other_charge,
+              fcc.time_liness_charge, fcc.urgent_charge, fcc.praise_fee AS 'praiseFee'
+        FROM 	fi_customercharge fcc
+              LEFT JOIN sd_order_condition soc ON soc.order_id = fcc.order_id
+              LEFT JOIN sd_order_head so ON so.id = soc.order_id
+              LEFT JOIN sd_order_status sos ON sos.order_id = soc.order_id
+              LEFT JOIN sd_order_fee sof ON sof.order_id = soc.order_id
+        WHERE fcc.quarter = #{quarter} AND fcc.create_date >= #{beginDate} AND <![CDATA[ fcc.create_date < #{endDate} ]]>
+              AND fcc.charge_order_type = 1
+              AND fcc.del_flag = 0
+        LIMIT	200000
+    </select>
+
+    <select id="getOrderListByOrderIdsFromWebDB" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerWriteOffEntity">
+        SELECT
+              soc.order_id, soc.order_no, so.workcard_id AS 'workCardId', so.parent_biz_order_id,
+              so.data_source AS 'dataSource.value', sof.order_payment_type AS 'paymentType.value', sof.expect_charge, sof.blocked_charge,
+              soc.product_category_id AS 'productCategory.id',
+
+              so.shop_id AS 'shop.value',
+
+              soc.user_name, soc.phone1 AS 'userPhone', CONCAT(soc.area_name,' ', soc.address) AS 'userAddress',
+              soc.status AS 'status.value', so.description, soc.create_by AS 'createBy.id',soc.create_date,
+              soc.kefu_id AS 'keFu.id', soc.close_date, sos.charge_date, sos.plan_date, soc.appointment_date,
+              so.orderitem_json AS 'orderItemPb'
+        FROM  sd_order_condition soc
+              INNER JOIN sd_order_head so ON so.id = soc.order_id
+              INNER JOIN sd_order_status sos ON sos.order_id = soc.order_id
+              INNER JOIN sd_order_fee sof ON sof.order_id = soc.order_id
+        <where>
+            <choose>
+                <when test="orderIds != null and orderIds.size > 0">
+                    soc.order_id IN
+                    <foreach collection="orderIds" open="(" separator="," close=")" item="orderId">
+                        #{orderId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    FALSE
+                </otherwise>
+            </choose>
+        </where>
+        LIMIT 100
+    </select>
+
+    <select id="getOrderDetailListFromWebDB" resultType="com.kkl.kklplus.entity.rpt.web.RPTOrderDetail">
+        SELECT
+              sod.id, sod.order_id,
+              sod.service_times, sod.service_type_id AS 'serviceType.id',
+              sod.product_id AS 'product.id', sod.product_spec, sod.brand, sod.qty, sod.remarks
+        FROM  sd_orderdetail sod
+              INNER JOIN fi_customercharge fcc ON fcc.order_id = sod.order_id
+        WHERE fcc.quarter = #{quarter} AND fcc.create_date >= #{beginDate} AND <![CDATA[ fcc.create_date < #{endDate} ]]>
+              AND sod.del_flag = 0
+              AND fcc.charge_order_type = 1
+        LIMIT 200000
+    </select>
+
+    <select id="getOrderDetailListByOrderIdsFromWebDB" resultType="com.kkl.kklplus.entity.rpt.web.RPTOrderDetail">
+        SELECT
+              sod.id, sod.order_id,
+              sod.service_times, sod.service_type_id AS 'serviceType.id',
+              sod.product_id AS 'product.id', sod.product_spec, sod.brand, sod.qty, sod.remarks
+        FROM  sd_orderdetail sod
+        <where>
+              sod.del_flag = 0
+            <choose>
+                <when test="orderIds != null and orderIds.size > 0">
+                    AND sod.order_id IN
+                    <foreach collection="orderIds" open="(" separator="," close=")" item="orderId">
+                        #{orderId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    FALSE
+                </otherwise>
+            </choose>
+        </where>
+        LIMIT 100
+    </select>
+
+
+
+
+
+    <insert id="insert" parameterType="com.kkl.kklplus.entity.rpt.RPTCustomerWriteOffEntity">
+        INSERT INTO rpt_customer_write_off
+        (
+            customer_write_off_id,
+            system_id,
+            order_id,
+            order_no,
+            workcard_id,
+            parent_biz_order_id,
+            data_source,
+            payment_type,
+            expect_charge,
+            blocked_charge,
+            product_category_id,
+            customer_id,
+            customer_name,
+            customer_code,
+            contract_date,
+            customer_payment_type_name,
+            sales_name,
+            shop_name,
+            user_name,
+            user_phone,
+            user_address,
+            status,
+            status_label,
+            warranty_status,
+            description,
+            create_by_name,
+            create_date,
+            close_date,
+            charge_date,
+            kefu_name,
+            plan_date,
+            appointment_date,
+            write_off_create_date,
+            write_off_remarks,
+            service_charge,
+            material_charge,
+            express_charge,
+            travel_charge,
+            other_charge,
+            timeliness_charge,
+            urgent_charge,
+            praise_fee,
+            order_item_pb,
+            order_detail_pb,
+            quarter
+        )
+        VALUES
+        (
+            #{customerWriteOffId},
+            #{systemId},
+            #{orderId},
+            #{orderNo},
+            #{workCardId},
+            #{parentBizOrderId},
+            #{dataSource.value},
+            #{paymentType.value},
+            #{expectCharge},
+            #{blockedCharge},
+            #{productCategory.id},
+            #{customer.id},
+            #{customer.name},
+            #{customer.code},
+            #{customer.contractDt},
+            #{customer.paymentType.label},
+            #{customer.sales.name},
+            #{shop.label},
+            #{userName},
+            #{userPhone},
+            #{userAddress},
+            #{status.value},
+            #{status.label},
+            #{warrantyStatus},
+            #{description},
+            #{createBy.name},
+            #{createDt},
+            #{closeDt},
+            #{chargeDt},
+            #{keFu.name},
+            #{planDt},
+            #{appointmentDt},
+            #{writeOffCreateDt},
+            #{writeOffRemarks},
+            #{serviceCharge},
+            #{materialCharge},
+            #{expressCharge},
+            #{travelCharge},
+            #{otherCharge},
+            #{timelinessCharge},
+            #{urgentCharge},
+            #{praiseFee},
+            #{orderItemPb},
+            #{orderDetailPb},
+            #{quarter}
+        )
+    </insert>
+    
+    <sql id="customerWriteOffColumns">
+        a.id,
+        a.customer_write_off_id,
+        a.system_id,
+        a.order_id,
+        a.order_no,
+        a.workcard_id                 AS "workCardId",
+        a.parent_biz_order_id,
+        a.data_source                 AS "dataSource.value",
+        a.payment_type                AS "paymentType.value",
+        a.expect_charge,
+        a.blocked_charge,
+        a.product_category_id         AS "productCategory.id",
+        a.customer_id                 AS "customer.id",
+        a.customer_name               AS "customer.name",
+        a.customer_code               AS "customer.code",
+        a.contract_date               AS "customer.contractDt",
+        a.customer_payment_type_name  AS "customer.paymentType.label",
+        a.sales_name                  AS "customer.sales.name",
+        a.shop_name                   AS "shop.label",
+        a.user_name,
+        a.user_phone,
+        a.user_address,
+        a.status                      AS "status.value",
+        a.status_label                AS "status.label",
+        a.description,
+        a.create_by_name              AS "createBy.name",
+        a.create_date                 AS "createDt",
+        a.close_date                  AS "closeDt",
+        a.charge_date                 AS "chargeDt",
+        a.kefu_name                   AS "keFu.name",
+        a.plan_date                   AS "planDt",
+        a.appointment_date            AS "appointmentDt",
+        a.write_off_create_date       AS "writeOffCreateDt",
+        a.write_off_remarks,
+        a.service_charge,
+        a.material_charge,
+        a.express_charge,
+        a.travel_charge,
+        a.other_charge,
+        a.timeliness_charge,
+        a.urgent_charge,
+        a.praise_fee,
+        a.order_item_pb,
+        a.order_detail_pb,
+        a.quarter
+    </sql>
+    
+    
+    <select id="getCustomerWriteOffListByPaging" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerWriteOffEntity">
+        SELECT
+              <include refid="customerWriteOffColumns"/>
+        FROM rpt_customer_write_off a
+        <where>
+            <if test="quarter != null and quarter != ''.toString()">
+                a.quarter = #{quarter}
+            </if>
+                AND a.system_id = #{systemId}
+            <if test="customerId != null and customerId > 0">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="productCategoryId != null and productCategoryId > 0">
+                AND a.product_category_id = #{productCategoryId}
+            </if>
+            <if test="paymentType != null and paymentType > 0">
+                AND a.payment_type = #{paymentType}
+            </if>
+            <if test="beginWriteOffCreateDate != null and beginWriteOffCreateDate > 0">
+                AND a.write_off_create_date >= #{beginWriteOffCreateDate}
+            </if>
+            <if test="endWriteOffCreateDate != null and endWriteOffCreateDate > 0">
+                AND <![CDATA[ a.write_off_create_date <= #{endWriteOffCreateDate} ]]>
+            </if>
+        </where>
+        ORDER BY a.order_id
+    </select>
+
+    <select id="getCustomerWriteOffList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerWriteOffEntity">
+        SELECT
+              <include refid="customerWriteOffColumns"/>
+        FROM rpt_customer_write_off a
+        <where>
+            system_id = #{systemId}
+            AND a.write_off_create_date >= #{beginDate}
+            AND <![CDATA[ a.write_off_create_date <= #{endDate} ]]>
+            AND a.customer_id = #{customerId}
+            <if test="quarter != null and quarter != ''.toString()">
+              AND  a.quarter = #{quarter}
+            </if>
+        </where>
+        ORDER BY a.order_id
+        LIMIT 100000
+    </select>
+
+
+    <select id="getCustomerWriteOffIds" resultType="com.kkl.kklplus.provider.rpt.entity.LongTwoTuple">
+        SELECT
+              a.id                      AS "aElement",
+              a.customer_write_off_id   AS "bElement"
+        FROM  rpt_customer_write_off a
+        WHERE a.quarter = #{quarter}
+              AND a.system_id = #{systemId}
+              AND a.write_off_create_date >= #{beginWriteOffCreateDate}
+              AND <![CDATA[ a.write_off_create_date <= #{endWriteOffCreateDate} ]]>
+        LIMIT 200000
+    </select>
+
+    <delete id="deleteCustomerWriteOffs">
+        DELETE FROM rpt_customer_write_off
+        WHERE quarter = #{quarter}
+              AND system_id = #{systemId}
+              AND write_off_create_date >= #{beginWriteOffCreateDate}
+              AND <![CDATA[ write_off_create_date <= #{endWriteOffCreateDate} ]]>
+    </delete>
+
+
+</mapper>

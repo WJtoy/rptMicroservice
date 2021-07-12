@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.CustomerFrozenDailyRptMapper">
+
+    <select id="getCustomerFrozenDailyList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerFrozenDailyEntity">
+        SELECT
+        soc.order_no , so.shop_id, so.parent_biz_order_id, soc.create_by AS "orderCreateById",
+        so.orderitem_json AS "orderItemPb", so.data_source AS "dataSourceId",
+
+        fcc.amount AS "blockAmount", fcc.remarks, fcc.currency_type,
+        fcc.currency_no
+        FROM fi_customercurrency_block fcc
+        left join sd_order_condition soc ON soc.order_no = fcc.currency_no
+        left join sd_order_head so on so.id = soc.order_id
+        <if test="saleId!=null and saleId!=0">
+            inner join md_customer_sales mcs on mcs.customer_id = fcc.customer_id
+            <if test="subFlag ==3" >
+                inner join sys_user_sub as sus on sus.sub_user_id = mcs.sales_id and sus.type = 7
+            </if>
+        </if>
+        WHERE
+        fcc.quarter = #{quarter}
+        <if test="customerId!=null and customerId!=0">
+            and  fcc.customer_id = #{customerId}
+        </if>
+        <if test="saleId != null and saleId != 0">
+            <choose>
+                <when test="subFlag == 3">
+                    and sus.user_id= #{saleId}
+                </when>
+                <otherwise>
+                    and mcs.sales_id=#{saleId}
+                </otherwise>
+            </choose>
+        </if>
+        and fcc.create_date >= #{beginDate}
+        and <![CDATA[ fcc.create_date <= #{endDate} ]]>
+    </select>
+
+
+    <select id="getCustomerFrozenDailyByList" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerFrozenDailyEntity">
+        SELECT
+        soc.order_no , so.shop_id, so.parent_biz_order_id, soc.create_by AS "orderCreateById",
+        so.orderitem_json AS "orderItemPb", so.data_source AS "dataSourceId",
+
+        fcc.amount AS "blockAmount", fcc.remarks, fcc.currency_type,
+        fcc.currency_no
+        FROM fi_customercurrency_block fcc
+        left join sd_order_condition soc ON soc.order_no = fcc.currency_no
+        left join sd_order_head so on so.id = soc.order_id
+        <if test="saleId!=null and saleId!=0">
+            inner join md_customer_sales mcs on mcs.customer_id = fcc.customer_id
+            <if test="subFlag != null and subFlag ==3" >
+                inner join sys_user_sub as sus on sus.sub_user_id = mcs.sales_id and sus.type = 7
+            </if>
+         </if>
+        WHERE
+        fcc.quarter = #{quarter}
+        <if test="customerId!=null and customerId!=0">
+            and  fcc.customer_id = #{customerId}
+        </if>
+        <if test="saleId != null and saleId != 0">
+            <choose>
+                <when test="subFlag != null and subFlag == 3">
+                    and sus.user_id= #{saleId}
+                </when>
+                <otherwise>
+                    and mcs.sales_id=#{saleId}
+                </otherwise>
+            </choose>
+        </if>
+        and fcc.create_date >= #{beginDate}
+        and <![CDATA[ fcc.create_date <= #{endDate} ]]>
+    </select>
+
+
+    <select id="getCustomerFrozenDailyIdsFromWebDB" resultType="com.kkl.kklplus.entity.rpt.RPTCustomerFrozenDailyEntity">
+        SELECT
+        soc.order_no, so.shop_id, so.parent_biz_order_id, soc.create_by AS "orderCreateById",
+        so.orderitem_json AS "orderItemPb", so.data_source AS "dataSourceId"
+        FROM  sd_order_condition soc
+        INNER JOIN sd_order_head so ON so.id = soc.order_id
+        <where>
+            <choose>
+                <when test="currencyNos != null and currencyNos.size > 0">
+                    soc.order_no IN
+                    <foreach collection="currencyNos" open="(" separator="," close=")" item="currencyNo">
+                        #{currencyNo}
+                    </foreach>
+                </when>
+                <otherwise>
+                    FALSE
+                </otherwise>
+            </choose>
+        </where>
+        LIMIT 100
+    </select>
+
+
+    <select id="hasReportData" resultType="Integer">
+        SELECT
+        COUNT(0)
+        FROM fi_customercurrency_block fcc
+        <if test="saleId!=null and saleId!=0">
+            INNER JOIN md_customer_sales mcs on mcs.customer_id = fcc.customer_id
+            <if test="subFlag ==3" >
+                inner join sys_user_sub as sus on sus.sub_user_id = mcs.sales_id and sus.type = 7
+            </if>
+        </if>
+        <where>
+            fcc.quarter = #{quarter}
+            AND fcc.create_date >= #{beginDate}
+            AND <![CDATA[ fcc.create_date <= #{endDate} ]]>
+            <if test="customerId!=null and customerId!=0">
+                AND fcc.customer_id = #{customerId}
+            </if>
+            <if test="saleId != null and saleId != 0">
+                <choose>
+                    <when test="subFlag == 3">
+                        and sus.user_id= #{saleId}
+                    </when>
+                    <otherwise>
+                        and mcs.sales_id=#{saleId}
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </select>
+
+
+
+</mapper>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.UncompletedOrderRptMapper">
+
+    <!-- 查询客户的未完工的工单信息 -->
+    <select id="getUncompletedOrder" resultType="com.kkl.kklplus.entity.rpt.RPTUncompletedOrderEntity">
+        SELECT
+        soc.order_id,
+        soc.order_no,
+        soc.create_by AS "createBy.id",
+        '' AS "createBy.name",
+        soc.create_date,
+        soc.close_date,
+        soc.customer_id AS "customer.id",
+        so.description,
+        so.orderitem_json AS "orderItemPb",
+        soc.user_name,
+        soc.phone1 AS "userPhone",
+        soc.area_id,
+        soc.address AS "userAddress",
+        sof.expect_charge,
+        sof.blocked_charge,
+        so.data_source AS "dataSource.value",
+        soc.pending_type AS "pendingType.value",
+        soc.status AS "status.value",
+        so.workcard_id AS "workCardId",
+        so.shop_id AS "shop.value",
+        so.parent_biz_order_id AS "parentBizOrderId"
+        FROM sd_order_condition soc
+        INNER JOIN sd_order_head so ON so.id = soc.order_id
+        INNER JOIN sd_order_fee sof ON soc.order_id=sof.order_id
+        INNER JOIN sd_order_status sos ON soc.order_id=sos.order_id
+        <where>
+            <if test="customerId != null and customerId != 0">
+                soc.customer_id = #{customerId}
+            </if>
+            AND <![CDATA[ soc.create_date < #{endDate} ]]>
+            AND (sos.cancel_approve_date IS NULL OR sos.cancel_approve_date > #{endDate})
+            AND (sos.charge_date IS NULL OR sos.charge_date > #{endDate})
+            <if test="quarters != null and quarters.size > 0">
+                <choose>
+                    <when test="quarters.size == 1">
+                        AND soc.quarter = #{quarters[0]}
+                    </when>
+                    <otherwise>
+                        AND soc.quarter IN
+                        <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">
+                            #{quarters[${index}]}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+        ORDER BY soc.order_id
+    </select>
+
+
+    <select id="hasReportData" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        FROM sd_order_condition soc
+        INNER JOIN sd_order_status sos ON soc.order_id=sos.order_id
+        <where>
+            <if test="customerId != null and customerId != 0">
+                soc.customer_id = #{customerId}
+            </if>
+            AND <![CDATA[ soc.create_date < #{endDate} ]]>
+            AND (sos.cancel_approve_date IS NULL OR sos.cancel_approve_date > #{endDate})
+            AND (sos.charge_date IS NULL OR sos.charge_date > #{endDate})
+            <if test="quarters != null and quarters.size > 0">
+                <choose>
+                    <when test="quarters.size == 1">
+                        AND soc.quarter = #{quarters[0]}
+                    </when>
+                    <otherwise>
+                        AND soc.quarter IN
+                        <foreach collection="quarters" item="quarter" index="index" open="(" close=")" separator=",">
+                            #{quarters[${index}]}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </select>
+</mapper>

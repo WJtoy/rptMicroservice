@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.chart.mapper.KeFuCompleteTimeChartMapper">
+
+    <select id="getKeFuCompleteTimeInstallData" resultType="com.kkl.kklplus.entity.rpt.RPTKeFuCompleteTimeEntity">
+        SELECT day_index AS 'dayIndex',efficiency_flag AS 'efficiencyFlag',COUNT(0) AS efficiencyFlagSum
+        From rpt_kefu_complete_time rkc
+        WHERE rkc.order_create_date >= #{beginDate}
+        AND <![CDATA[ rkc.order_create_date <= #{endDate}]]>
+        and rkc.system_id = #{systemId}
+
+        <if test="orderServiceType != null">
+            and rkc.order_service_type = #{orderServiceType}
+        </if>
+        <if test="quarter != null">
+            and rkc.quarter = #{quarter}
+        </if>
+        GROUP BY dayIndex,efficiencyFlag
+        ORDER BY dayIndex
+        LIMIT 100000
+    </select>
+
+
+
+
+</mapper>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kkl.kklplus.provider.rpt.mapper.SysUserCustomerMappingMapper">
+
+    <select id="getSysUserCustomerMappingFromWebDB" resultType="com.kkl.kklplus.provider.rpt.entity.UserCustomerEntity">
+        SELECT
+              user_id,
+              customer_id
+        FROM sys_user_customer_1
+        LIMIT 200000
+    </select>
+
+    <insert id="insert" parameterType="com.kkl.kklplus.provider.rpt.entity.UserCustomerEntity">
+        INSERT INTO rpt_sys_user_customer_${quarter}
+        (
+              user_id,
+              customer_id,
+              system_id
+        )
+        VALUES
+        (
+            #{userId},
+            #{customerId},
+            #{systemId}
+        )
+    </insert>
+
+    <delete id="deleteSysUserCustomerMappings">
+        DELETE FROM rpt_sys_user_customer_${quarter}
+        WHERE system_id = #{systemId}
+    </delete>
+
+</mapper>
